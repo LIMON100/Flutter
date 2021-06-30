@@ -14,24 +14,20 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-
   final List<Transaction> transaction = [
-
     Transaction(
       id: 'p1',
       title: 'Shoes',
       amount: 969.4,
       date: DateTime.now(),
     ),
-
     Transaction(
       id: 'p2',
       title: 'Bags',
       amount: 19.4,
       date: DateTime.now(),
     ),
-
-  ],
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +46,26 @@ class MyHomePage extends StatelessWidget {
               elevation: 5,
             ),
           ),
-          Card(
-            child: Text('List of items.'),
-          ),
+          Column(
+              children: transaction.map((tx) {
+            return Card(
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    child: Text(tx.amount.toString()),
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text(tx.title),
+                      Text(
+                        tx.date.toString(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }).toList()),
         ],
       ),
     );
