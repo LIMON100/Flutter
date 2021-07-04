@@ -16,26 +16,30 @@ class _NewTransactionState extends State<NewTransaction> {
   DateTime _selectedDate;
 
   void _submitData() {
+    if (_amountController.text.isEmpty) {
+      return;
+    }
     final enteredTitle = _titleController.text;
     final enteredAmount = double.parse(_amountController.text);
 
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+    if (enteredTitle.isEmpty || enteredAmount <= 0 || _selectedDate == null) {
       return;
     }
 
     widget.addTx(
       enteredTitle,
       enteredAmount,
+      _selectedDate,
     );
 
     Navigator.of(context).pop();
   }
 
-  void _presendDatePicker() {
+  void _presentDatePicker() {
     showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
+      firstDate: DateTime(2019),
       lastDate: DateTime.now(),
     ).then((pickedDate) {
       if (pickedDate == null) {
@@ -45,7 +49,7 @@ class _NewTransactionState extends State<NewTransaction> {
         _selectedDate = pickedDate;
       });
     });
-    print("......");
+    print('...');
   }
 
   @override
@@ -77,19 +81,21 @@ class _NewTransactionState extends State<NewTransaction> {
               child: Row(
                 children: <Widget>[
                   Expanded(
-                    child: Text(_selectedDate == null
-                        ? "No date chosem."
-                        : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}'),
+                    child: Text(
+                      _selectedDate == null
+                          ? 'No Date Chosen!'
+                          : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
+                    ),
                   ),
                   FlatButton(
                     textColor: Theme.of(context).primaryColor,
                     child: Text(
-                      "Choose Date.",
+                      'Choose Date',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    onPressed: _presendDatePicker,
+                    onPressed: _presentDatePicker,
                   ),
                 ],
               ),
@@ -97,7 +103,7 @@ class _NewTransactionState extends State<NewTransaction> {
             RaisedButton(
               child: Text('Add Transaction'),
               color: Theme.of(context).primaryColor,
-              textColor: Colors.white,
+              textColor: Theme.of(context).textTheme.button.color,
               onPressed: _submitData,
             ),
           ],
