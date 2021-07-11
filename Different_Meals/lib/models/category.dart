@@ -5,9 +5,9 @@ class Category {
   final String title;
   final Color color;
 
-  const Catetory({
+  const Category({
     @required this.id,
     @required this.title,
-    this.color = Colors.orage,
+    this.color = Colors.orange,
   });
 }
