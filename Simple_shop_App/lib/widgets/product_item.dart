@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../screens/product_detail_screen.dart';
 
 class ProductItem extends StatelessWidget {
@@ -6,7 +7,7 @@ class ProductItem extends StatelessWidget {
   final String title;
   final String imageUrl;
 
-  ProductItem(this.id, this.imageUrl, this.title);
+  ProductItem(this.id, this.title, this.imageUrl);
 
   @override
   Widget build(BuildContext context) {
