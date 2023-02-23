@@ -17,28 +17,32 @@ class MyHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: SideBar(),
-      appBar: AppBar(title: const Text('LLama'),
-      backgroundColor: Colors.grey,),
-      // backgroundColor: Colors.blueGrey,
-      body: Container(
-        child: Center(
-          child: Image.asset('images/llamalogo_no_txt.jpg',
-            fit: BoxFit.cover,
-            width: 90,
-            height: 90,
+
+      appBar: AppBar(
+        centerTitle: true,
+        foregroundColor: Colors.black,
+        title: const Text('LLama'),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            // color: Color(0xFF6497d3),
+              color: Color(0xff2e89f6),
           ),
         ),
       ),
-      // body: Center(
-      //   child: ElevatedButton(
-      //     onPressed: () {
-      //       Navigator.of(context).push(MaterialPageRoute(
-      //         builder: (context) => const QRViewExample(),
-      //       ));
-      //     },
-      //     child: const Text('Open Camera'),
-      //   ),
-      // ),
+        // backgroundColor: Colors.lightBlue,),
+
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Container(
+          height: 500,
+          width: 500,
+          child: Image.asset('images/test.jpg',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+          ),
+        ),
+      ),
     );
   }
 }
