@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_code_scan_sidebar/custom_icon_icons.dart';
 import 'open_camera.dart';
 import 'qrviewexample.dart';
+import 'db_icons.dart';
 
 class SideBar extends StatelessWidget {
   @override
@@ -22,7 +25,7 @@ class SideBar extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.electric_scooter),
+            leading: Icon(CustomIcon.scooter, color: Colors.black,),
             title: Text('Llama Eye'),
             onTap: () {
               showDialog(
@@ -55,21 +58,50 @@ class SideBar extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.car_crash),
+            leading: Icon(CustomIcon.car, color: Colors.black,),
             title: Text(' Llama Radar'),
             onTap: () => null,
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.settings),
+            leading: Icon(CustomIcon.webcam, color: Colors.black,),
+            title: Text('Dash Cam'),
+            onTap: () => null,
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(DBIcons.logo, color: Colors.black,),
             title: Text('Settings'),
             onTap: () => null,
           ),
           Divider(),
           ListTile(
             title: Text('Exit'),
-            leading: Icon(Icons.exit_to_app),
-            onTap: () => null,
+            leading: Icon(CustomIcon.exit, color: Colors.black,),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (context){
+                    return Container(
+                      child: AlertDialog(
+                        title: Text("Are you sure to exit"),
+                        actions: [
+                          TextButton(
+                              onPressed: (){
+                                // Navigator.of(context).pop(true);
+                                SystemNavigator.pop();
+                              },
+                              child: Text("Yes")),
+                          TextButton(
+                              onPressed: (){
+                                Navigator.of(context).pop(false);
+                              },
+                              child: Text("No"))
+                        ],
+                      ),
+                    );
+                  });
+            },
           ),
         ],
       ),
