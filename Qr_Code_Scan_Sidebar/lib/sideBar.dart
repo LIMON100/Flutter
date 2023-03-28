@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:qr_code_scan_sidebar/custom_icon_icons.dart';
+import 'package:lamaApp/custom_icon_icons.dart';
 import 'open_camera.dart';
 import 'qrviewexample.dart';
 import 'db_icons.dart';
+import 'llama_web_menu.dart';
+import 'llama_web_menu2.dart';
 
 class SideBar extends StatelessWidget {
   @override
@@ -33,14 +35,14 @@ class SideBar extends StatelessWidget {
                   builder: (context){
                     return Container(
                       child: AlertDialog(
-                        title: Text("Want to open web tool"),
+                        title: Text("Open the llama web"),
                         actions: [
                           TextButton(
                               onPressed: (){
                                 Navigator.pop(context);
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context) => const OpenCamera(),
+                                    builder: (context) => const LlamaWebMenu2(),
                                   ),
                                 );
                               },
