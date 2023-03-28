@@ -14,55 +14,137 @@ class CameraInfo extends StatefulWidget {
 
 class _CameraInfoState extends State<CameraInfo> {
 
-  // postData() async{
-  //   var response = await http.post(
-  //     Uri.parse("http://192.168.0.105/api/v1/custom=1&cmd=1001"),
-  //     body: {
-  //       "id": "1",
-  //     }
-  //   );
-  //   print(response.body);
-  // }
-  Future<void> postData() async {
-    final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4001');
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({'ssid': 'Efty @ SF Networking', 'pass': '01723089'});
-
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-
-      if (response.statusCode == 200) {
-        print('POST request successful');
-        print(response.body);
-      } else {
-        print('Error during POST request: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error during POST request: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("CAMERA"),
       ),
-      body: Center(
-        child: MaterialButton(
-          color: Colors.redAccent,
-          onPressed: () async{
-            print("POSTING DATA CHECK");
-            await postData();
-          },
-          child: Text(
-            "post",
-            style: TextStyle(color:Colors.white70),
-          ),
+      // body: Center(
+      //   child: Column(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: <Widget>[
+      //       Row(
+      //         mainAxisAlignment: MainAxisAlignment.center,
+      //         children: <Widget>[
+      //           ElevatedButton(
+      //             onPressed: () {
+      //               // handle button press
+      //             },
+      //             child: Text('Open Camera'),
+      //           ),
+      //           SizedBox(width: 20),
+      //           ElevatedButton(
+      //             onPressed: () {
+      //               // handle button press
+      //             },
+      //             child: Text('Close Camera'),
+      //           ),
+      //         ],
+      //       ),
+      //       SizedBox(height: 20),
+      //       Container(
+      //         width: 200,
+      //         child: TextField(
+      //
+      //           decoration: InputDecoration(
+      //             border: OutlineInputBorder(),
+      //             // labelText: 'Enter some text',
+      //           ),
+      //         ),
+      //       ),
+      //       SizedBox(height: 20),
+      //       Text(
+      //         'Snapshot take',
+      //         style: TextStyle(fontSize: 24.0),
+      //       ),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           // handle button press
+      //         },
+      //         child: Text('STOP'),
+      //       ),
+      //     ],
+      //   ),
+      // ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {},
+                  child: Text('Open Camera'),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: Text('Close Camera'),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            Container(
+                  width: 200,
+                  child: TextField(
+                    //controller: _textController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+            SizedBox(height: 100),
+            Text(
+              'Snapshot take',
+              style: TextStyle(fontSize: 24.0),
+            ),
+            SizedBox(height: 35.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Front Camera'),
+                  ),
+                ),
+                SizedBox(width: 5.0),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Rear Up Camera'),
+                  ),
+                ),
+                SizedBox(width: 5.0),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Rear Down Camera'),
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // handle button press
+              },
+              child: Text('STOP'),
+            ),
+            SizedBox(height: 16.0),
+            Container(
+              width: 200,
+              child: TextField(
+
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-
     );
   }
-  
 }
