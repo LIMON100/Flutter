@@ -13,13 +13,15 @@ class WifiScreen extends StatefulWidget {
 }
 
 class _WifiScreenState extends State<WifiScreen> {
+
   final _formKey = GlobalKey<FormState>();
   final ssidController = TextEditingController();
   final passController = TextEditingController();
+  final responseData = '';
 
   Future<CheckWifiInfo> getProductApi () async{
 
-    final response = await http.get(Uri.parse('http://192.168.0.109/api/v1/wifi/settings'));
+    final response = await http.get(Uri.parse('http://192.168.0.106/api/v1/wifi/settings'));
     var data = jsonDecode(response.body.toString());
 
 
@@ -31,7 +33,7 @@ class _WifiScreenState extends State<WifiScreen> {
   }
 
   Future<void> submitForm() async {
-    final url = Uri.parse('http://192.168.0.109/api/v1/custom=4&cmd=4001');
+    final url = Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001');
     final response = await http.post(url, body: {
       'ssid': ssidController.text,
       'password': passController.text,
@@ -54,6 +56,7 @@ class _WifiScreenState extends State<WifiScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responseData = '';
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -64,7 +67,7 @@ class _WifiScreenState extends State<WifiScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: 16.0),
+            SizedBox(height: 10.0),
             Container(
               width: 200,
               child: TextField(
@@ -86,146 +89,261 @@ class _WifiScreenState extends State<WifiScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // Do something with the data
-                  final ssid = ssidController.text;
-                  final password = passController.text;
-                  print('SSID: $ssid, Password: $password');
-                }
-              },
-              child: Text('Submit'),
-            ),
-            Center(
-              child: FutureBuilder<CheckWifiInfo>(
-                future: getProductApi(),
-                builder: (context, snapshot) {
-                  if(snapshot.hasData){
-                    return DataTable(
-                        border: TableBorder.symmetric(
+              // onPressed: () {
+              //   if (_formKey.currentState!.validate()) {
+              //     // Do something with the data
+              //     final ssid = ssidController.text;
+              //     final password = passController.text;
+              //     print('SSID: $ssid, Password: $password');
+              //   }
+              // },
+              child: Text('Send'),
+              onPressed: () async {
+                // Define the POST request body
+                final postData = {
+                  "ssid": ssidController.text,
+                  "pass": passController.text
+                };
 
+                // Encode the request body as JSON
+                final jsonBody = jsonEncode(postData);
+                print(jsonBody);
+
+                // Make the POST request
+                final response = await http.post(
+                  Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001'),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: jsonBody,
+                );
+
+                // Decode the response JSON
+                final responseData = jsonDecode(response.body);
+                print("response Data ..............");
+                print(responseData["request"]["pass"]);
+
+                // Build the output JSON
+                final outputData = {
+                  "funtion": [
+                    {
+                      "cmd": 4001,
+                      "status": 0
+                    }
+                  ],
+                  "request": postData
+                };
+                // Encode the output JSON as a string
+                final outputJson = jsonEncode(outputData);
+
+              },
+            ),
+
+            Expanded(
+              child: Center(
+                child: DataTable(
+                      border: TableBorder.symmetric(),
+                      columns: [
+                        DataColumn(label: Text('')),
+                        DataColumn(label: Text('')),
+                        DataColumn(label: Text('')),
+                      ],
+                      rows: [
+                        DataRow(
+                          cells: [
+                            DataCell(Text("ssid")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DataCell(Text(ssidController.text)),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12), // set the background color to yellow
                         ),
-                        columns: [
-                          DataColumn(label: Text('')),
-                          DataColumn(label: Text('')),
-                          DataColumn(label: Text('')),
-                        ],
-                        rows: [
-                          DataRow(
-                            cells: [
-                              DataCell(Text("ssid")),
-                              DataCell(
-                                Container(
-                                  width: 1,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: Colors.black45,
-                                        width: 1,
-                                      ),
+                        DataRow(
+                          cells: [
+                            DataCell(Text("pass")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
                                     ),
                                   ),
                                 ),
                               ),
-                              DataCell(Text(ssidController.text)),
-                            ],
-                            color: MaterialStateProperty.all<Color>(Colors.black12), // set the background color to yellow
-                          ),
-                          DataRow(
-                            cells: [
-                              DataCell(Text("pass")),
-                              DataCell(
-                                Container(
-                                  width: 1,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: Colors.black45,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(passController.text)),
-                            ],
-                            color: MaterialStateProperty.all<Color>(Colors.black12),
-                          ),
-                          DataRow(
-                            cells: [
-                              DataCell(Text("ip")),
-                              DataCell(
-                                Container(
-                                  width: 1,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: Colors.black45,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(snapshot.data!.ip.toString())),
-                            ],
-                            color: MaterialStateProperty.all<Color>(Colors.black12),
-                          ),
-                          DataRow(
-                            cells: [
-                              DataCell(Text("mask")),
-                              DataCell(
-                                Container(
-                                  width: 1,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: Colors.black45,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(snapshot.data!.mask.toString())),
-                            ],
-                            color: MaterialStateProperty.all<Color>(Colors.black12),
-                          ),
-                          DataRow(
-                            cells: [
-                              DataCell(Text("gtw")),
-                              DataCell(
-                                Container(
-                                  width: 1,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: Colors.black45,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text(snapshot.data!.gtw.toString())),
-                            ],
-                            color: MaterialStateProperty.all<Color>(Colors.black12),
-                          ),
-                        ]
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
-                  // By default, show a loading spinner
-                  return CircularProgressIndicator();
-                },
+                            ),
+                            DataCell(Text(passController.text)),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12),
+                        ),
+                      ]
+                  ),
+              ),
+            ),
+
+            // 6 row for value input
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: ssidController,
+                    decoration: InputDecoration(
+                      labelText: "dhcp",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: passController,
+                    decoration: InputDecoration(
+                      labelText: "ip",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: ssidController,
+                    decoration: InputDecoration(
+                      labelText: "gw",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: passController,
+                    decoration: InputDecoration(
+                      labelText: "mask",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: ssidController,
+                    decoration: InputDecoration(
+                      labelText: "dns1",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+
+                Container(
+                  width: 150,
+                  child: TextField(
+                    controller: passController,
+                    decoration: InputDecoration(
+                      labelText: "dns2",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton(
+              child: Text('Send'),
+              onPressed: () async {
+                // Define the POST request body
+                final postData = {
+                  "ssid": ssidController.text,
+                  "pass": passController.text
+                };
+
+                // Encode the request body as JSON
+                final jsonBody = jsonEncode(postData);
+                print(jsonBody);
+
+                // Make the POST request
+                final response = await http.post(
+                  Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001'),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: jsonBody,
+                );
+
+                // Decode the response JSON
+                final responseData = jsonDecode(response.body);
+                print("response Data ..............");
+                print(responseData["request"]["pass"]);
+
+                // Build the output JSON
+                final outputData = {
+                  "funtion": [
+                    {
+                      "cmd": 4001,
+                      "status": 0
+                    }
+                  ],
+                  "request": postData
+                };
+                // Encode the output JSON as a string
+                final outputJson = jsonEncode(outputData);
+
+              },
+            ),
+
+            // Display dhcp, ip, mask, dns
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: [
+                  DataColumn(label: Text('dhcp')),
+                  DataColumn(label: Text('ip')),
+                  DataColumn(label: Text('gw')),
+                  DataColumn(label: Text('mask')),
+                  DataColumn(label: Text('dns1')),
+                  DataColumn(label: Text('dns2')),
+
+                ],
+                rows: [
+                  DataRow(cells: [
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                    DataCell(Text('xxx.xxx.xxx.xxx')),
+                  ]),
+                ],
               ),
             ),
           ],
