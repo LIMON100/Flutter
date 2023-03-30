@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lamaApp/Models/CheckWifiInfo.dart';
 import 'package:lamaApp/llama_web_menu.dart';
+import 'package:lamaApp/Models/model.dart';
 
 class TestWifi extends StatefulWidget {
   const TestWifi({Key? key}) : super(key: key);
@@ -19,8 +20,11 @@ class _TestWifiState extends State<TestWifi> {
   final passController = TextEditingController();
   final responseData = '';
 
-  Future<CheckWifiInfo> getProductApi () async{
+  String _ssid = '';
+  String _password = '';
+  Model model = Model();
 
+  Future<CheckWifiInfo> getProductApi () async{
     final response = await http.get(Uri.parse('http://192.168.0.106/api/v1/wifi/settings'));
     var data = jsonDecode(response.body.toString());
 
@@ -46,18 +50,28 @@ class _TestWifiState extends State<TestWifi> {
     }
   }
 
-  // @override
-  // void dispose() {
-  //   ssidController.dispose();
-  //   passController.dispose();
-  //   super.dispose();
-  // }
+  Future<String> send() async {
+    model = Model(ssid: ssidController.text, pass: passController.text);
+    final url = Uri.parse('http://192.168.0.109/api/v1/custom=4&cmd=4001');
+    final response = await http.post(url, body: json.encode(model.toJson()));
+    print(response.body);
 
-  final _textControllers = List.generate(5, (_) => TextEditingController());
+    final decodedJson = jsonDecode(response.body);
+    final ssid = decodedJson['request']['ssid'];
+    final password = decodedJson['request']['pass'];
+
+    setState(() {
+      _ssid = ssid;
+      _password = password;
+    });
+
+    return response.body;
+  }
 
   @override
   void dispose() {
-    _textControllers.forEach((controller) => controller.dispose());
+    ssidController.dispose();
+    passController.dispose();
     super.dispose();
   }
 
@@ -104,47 +118,52 @@ class _TestWifiState extends State<TestWifi> {
                 children:[
                   SizedBox(height: 1.0),
                   ElevatedButton(
-                    child: Text('Send'),
-                    onPressed: () async {
-                      // Define the POST request body
-                      final postData = {
-                        "ssid": ssidController.text,
-                        "pass": passController.text
-                      };
-
-                      // Encode the request body as JSON
-                      final jsonBody = jsonEncode(postData);
-                      print(jsonBody);
-
-                      // Make the POST request
-                      final response = await http.post(
-                        Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001'),
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: jsonBody,
-                      );
-
-                      // Decode the response JSON
-                      final responseData = jsonDecode(response.body);
-                      print("response Data ..............");
-                      print(responseData["request"]["pass"]);
-
-                      // Build the output JSON
-                      final outputData = {
-                        "funtion": [
-                          {
-                            "cmd": 4001,
-                            "status": 0
-                          }
-                        ],
-                        "request": postData
-                      };
-                      // Encode the output JSON as a string
-                      final outputJson = jsonEncode(outputData);
-
-                    },
+                    onPressed: send,
+                    child: Text("Send"),
+                    // color: Colors.teal,
                   ),
+                  // ElevatedButton(
+                  //   child: Text('Send'),
+                  //   onPressed: () async {
+                  //     // Define the POST request body
+                  //     final postData = {
+                  //       "ssid": ssidController.text,
+                  //       "pass": passController.text
+                  //     };
+                  //
+                  //     // Encode the request body as JSON
+                  //     final jsonBody = jsonEncode(postData);
+                  //     print(jsonBody);
+                  //
+                  //     // Make the POST request
+                  //     final response = await http.post(
+                  //       Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001'),
+                  //       headers: {
+                  //         'Content-Type': 'application/json',
+                  //       },
+                  //       body: jsonBody,
+                  //     );
+                  //
+                  //     // Decode the response JSON
+                  //     final responseData = jsonDecode(response.body);
+                  //     print("response Data ..............");
+                  //     print(responseData["request"]["pass"]);
+                  //
+                  //     // Build the output JSON
+                  //     final outputData = {
+                  //       "funtion": [
+                  //         {
+                  //           "cmd": 4001,
+                  //           "status": 0
+                  //         }
+                  //       ],
+                  //       "request": postData
+                  //     };
+                  //     // Encode the output JSON as a string
+                  //     final outputJson = jsonEncode(outputData);
+                  //
+                  //   },
+                  // ),
                   SizedBox(height: 0.0),
                   DataTable(
                         border: TableBorder.symmetric(),
@@ -171,7 +190,7 @@ class _TestWifiState extends State<TestWifi> {
                                   ),
                                 ),
                               ),
-                              DataCell(Text(ssidController.text)),
+                              DataCell(Text(_ssid)),
                             ],
                             color: MaterialStateProperty.all<Color>(Colors.black12), // set the background color to yellow
                           ),
@@ -192,7 +211,7 @@ class _TestWifiState extends State<TestWifi> {
                                   ),
                                 ),
                               ),
-                              DataCell(Text(passController.text)),
+                              DataCell(Text(_password)),
                             ],
                             color: MaterialStateProperty.all<Color>(Colors.black12),
                           ),
