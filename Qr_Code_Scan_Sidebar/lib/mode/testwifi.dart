@@ -67,7 +67,7 @@ class _TestWifiState extends State<TestWifi> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Test WiFi'),
+        title: Text('WiFi'),
       ),
       body: Form(
         key: _formKey,
@@ -202,20 +202,56 @@ class _TestWifiState extends State<TestWifi> {
               ),
 
             // Dhcp status
-           Row(
+            SizedBox(height: 15.0),
+            Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Container(
                     width: 150,
-                    child: TextField(
-                      controller: ssidController,
-                      decoration: InputDecoration(
-                        labelText: "DHCP",
-                        border: OutlineInputBorder(),
-                      ),
+                    height: 65,
+                    child: ElevatedButton(
+                      child: Text('DHCP'),
+                      onPressed: () async {
+                        // Define the POST request body
+                        final postData = {
+                          "ssid": ssidController.text,
+                          "pass": passController.text
+                        };
+
+                        // Encode the request body as JSON
+                        final jsonBody = jsonEncode(postData);
+                        print(jsonBody);
+
+                        // Make the POST request
+                        final response = await http.post(
+                          Uri.parse('http://192.168.0.106/api/v1/custom=4&cmd=4001'),
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: jsonBody,
+                        );
+
+                        // Decode the response JSON
+                        final responseData = jsonDecode(response.body);
+                        print("response Data ..............");
+                        print(responseData["request"]["pass"]);
+
+                        // Build the output JSON
+                        final outputData = {
+                          "funtion": [
+                            {
+                              "cmd": 4001,
+                              "status": 0
+                            }
+                          ],
+                          "request": postData
+                        };
+                        // Encode the output JSON as a string
+                        final outputJson = jsonEncode(outputData);
+
+                      },
                     ),
                   ),
-
                   Container(
                     width: 150,
                     child: TextField(
@@ -230,106 +266,76 @@ class _TestWifiState extends State<TestWifi> {
               ),
 
             // 6 row for value input
-
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.horizontal,
-            //   child: Column(
-            //     children: [
-            //     TextField(
-            //           controller: ssidController,
-            //           decoration: InputDecoration(
-            //             labelText: "dhcp",
-            //             border: OutlineInputBorder(),
-            //           ),
-            //         ),
-            //         Container(
-            //           width: 150,
-            //           child: TextField(
-            //             controller: passController,
-            //             decoration: InputDecoration(
-            //               labelText: "ip",
-            //               border: OutlineInputBorder(),
-            //             ),
-            //           ),
-            //         ),
-            //       SizedBox(height: 8.0),
-            //       Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //         children: [
-            //           Container(
-            //             width: 150,
-            //             child: TextField(
-            //               controller: ssidController,
-            //               decoration: InputDecoration(
-            //                 labelText: "gw",
-            //                 border: OutlineInputBorder(),
-            //               ),
-            //             ),
-            //           ),
-            //
-            //           Container(
-            //             width: 150,
-            //             child: TextField(
-            //               controller: passController,
-            //               decoration: InputDecoration(
-            //                 labelText: "mask",
-            //                 border: OutlineInputBorder(),
-            //               ),
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //       SizedBox(height: 8.0),
-            //       Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //         children: [
-            //           Container(
-            //             width: 150,
-            //             child: TextField(
-            //               controller: ssidController,
-            //               decoration: InputDecoration(
-            //                 labelText: "dns1",
-            //                 border: OutlineInputBorder(),
-            //               ),
-            //             ),
-            //           ),
-            //
-            //           Container(
-            //             width: 150,
-            //             child: TextField(
-            //               controller: passController,
-            //               decoration: InputDecoration(
-            //                 labelText: "dns2",
-            //                 border: OutlineInputBorder(),
-            //               ),
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //     ],
-            //   ),
-            // ),
-
-            // Test SingleScrollView textfield
+            SizedBox(height: 10.0),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                  children: [
-              for (int i = 0; i < 5; i++)
-              Container(
-              width: 100,
-              margin: EdgeInsets.all(8),
-              child: TextFormField(
-                controller: _textControllers[i],
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Field ${i + 1}',
-                ),
+                children: [
+                  Container(
+                    width: 100,
+                    child: TextField(
+                      controller: ssidController,
+                      decoration: InputDecoration(
+                        labelText: "dhcp",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  Container(
+                      width: 100,
+                      margin: EdgeInsets.all(8),
+                      child: TextField(
+                        controller: passController,
+                        decoration: InputDecoration(
+                          labelText: "ip",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 100,
+                      child: TextField(
+                        controller: ssidController,
+                        decoration: InputDecoration(
+                          labelText: "gw",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 100,
+                      margin: EdgeInsets.all(8),
+                      child: TextField(
+                        controller: passController,
+                        decoration: InputDecoration(
+                          labelText: "mask",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 150,
+                      child: TextField(
+                        controller: ssidController,
+                        decoration: InputDecoration(
+                          labelText: "dns1",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 150,
+                      child: TextField(
+                        controller: passController,
+                        decoration: InputDecoration(
+                          labelText: "dns2",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-        ]
-            ),
-          ),
 
             ElevatedButton(
               child: Text('Send'),
