@@ -25,7 +25,7 @@ class MyHome extends StatelessWidget {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             // color: Color(0xFF6497d3),
-              color: Color(0xff2e89f6),
+            color: Color(0xFF2580B3),
           ),
         ),
       ),

@@ -17,7 +17,7 @@ class _WifiInfoState extends State<WifiInfo> {
   // List<CheckVersion> postList = [];
   Future<CheckWifiInfo> getProductApi () async{
 
-    final response = await http.get(Uri.parse('http://192.168.0.115/api/v1/wifi/settings'));
+    final response = await http.get(Uri.parse('http://192.168.0.109/api/v1/wifi/settings'));
     var data = jsonDecode(response.body.toString());
 
 
@@ -45,136 +45,139 @@ class _WifiInfoState extends State<WifiInfo> {
           centerTitle: true,
           title: Text('WIFI information'),
         ),
-        body: Center(
-          child: FutureBuilder<CheckWifiInfo>(
-            future: getProductApi(),
-            builder: (context, snapshot) {
-              if(snapshot.hasData){
-                return DataTable(
-                    border: TableBorder.symmetric(
+        body: Column(
+          children: [
+            Center(
+            child: FutureBuilder<CheckWifiInfo>(
+              future: getProductApi(),
+              builder: (context, snapshot) {
+                if(snapshot.hasData){
+                  return DataTable(
+                      border: TableBorder.symmetric(
 
-                    ),
-                    columns: [
-                      DataColumn(label: Text('')),
-                      DataColumn(label: Text('')),
-                      DataColumn(label: Text('')),
-                    ],
-                    rows: [
-                      DataRow(
-                        cells: [
-                          DataCell(Text("ssid")),
-                          DataCell(
-                            Container(
-                              width: 1,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Colors.black45,
-                                    width: 1,
+                      ),
+                      columns: [
+                        DataColumn(label: Text('')),
+                        DataColumn(label: Text('')),
+                        DataColumn(label: Text('')),
+                      ],
+                      rows: [
+                        DataRow(
+                          cells: [
+                            DataCell(Text("ssid")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(snapshot.data!.ssid.toString())),
-                        ],
-                        color: MaterialStateProperty.all<Color>(Colors.black12), // set the background color to yellow
-                      ),
-                      DataRow(
-                        cells: [
-                          DataCell(Text("pass")),
-                          DataCell(
-                            Container(
-                              width: 1,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Colors.black45,
-                                    width: 1,
+                            DataCell(Text(snapshot.data!.ssid.toString())),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12), // set the background color to yellow
+                        ),
+                        DataRow(
+                          cells: [
+                            DataCell(Text("pass")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(snapshot.data!.pass.toString())),
-                        ],
-                        color: MaterialStateProperty.all<Color>(Colors.black12),
-                      ),
-                      DataRow(
-                        cells: [
-                          DataCell(Text("ip")),
-                          DataCell(
-                            Container(
-                              width: 1,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Colors.black45,
-                                    width: 1,
+                            DataCell(Text(snapshot.data!.pass.toString())),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12),
+                        ),
+                        DataRow(
+                          cells: [
+                            DataCell(Text("ip")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(snapshot.data!.ip.toString())),
-                        ],
-                        color: MaterialStateProperty.all<Color>(Colors.black12),
-                      ),
-                      DataRow(
-                        cells: [
-                          DataCell(Text("mask")),
-                          DataCell(
-                            Container(
-                              width: 1,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Colors.black45,
-                                    width: 1,
+                            DataCell(Text(snapshot.data!.ip.toString())),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12),
+                        ),
+                        DataRow(
+                          cells: [
+                            DataCell(Text("mask")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(snapshot.data!.mask.toString())),
-                        ],
-                        color: MaterialStateProperty.all<Color>(Colors.black12),
-                      ),
-                      DataRow(
-                        cells: [
-                          DataCell(Text("gtw")),
-                          DataCell(
-                            Container(
-                              width: 1,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: Colors.black45,
-                                    width: 1,
+                            DataCell(Text(snapshot.data!.mask.toString())),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12),
+                        ),
+                        DataRow(
+                          cells: [
+                            DataCell(Text("gtw")),
+                            DataCell(
+                              Container(
+                                width: 1,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Colors.black45,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(Text(snapshot.data!.gtw.toString())),
-                        ],
-                        color: MaterialStateProperty.all<Color>(Colors.black12),
-                      ),
-                    ]
-                );
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              // By default, show a loading spinner
-              return CircularProgressIndicator();
-            },
+                            DataCell(Text(snapshot.data!.gtw.toString())),
+                          ],
+                          color: MaterialStateProperty.all<Color>(Colors.black12),
+                        ),
+                      ]
+                  );
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                }
+                // By default, show a loading spinner
+                return CircularProgressIndicator();
+              },
+            ),
           ),
-
+          ]
         ));
   }
 }

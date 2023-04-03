@@ -14,55 +14,107 @@ class CameraInfo extends StatefulWidget {
 
 class _CameraInfoState extends State<CameraInfo> {
 
-  // postData() async{
-  //   var response = await http.post(
-  //     Uri.parse("http://192.168.0.105/api/v1/custom=1&cmd=1001"),
-  //     body: {
-  //       "id": "1",
-  //     }
-  //   );
-  //   print(response.body);
-  // }
-  Future<void> postData() async {
-    final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4001');
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({'ssid': 'Efty @ SF Networking', 'pass': '01723089'});
-
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-
-      if (response.statusCode == 200) {
-        print('POST request successful');
-        print(response.body);
-      } else {
-        print('Error during POST request: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error during POST request: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("CAMERA"),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFCBBACC), Color(0xFF2580B3)],
+        ),
       ),
-      body: Center(
-        child: MaterialButton(
-          color: Colors.redAccent,
-          onPressed: () async{
-            print("POSTING DATA CHECK");
-            await postData();
-          },
-          child: Text(
-            "post",
-            style: TextStyle(color:Colors.white70),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("CAMERA"),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              // color: Color(0xFF6497d3),
+              color: Color(0xFF2580B3),
+            ),
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Open Camera'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Close Camera'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                height: 150,
+                width: 200,
+                child: Image.asset('',
+                  fit: BoxFit.fill,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                ),
+              ),
+              SizedBox(height: 100),
+              Text(
+                'Snapshot take',
+                style: TextStyle(fontSize: 24.0),
+              ),
+              SizedBox(height: 35.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text('Front Camera'),
+                    ),
+                  ),
+                  SizedBox(width: 5.0),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text('Rear Up Camera'),
+                    ),
+                  ),
+                  SizedBox(width: 5.0),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text('Rear Down Camera'),
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // handle button press
+                },
+                child: Text('STOP'),
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                height: 150,
+                width: 200,
+                child: Image.asset('',
+                  fit: BoxFit.fill,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                ),
+              ),
+            ],
           ),
         ),
       ),
-
     );
   }
-  
 }

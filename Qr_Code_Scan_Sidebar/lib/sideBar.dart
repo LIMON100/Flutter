@@ -7,6 +7,7 @@ import 'db_icons.dart';
 import 'llama_web_menu.dart';
 import 'llama_web_menu2.dart';
 
+
 class SideBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -30,33 +31,41 @@ class SideBar extends StatelessWidget {
             leading: Icon(CustomIcon.scooter, color: Colors.black,),
             title: Text('Llama Eye'),
             onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (context){
-                    return Container(
-                      child: AlertDialog(
-                        title: Text("Open the llama web"),
-                        actions: [
-                          TextButton(
-                              onPressed: (){
-                                Navigator.pop(context);
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const LlamaWebMenu2(),
-                                  ),
-                                );
-                              },
-                              child: Text("Yes")),
-                          TextButton(
-                              onPressed: (){
-                                Navigator.pop(context);
-                              },
-                              child: Text("No"))
-                        ],
-                      ),
-                    );
-                  });
-            },
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LlamaWebMenu(),
+                ),
+              );
+            }
+            // {
+            //   showDialog(
+            //       context: context,
+            //       builder: (context){
+            //         return Container(
+            //           child: AlertDialog(
+            //             title: Text("Open llama Eye"),
+            //             actions: [
+            //               TextButton(
+            //                   onPressed: (){
+            //                     Navigator.pop(context);
+            //                     Navigator.of(context).push(
+            //                       MaterialPageRoute(
+            //                         builder: (context) => const LlamaWebMenu2(),
+            //                       ),
+            //                     );
+            //                   },
+            //                   child: Text("Yes")),
+            //               TextButton(
+            //                   onPressed: (){
+            //                     Navigator.pop(context);
+            //                   },
+            //                   child: Text("No"))
+            //             ],
+            //           ),
+            //         );
+            //       });
+            // },
           ),
           Divider(),
           ListTile(

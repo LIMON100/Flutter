@@ -9,33 +9,42 @@ class LlamaWebMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: WebSideBar(),
-
-      appBar: AppBar(
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        title: const Text('LLama Web'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            // color: Color(0xFF6497d3),
-            color: Color(0xff2e89f6),
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFCBBACC), Color(0xFF2580B3)],
         ),
       ),
-      // backgroundColor: Colors.lightBlue,),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        drawer: WebSideBar(),
 
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Container(
-          height: 500,
-          width: 500,
-          child: Text(" "),
-          // child: Image.asset('images/test.jpg',
-          //   fit: BoxFit.fill,
-          //   width: MediaQuery.of(context).size.width,
-          //   height: MediaQuery.of(context).size.height,
-          // ),
+        appBar: AppBar(
+          centerTitle: true,
+          foregroundColor: Colors.black,
+          title: const Text('LLama Eye'),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              // color: Color(0xFF6497d3),
+              color: Color(0xFF2580B3),
+            ),
+          ),
+        ),
+        // backgroundColor: Colors.lightBlue,),
+
+        body: Center(
+          child: Container(
+            height: 500,
+            width: 500,
+            child: Text(" "),
+            // child: Image.asset('images/test.jpg',
+            //   fit: BoxFit.fill,
+            //   width: MediaQuery.of(context).size.width,
+            //   height: MediaQuery.of(context).size.height,
+            // ),
+          ),
         ),
       ),
     );
