@@ -81,6 +81,7 @@ class _SystemInfoState extends State<SystemInfo> {
 
   @override
   Widget build(BuildContext context) {
+    Color shadowColor = Colors.blueGrey;
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -123,54 +124,79 @@ class _SystemInfoState extends State<SystemInfo> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    SizedBox(height: 115.0),
                     Container(
-                      width: 150,
-                      height: 65,
-                      child: ElevatedButton(
-                        child: Text('Device Restart'),
-                        onPressed: () {}
-                      ),
+                      // width: 150,
+                      // height: 65,
+                      child:
+                      Text('Device Restart',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            shadows: [
+                              for (double i = 1; i < 10; i++)
+                                Shadow(
+                                  color: shadowColor,
+                                  blurRadius: 3 * i,
+                                )
+                            ]
+                        ),),
+                      // ElevatedButton(
+                      //     style: TextButton.styleFrom(
+                      //       backgroundColor: Colors.blueGrey, // set the color of the text
+                      //     ),
+                      //   child: Text('Device Restart'),
+                      //   onPressed: () {}
+                      // ),
                     ),
-                    // Container(
-                    //   width: 80,
-                    //   child: TextField(
-                    //     controller: devRestart,
-                    //     decoration: InputDecoration(
-                    //       labelText: "",
-                    //       border: OutlineInputBorder(),
-                    //     ),
+
+                    // Center(
+                    //   child: FutureBuilder<RestartInfo>(
+                    //     future: getRestartInfoApi(),
+                    //     builder: (context, snapshot) {
+                    //       if (snapshot.hasData) {
+                    //         final request = snapshot.data!.request;
+                    //         return Column(
+                    //           mainAxisAlignment: MainAxisAlignment.center,
+                    //           children: [
+                    //             // Text('${request.restartCounter}'),
+                    //             // Text(""),
+                    //           ],
+                    //         );
+                    //       }
+                    //        else {
+                    //         return CircularProgressIndicator();
+                    //       }
+                    //     },
                     //   ),
-                    // ),
+                    // )
                     Center(
                       child: FutureBuilder<RestartInfo>(
                         future: getRestartInfoApi(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             final request = snapshot.data!.request;
-                            return Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('${request.restartCounter}'),
-                                // Text(""),
-                                // TextField(
-                                //   decoration: InputDecoration(
-                                //     labelText: '',
-                                //     border: OutlineInputBorder(),
-                                //   ),
-                                //   controller: TextEditingController(
-                                //     text: '${request['date']} ${request['time']}',
-                                //   ),
-                                //   enabled: false,
-                                // ),
-                              ],
+                            TextEditingController controller = TextEditingController(
+                              text: '${request.restartCounter}',
                             );
-                          }
-                           else {
+                            return SizedBox(
+                              width: 105,
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  labelText: '',
+                                  border: OutlineInputBorder(),
+                                ),
+                                controller: controller,
+                                enabled: false,
+                              ),
+                            );
+                          } else {
                             return CircularProgressIndicator();
                           }
                         },
                       ),
                     )
+
 
                   ],
                 ),

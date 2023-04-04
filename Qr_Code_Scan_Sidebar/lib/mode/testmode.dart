@@ -8,6 +8,8 @@ import 'package:lamaApp/Models/model.dart';
 import 'package:lamaApp/Models/Checkwifistat.dart';
 import 'package:lamaApp/Models/WifiStat.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lamaApp/Models/ApiResponse.dart';
+import 'package:lamaApp/Models/RestartInfo.dart';
 
 class TestMode extends StatefulWidget {
   final Function(File)? onImageSelected;
@@ -19,20 +21,86 @@ class TestMode extends StatefulWidget {
 
 class _TestModeState extends State<TestMode> {
 
-  final _picker = ImagePicker();
-  File? _imageFile;
 
-  Future<void> _getImage(ImageSource source) async {
-    final pickedFile = await _picker.getImage(source: source);
-
-    setState(() {
-      if (pickedFile != null) {
-        _imageFile = File(pickedFile.path);
-        widget.onImageSelected?.call(_imageFile!);
-      }
-    });
+  // /Restart check
+  Future<RestartInfo> getRestartInfoApi() async {
+    final response = await http.get(Uri.parse('http://192.168.0.105/api/v1/custom=3&cmd=3001'));
+    if (response.statusCode == 200) {
+      return RestartInfo.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load data');
+    }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    Color shadowColor = Colors.blue;
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('Audio'),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              margin: EdgeInsets.zero,
+              child:Center(
+                  child: FutureBuilder<RestartInfo>(
+                    future: getRestartInfoApi(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final request = snapshot.data!.request;
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            Text('${request.restartCounter}'),
+                              // Text(""),
+                              // TextField(
+                              //   decoration: InputDecoration(
+                              //     labelText: '',
+                              //     border: OutlineInputBorder(),
+                              //   ),
+                              //   controller: TextEditingController(
+                              //     text: '${request['date']} ${request['time']}',
+                              //   ),
+                              //   enabled: false,
+                              // ),
+                            ],
+                          ),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('${snapshot.error}');
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                )
+            ),
+            Text('NEON BUTTON',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              shadows: [
+                for (double i = 1; i < 4; i++)
+                  Shadow(
+                    color: shadowColor,
+                    blurRadius: 3 * i,
+                  )
+              ]
+            ),),
+          ],
+        ),
+      )
+      );
+  }
+    //DataCell(Text('${request.restartCounter}')),
     // @override
     // Widget build(BuildContext context) {
     // return Column(
@@ -129,20 +197,6 @@ class _TestModeState extends State<TestMode> {
   //     ),
   //   );
   // }
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.redAccent, // set background color here
-              ),
-              child: Image(
-                image: AssetImage('images/test_background.jpg'),
-              ),
-            ),
-          ),
-        ));
-  }
+
+
 }
