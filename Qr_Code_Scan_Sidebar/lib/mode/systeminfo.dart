@@ -150,7 +150,7 @@ class _SystemInfoState extends State<SystemInfo> {
                             return Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(''),
+                                Text('${request.restartCounter}'),
                                 // Text(""),
                                 // TextField(
                                 //   decoration: InputDecoration(
