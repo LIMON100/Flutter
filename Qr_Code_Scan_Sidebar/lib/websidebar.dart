@@ -147,7 +147,8 @@ class WebSideBar extends StatelessWidget {
             ListTile(
                 leading: Icon(Icons.bluetooth, color: Colors.black,),
                 title: Text('BLE'),
-                onTap: () {
+                onTap: ()
+                {
                   Navigator.pop(context);
                   Navigator.of(context).push(
                     MaterialPageRoute(
