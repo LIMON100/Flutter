@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lamaApp/mode/systeminfo.dart';
+import 'package:lamaAppR/mode/systeminfo.dart';
 import 'mode/wifiInfo.dart';
 import 'mode/systeminfo.dart';
 import 'websidebar.dart';

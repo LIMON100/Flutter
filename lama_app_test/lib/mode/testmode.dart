@@ -2,16 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lamaApp/Models/model.dart';
+import 'package:lamaAppR/Models/model.dart';
 import 'dart:convert';
-import 'package:lamaApp/Models/model.dart';
-import 'package:lamaApp/Models/Checkwifistat.dart';
-import 'package:lamaApp/Models/WifiStat.dart';
+import 'package:lamaAppR/Models/model.dart';
+import 'package:lamaAppR/Models/Checkwifistat.dart';
+import 'package:lamaAppR/Models/WifiStat.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lamaApp/Models/ApiResponse.dart';
-import 'package:lamaApp/Models/RestartInfo.dart';
-import 'package:lamaApp/temp/glowing_button.dart';
-import 'package:lamaApp/temp/glowing_button2.dart';
+import 'package:lamaAppR/Models/ApiResponse.dart';
+import 'package:lamaAppR/Models/RestartInfo.dart';
+import 'package:lamaAppR/temp/glowing_button.dart';
+import 'package:lamaAppR/temp/glowing_button2.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 
 class TestMode extends StatefulWidget {
   final Function(File)? onImageSelected;
@@ -255,6 +256,7 @@ class _TestModeState extends State<TestMode> {
   //       ),
   //     );
   //   }
+  double progress = 0.0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -327,53 +329,36 @@ class _TestModeState extends State<TestMode> {
               ],
             ),
             SizedBox(height: 16.0),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Text Field 1",
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.0),
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Text Field 2",
-                      ),
-                    ),
-                  ),
-                ],
+            Container(
+              alignment: Alignment.center,
+              height: 100,
+              width: 10,
+              child: LiquidCircularProgressIndicator(
+                value: 0.5, // Defaults to 0.5.
+                valueColor: AlwaysStoppedAnimation(Colors.indigoAccent), // Defaults to the current Theme's accentColor.
+                backgroundColor: Colors.white, // Defaults to the current Theme's backgroundColor.
+                borderColor: Colors.black38,
+                borderWidth: 5.0,
+                direction: Axis.vertical, // The direction the liquid moves (Axis.vertical = bottom to top, Axis.horizontal = left to right). Defaults to Axis.vertical.
+                center: Text("Loading..."),
               ),
             ),
-            SizedBox(height: 16.0),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Text Field 3",
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.0),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Text Field 4",
-                      ),
-                    ),
-                  ),
-                ],
+            Container(
+              alignment: Alignment.center,
+              height: 50,
+              width: 5.0,
+              child: LiquidLinearProgressIndicator(
+                value: progress, // Defaults to 0.5.
+                valueColor: AlwaysStoppedAnimation(Colors.blueAccent), // Defaults to the current Theme's accentColor.
+                backgroundColor: Colors.white, // Defaults to the current Theme's backgroundColor.
+                borderColor: Colors.greenAccent,
+                borderWidth: 5.0,
+                // borderRadius: 5.0,
+                direction: Axis.vertical, // The direction the liquid moves (Axis.vertical = bottom to top, Axis.horizontal = left to right). Defaults to Axis.horizontal.
+                center: Text('${(progress * 100).toStringAsFixed(0)}%'),
               ),
             ),
+
           ],
         ),
       ),

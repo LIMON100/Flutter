@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lamaApp/temp/glowing_button.dart';
+import 'package:lamaAppR/temp/glowing_button.dart';
 
 class ApplicationInfo extends StatefulWidget {
 
@@ -64,9 +64,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                               decoration: const BoxDecoration(
                                   gradient: LinearGradient(
                                       colors: <Color>[
-                                        Color(0xFF0D47A1),
-                                        Color(0xFF1976D2),
                                         Color(0xFF42A5F5),
+                                        Color(0xFFa6c1ee),
+                                        Color(0xFF1976D2),
                                       ]
                                   )
                               ),
@@ -104,9 +104,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                               decoration: const BoxDecoration(
                                   gradient: LinearGradient(
                                       colors: <Color>[
-                                        Color(0xFF0D47A1),
-                                        Color(0xFF1976D2),
-                                        Color(0xFF42A5F5),
+                                        Color(0xFF3D4E81),
+                                        Color(0xFF5753C9),
+                                        Color(0xFF243949),
                                       ]
                                   )
                               ),
@@ -141,9 +141,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                               decoration: const BoxDecoration(
                                   gradient: LinearGradient(
                                       colors: <Color>[
-                                        Color(0xFF0D47A1),
-                                        Color(0xFF1976D2),
-                                        Color(0xFF42A5F5),
+                                        Color(0xFF30cfd0),
+                                        Color(0xFF330867),
+                                        // Color(0xFF42A5F5),
                                       ]
                                   )
                               ),
@@ -189,9 +189,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                               decoration: const BoxDecoration(
                                   gradient: LinearGradient(
                                       colors: <Color>[
-                                        Color(0xFF0D47A1),
-                                        Color(0xFF1976D2),
-                                        Color(0xFF42A5F5),
+                                        Color(0xFFbbc1bf),
+                                        Color(0xFF57c6e1),
+                                        Color(0xFF7ac5d8),
                                       ]
                                   )
                               ),
@@ -238,9 +238,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                                 decoration: const BoxDecoration(
                                     gradient: LinearGradient(
                                         colors: <Color>[
-                                          Color(0xFF0D47A1),
-                                          Color(0xFF1976D2),
-                                          Color(0xFF42A5F5),
+                                          Color(0xFF868f96),
+                                          Color(0xFF596164),
+                                          // Color(0xFF42A5F5),
                                         ]
                                     )
                                 ),
@@ -270,9 +270,10 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                                 decoration: const BoxDecoration(
                                     gradient: LinearGradient(
                                         colors: <Color>[
-                                          Color(0xFF0D47A1),
-                                          Color(0xFF1976D2),
-                                          Color(0xFF42A5F5),
+                                          // Color(0xFFd558c8),
+                                          Color(0xFF5D9FFF),
+                                          Color(0xFF2580B3),
+                                          Color(0xFF6BBBFF),
                                         ]
                                     )
                                 ),
@@ -302,9 +303,9 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                                 decoration: const BoxDecoration(
                                     gradient: LinearGradient(
                                         colors: <Color>[
-                                          Color(0xFF0D47A1),
-                                          Color(0xFF1976D2),
-                                          Color(0xFF42A5F5),
+                                          Color(0xFF562B7C),
+                                          Color(0xFF2B86C5),
+                                          Color(0xFF6654F1),
                                         ]
                                     )
                                 ),

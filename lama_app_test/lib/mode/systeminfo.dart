@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lamaApp/Models/SystemsInfo.dart';
-import 'package:lamaApp/Models/VersionInfo.dart';
-import 'package:lamaApp/Models/RestartInfo.dart';
-import 'package:lamaApp/llama_web_menu.dart';
+import 'package:lamaAppR/Models/SystemsInfo.dart';
+import 'package:lamaAppR/Models/VersionInfo.dart';
+import 'package:lamaAppR/Models/RestartInfo.dart';
+import 'package:lamaAppR/llama_web_menu.dart';
 
 class SystemInfo extends StatefulWidget {
 
@@ -118,35 +118,8 @@ class _SystemInfoState extends State<SystemInfo> {
                                 )
                             ]
                         ),),
-                      // ElevatedButton(
-                      //     style: TextButton.styleFrom(
-                      //       backgroundColor: Colors.blueGrey, // set the color of the text
-                      //     ),
-                      //   child: Text('Device Restart'),
-                      //   onPressed: () {}
-                      // ),
                     ),
 
-                    // Center(
-                    //   child: FutureBuilder<RestartInfo>(
-                    //     future: getRestartInfoApi(),
-                    //     builder: (context, snapshot) {
-                    //       if (snapshot.hasData) {
-                    //         final request = snapshot.data!.request;
-                    //         return Column(
-                    //           mainAxisAlignment: MainAxisAlignment.center,
-                    //           children: [
-                    //             // Text('${request.restartCounter}'),
-                    //             // Text(""),
-                    //           ],
-                    //         );
-                    //       }
-                    //        else {
-                    //         return CircularProgressIndicator();
-                    //       }
-                    //     },
-                    //   ),
-                    // )
                     Center(
                       child: FutureBuilder<RestartInfo>(
                         future: getRestartInfoApi(),
@@ -173,8 +146,6 @@ class _SystemInfoState extends State<SystemInfo> {
                         },
                       ),
                     )
-
-
                   ],
                 ),
 
@@ -188,7 +159,7 @@ class _SystemInfoState extends State<SystemInfo> {
                   margin: EdgeInsets.zero,
                   child: Center(
                     child: FutureBuilder<VersionInfo>(
-                      future: getDeviceApi('http://192.168.0.105/api/v1/custom=3&cmd=3002'),
+                      future: getDeviceApi('http://192.168.0.104/api/v1/custom=3&cmd=3002'),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           final request = snapshot.data!.request;
@@ -239,7 +210,7 @@ class _SystemInfoState extends State<SystemInfo> {
                   margin: EdgeInsets.zero,
                   child: Center(
                     child: FutureBuilder<VersionInfo>(
-                      future: getDeviceApi('http://192.168.0.105/api/v1/custom=3&cmd=3003'),
+                      future: getDeviceApi('http://192.168.0.104/api/v1/custom=3&cmd=3003'),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           final request = snapshot.data!.request;
@@ -289,7 +260,7 @@ class _SystemInfoState extends State<SystemInfo> {
 
                 Center(
                   child: FutureBuilder<VersionInfo>(
-                    future: getDeviceApi('http://192.168.0.105/api/v1/custom=3&cmd=3004'),
+                    future: getDeviceApi('http://192.168.0.104/api/v1/custom=3&cmd=3004'),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         final request = snapshot.data!.request;
@@ -335,7 +306,6 @@ class _SystemInfoState extends State<SystemInfo> {
                     },
                   ),
                 ),
-
 
                 // System info
                 SizedBox(height: 40.0),

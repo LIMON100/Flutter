@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lamaApp/Models/CheckWifiInfo.dart';
-import 'package:lamaApp/llama_web_menu.dart';
+import 'package:lamaAppR/Models/CheckWifiInfo.dart';
+import 'package:lamaAppR/llama_web_menu.dart';
 
 class WifiScreen extends StatefulWidget {
   const WifiScreen({Key? key}) : super(key: key);

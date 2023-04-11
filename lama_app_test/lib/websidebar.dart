@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lamaApp/custom_icon_icons.dart';
-import 'package:lamaApp/mode/applicationinfo.dart';
-import 'package:lamaApp/mode/testwifi.dart';
+import 'package:lamaAppR/custom_icon_icons.dart';
+import 'package:lamaAppR/mode/applicationinfo.dart';
+import 'package:lamaAppR/mode/testwifi.dart';
+import 'package:lamaAppR/temp/UploadFilePage.dart';
 import 'db_icons.dart';
 import 'llama_web_menu.dart';
 import 'mode/wifiInfo.dart';
@@ -16,6 +17,7 @@ import 'mode/testfw.dart';
 import 'mode/testwifi.dart';
 import 'mode/testmode.dart';
 import 'mode/bleinfo.dart';
+import 'package:lamaAppR/temp/UploadFilePage.dart';
 
 class WebSideBar extends StatelessWidget {
   @override

@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:lamaApp/Models/CheckWifiInfo.dart';
-import 'package:lamaApp/llama_web_menu.dart';
-import 'package:lamaApp/Models/model.dart';
-import 'package:lamaApp/Models/Checkwifistat.dart';
-import 'package:lamaApp/Models/WifiStat.dart';
-import 'package:lamaApp/temp/glowing_button2.dart';
-import 'package:lamaApp/Models/DhcpInfo.dart';
+import 'package:lamaAppR/Models/model.dart';
+import 'package:lamaAppR/Models/Checkwifistat.dart';
+import 'package:lamaAppR/temp/glowing_button2.dart';
+import 'package:lamaAppR/Models/DhcpInfo.dart';
+import 'package:lamaAppR/temp/customtextfield.dart';
 
 class TestWifi extends StatefulWidget {
   const TestWifi({Key? key}) : super(key: key);
@@ -49,7 +47,7 @@ class _TestWifiState extends State<TestWifi> {
   // For wifistatic
   Future<String> send2() async {
     wifiStatic = Checkwifistat(dhcp: dhcpController.text, ip: ipController.text, gw: gwController.text, mask: maskController.text, dns1: dns1Controller.text, dns2: dns2Controller.text,);
-    final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4002');
+    final url = Uri.parse('http://192.168.0.104/api/v1/custom=4&cmd=4002');
     final response = await http.post(url, body: json.encode(wifiStatic.toJson()));
     print(response.body);
 
@@ -78,7 +76,7 @@ class _TestWifiState extends State<TestWifi> {
   // for ssid and password
   Future<String> send() async {
     model = Model(ssid: ssidController.text, pass: passController.text);
-    final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4001');
+    final url = Uri.parse('http://192.168.0.104/api/v1/custom=4&cmd=4001');
     final response = await http.post(url, body: json.encode(model.toJson()));
     print(response.body);
 
@@ -100,7 +98,7 @@ class _TestWifiState extends State<TestWifi> {
 
   Future<String> getDhcpApi() async {
     dhcpinfo = DhcpInfo(dhcp: int.parse(dhController.text));
-    final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4002');
+    final url = Uri.parse('http://192.168.0.104/api/v1/custom=4&cmd=4002');
     final response = await http.post(url, body: json.encode(dhcpinfo.toJson()));
     print(response.body);
 
@@ -151,7 +149,7 @@ class _TestWifiState extends State<TestWifi> {
               Column(
               // mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 20.0),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 Container(
                   width: 200,
                   height: 50,
@@ -167,7 +165,7 @@ class _TestWifiState extends State<TestWifi> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10.0),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 Container(
                   width: 200,
                   height: 50,
@@ -185,7 +183,9 @@ class _TestWifiState extends State<TestWifi> {
 
                 // Button for send ssid and password
                 Container(
-                  margin: EdgeInsets.only(top: 15.0,bottom: 0.5),
+                  margin: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.height * 0.02,
+                      bottom: MediaQuery.of(context).size.height * 0.005),
                   child: GlowingButton2(
                     text: "Send",
                     onPressed: send,
@@ -193,18 +193,13 @@ class _TestWifiState extends State<TestWifi> {
                     color2: Colors.indigo,
                   ),
                 ),
-                SizedBox(height: 1),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.000009),
                 Container(
                   margin: EdgeInsets.only(top: 1.0,bottom: 5.0),
                   child: Column(
                       children:[
-                        SizedBox(height: 7.0),
-                        // ElevatedButton(
-                        //   onPressed: send,
-                        //   child: Text("Send"),
-                        //   // color: Colors.teal,
-                        // ),
-                        SizedBox(height: 0.0),
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.007),
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.001),
                         DataTable(
                               border: TableBorder.symmetric(),
                               columns: [
@@ -296,7 +291,7 @@ class _TestWifiState extends State<TestWifi> {
                       ],
                     ),
                 ),
-
+                SizedBox(height: MediaQuery.of(context).size.height * 0.001),
                 Container(
                   margin: EdgeInsets.only(top: 1.0,bottom: 5.0),
                   child: DataTable(
@@ -334,99 +329,18 @@ class _TestWifiState extends State<TestWifi> {
 
                 // 6 row for value input
                 SizedBox(height: 30.0),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 100,
-                        child: TextField(
-                          controller: dhcpController,
-                          decoration: InputDecoration(
-                            hintText: "dhcp",
-                            hintStyle: TextStyle(
-                              color: Colors.black,
-                            ),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      Container(
-                          width: 100,
-                          margin: EdgeInsets.all(8),
-                          child: TextField(
-                            controller: ipController,
-                            decoration: InputDecoration(
-                              hintText: "ip",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 100,
-                          child: TextField(
-                            controller: gwController,
-                            decoration: InputDecoration(
-                              hintText: "gw",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 100,
-                          margin: EdgeInsets.all(8),
-                          child: TextField(
-                            controller: maskController,
-                            decoration: InputDecoration(
-                              hintText: "mask",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 150,
-                          child: TextField(
-                            controller: dns1Controller,
-                            decoration: InputDecoration(
-                              hintText: "dns1",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 150,
-                          child: TextField(
-                            controller: dns2Controller,
-                            decoration: InputDecoration(
-                              hintText: "dns2",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                    ],
+
+                Center(
+                  child: CustomTextField(
+                    dhcpController: dhcpController,
+                    ipController: ipController,
+                    gwController: gwController,
+                    maskController: maskController,
+                    dns1Controller: dns1Controller,
+                    dns2Controller: dns2Controller,
                   ),
                 ),
 
-                // ElevatedButton(
-                //   onPressed: send2,
-                //   child: Text("Send"),
-                //   // color: Colors.teal,
-                // ),
                 GlowingButton2(
                   text: "Send",
                   onPressed: send2,

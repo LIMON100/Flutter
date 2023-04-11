@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 
 class TestFw extends StatefulWidget {
 
@@ -14,13 +15,13 @@ class TestFw extends StatefulWidget {
   _TestFwState createState() => _TestFwState();
 }
 
-class _TestFwState extends State<TestFw> {
+class _TestFwState extends State<TestFw> with SingleTickerProviderStateMixin{
   // final _urlController = TextEditingController();
   TextEditingController _outputController = TextEditingController();
   TextEditingController _urlController = TextEditingController();
 
   Future<void> _submitPostRequest() async {
-    final url = Uri.parse('http://192.168.0.109/api/v1/custom=7&cmd=7002');
+    final url = Uri.parse('http://192.168.0.103/api/v1/custom=7&cmd=7002');
     final headers = {'Content-Type': 'application/json'};
     final body = json.encode({'url': _urlController.text.trim()});
     try {
@@ -33,7 +34,7 @@ class _TestFwState extends State<TestFw> {
   }
 
   Future<String> makePostRequest() async {
-    String url = 'http://192.168.0.109/api/v1/custom=7&cmd=7002';
+    String url = 'http://192.168.0.103/api/v1/custom=7&cmd=7002';
     Map<String, String> headers = {"Content-type": "application/json"};
     String json = '{"url": "${_urlController.text}"}';
     http.Response response =
@@ -43,6 +44,33 @@ class _TestFwState extends State<TestFw> {
       return jsonResponse['message'];
     } else {
       throw Exception('Failed to make post request.');
+    }
+  }
+
+  AnimationController? controller;
+  Animation<Color>? animation;
+  double progress = 0;
+  Widget buildLinearProgress() => Text(
+    '${(progress * 100).toStringAsFixed(1)}',
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+  );
+
+  Widget buildProgress() {
+    if (progress == 1) {
+      return Icon(
+        Icons.done,
+        color: Colors.green,
+        size: 56,
+      );
+    } else {
+      return Text(
+        '${(progress * 100).toStringAsFixed(1)}',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          fontSize: 24,
+        ),
+      );
     }
   }
 
@@ -78,6 +106,39 @@ class _TestFwState extends State<TestFw> {
                 decoration: InputDecoration(
                   labelText: 'Enter ',
                   border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Container(
+                alignment: Alignment.center,
+                height: 100,
+                width: 10,
+                child: LiquidCircularProgressIndicator(
+                  value: 0.5, // Defaults to 0.5.
+                  // value: progress,
+                  valueColor: AlwaysStoppedAnimation(Color(0xFF2580B3)), // Defaults to the current Theme's accentColor.
+                  backgroundColor: Colors.white, // Defaults to the current Theme's backgroundColor.
+                  borderColor: Colors.black38,
+                  borderWidth: 5.0,
+                  direction: Axis.vertical, // The direction the liquid moves (Axis.vertical = bottom to top, Axis.horizontal = left to right). Defaults to Axis.vertical.
+                  center: Text("Loading..."),
+                  // center: Text('${(progress * 100).toStringAsFixed(0)}%'),
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: 100,
+                height: 30,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    LinearProgressIndicator(
+                      value: progress,
+                      valueColor: AlwaysStoppedAnimation(Colors.green),
+                      backgroundColor: Colors.white,
+                    ),
+                    Center(child: buildLinearProgress()),
+                  ],
                 ),
               ),
               SizedBox(height: 16),
