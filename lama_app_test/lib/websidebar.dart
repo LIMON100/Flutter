@@ -57,7 +57,16 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.camera, color: Colors.black,),
-              title: Text('Camera'),
+              title: Text(
+                  'Camera',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -70,7 +79,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.note, color: Colors.black,),
-              title: Text(' Application'),
+              title: Text('Application',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -83,7 +99,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.dashboard, color: Colors.black,),
-              title: Text('Device'),
+              title: Text('Device',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -96,7 +119,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.wifi, color: Colors.black,),
-              title: Text('Wifi'),
+              title: Text('Wifi',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -109,7 +139,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.sd_card, color: Colors.black,),
-              title: Text('Sd card'),
+              title: Text('Sd card',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -122,7 +159,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.upload, color: Colors.black,),
-              title: Text('Models & Firmware'),
+              title: Text('Models & Firmware',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -135,7 +179,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
               leading: Icon(Icons.audio_file, color: Colors.black,),
-              title: Text('Audio'),
+              title: Text('Audio',
+                style: TextStyle(
+                  fontFamily: 'Anuphan-VariableFont_wght',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  letterSpacing: 2.0,
+                ),),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -148,7 +199,14 @@ class WebSideBar extends StatelessWidget {
             Divider(),
             ListTile(
                 leading: Icon(Icons.bluetooth, color: Colors.black,),
-                title: Text('BLE'),
+                title: Text('BLE',
+                  style: TextStyle(
+                    fontFamily: 'Anuphan-VariableFont_wght',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                    letterSpacing: 2.0,
+                  ),),
                 onTap: ()
                 {
                   Navigator.pop(context);

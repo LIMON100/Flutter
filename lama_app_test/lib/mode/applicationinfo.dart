@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lamaAppR/temp/glowing_button.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
+
+
 
 class ApplicationInfo extends StatefulWidget {
 
@@ -21,6 +26,50 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
       _inputText = value;
       _textFieldController.clear();
     });
+  }
+
+  //Audio Api
+  final _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  TextEditingController _textFieldController2 = TextEditingController();
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _textFieldController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playAudio(String url) async {
+    final bytes = await http.readBytes(Uri.parse(url));
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/audio.mp3');
+    await file.writeAsBytes(bytes);
+    final source = AudioSource.uri(Uri.parse(file.path));
+    await _audioPlayer.setAudioSource(source);
+    await _audioPlayer.play();
+    setState(() {
+      _isPlaying = true;
+    });
+  }
+
+  Future<void> _sendPostRequest(String input) async {
+    final url = Uri.parse('http://your-api-url.com/audio');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'input': input,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final url = json.decode(response.body)['url'];
+      await _playAudio(url);
+    } else {
+      throw Exception('Failed to load audio');
+    }
   }
 
   @override
@@ -132,38 +181,41 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: Stack(
-                          children: <Widget>[
-                            Positioned.fill(child: Container(
-                              decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                      colors: <Color>[
-                                        Color(0xFF30cfd0),
-                                        Color(0xFF330867),
-                                        // Color(0xFF42A5F5),
-                                      ]
-                                  )
-                              ),
-                            ),),
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.all(10),
-                                primary: Colors.white,
-                                textStyle: const TextStyle(fontSize: 15),
-                              ),
-                              onPressed: (){},
-                              child: Text("Restart app"),
-                            )
-                          ],
+                    Container(
+                      width: 150,
+                      child: Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: Stack(
+                            children: <Widget>[
+                              Positioned.fill(child: Container(
+                                decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                        colors: <Color>[
+                                          Color(0xFF30cfd0),
+                                          Color(0xFF330867),
+                                          // Color(0xFF42A5F5),
+                                        ]
+                                    )
+                                ),
+                              ),),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.all(20),
+                                  primary: Colors.white,
+                                  textStyle: const TextStyle(fontSize: 15),
+                                ),
+                                onPressed: (){},
+                                child: Text("Restart app"),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     Container(
-                      width: 50,
-                      height: 40,
+                      width: 60,
+                      height: 50,
                       child: TextField(
                         controller: _textFieldController,
                         decoration: InputDecoration(
@@ -202,7 +254,10 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                                 primary: Colors.white,
                                 textStyle: const TextStyle(fontSize: 15),
                               ),
-                              onPressed: (){},
+                              onPressed: () async {
+                              final input = _textFieldController.text;
+                              await _sendPostRequest(input);
+                              },
                               child: Text("Play Audio"),
                             )
                           ],
@@ -213,7 +268,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                       width: 50,
                       height: 40,
                       child: TextField(
-                        controller: _textFieldController,
+                        controller: _textFieldController2,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -223,6 +278,7 @@ class _ApplicationInfoState extends State<ApplicationInfo> {
                   ],
                 ),
 
+                //Change Script
                 SizedBox(height: 35.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

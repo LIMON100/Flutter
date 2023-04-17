@@ -11,6 +11,8 @@ import 'package:dio/dio.dart';
 import 'package:path/path.dart' as path;
 import 'package:lamaAppR/temp/UploadFilePage.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class BleInfo extends StatefulWidget {
 
@@ -22,139 +24,6 @@ class BleInfo extends StatefulWidget {
 
 class _BleInfoState extends State<BleInfo> with SingleTickerProviderStateMixin{
 
-  // final _formKey = GlobalKey<FormState>();
-  // DhcpInfo dhcpinfo = DhcpInfo();
-  //
-  // // int _dhcp = 0;
-  //
-  // final ssidController = TextEditingController();
-  // final passController = TextEditingController();
-  // final dhController = TextEditingController();
-  //
-  // final dhcpController = TextEditingController();
-  // final ipController = TextEditingController();
-  // final gwController = TextEditingController();
-  // final maskController = TextEditingController();
-  // final dns1Controller = TextEditingController();
-  // final dns2Controller = TextEditingController();
-  //
-  // final responseData = '';
-  //
-  // String _dhcp = '';
-  // String _ip = '';
-  // String _gw = '';
-  // String _mask = '';
-  // String _dns1 = '';
-  // String _dns2 = '';
-  //
-  // Checkwifistat wifiStatic = Checkwifistat();
-  //
-  // // For wifistatic
-  // Future<String> send2() async {
-  //   wifiStatic = Checkwifistat(dhcp: dhcpController.text, ip: ipController.text, gw: gwController.text, mask: maskController.text, dns1: dns1Controller.text, dns2: dns2Controller.text,);
-  //   final url = Uri.parse('http://192.168.0.104/api/v1/custom=4&cmd=4002');
-  //   final response = await http.post(url, body: json.encode(wifiStatic.toJson()));
-  //   print(response.body);
-  //
-  //   final decodedJson = jsonDecode(response.body);
-  //
-  //   final dhcp = decodedJson['request']['dhcp'];
-  //   final ip = decodedJson['request']['ip'];
-  //   final gw = decodedJson['request']['gw'];
-  //   final mask = decodedJson['request']['mask'];
-  //   final dns1 = decodedJson['request']['dns1'];
-  //   final dns2 = decodedJson['request']['dns2'];
-  //
-  //   setState(() {
-  //     _dhcp = dhcp;
-  //     _ip = ip;
-  //     _gw = gw;
-  //     _mask = mask;
-  //     _dns1 = dns1;
-  //     _dns2 = dns2;
-  //   });
-  //
-  //   return response.body;
-  // }
-  //
-  //
-  // Future<String> send() async {
-  //   dhcpinfo = DhcpInfo(dhcp: int.parse(dhcpController.text));
-  //   final url = Uri.parse('http://192.168.0.105/api/v1/custom=4&cmd=4002');
-  //   final response = await http.post(url, body: json.encode(dhcpinfo.toJson()));
-  //   print(response.body);
-  //
-  //   final decodedJson = jsonDecode(response.body);
-  //   final dhcp = decodedJson['request']['dhcp'];
-  //
-  //   setState(() {
-  //     _dhcp = dhcp;
-  //   });
-  //
-  //   return response.body;
-  // }
-  //
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: Text('Fetch DHCP Value'),
-  //     ),
-  //     body: Form(
-  //       key: _formKey,
-  //       child: Column(
-  //         children: [
-  //           SizedBox(height: 20.0),
-  //           Center(
-  //             child: CustomTextField(
-  //             dhcpController: dhcpController,
-  //             ipController: ipController,
-  //             gwController: gwController,
-  //             maskController: maskController,
-  //             dns1Controller: dns1Controller,
-  //             dns2Controller: dns2Controller,
-  //           ),
-  //           ),
-  //           SizedBox(height: 10),
-  //           ElevatedButton(
-  //             onPressed: send2,
-  //             child: Text("Send"),
-  //             // color: Colors.teal,
-  //           ),
-  //           SingleChildScrollView(
-  //             scrollDirection: Axis.horizontal,
-  //             child: DataTable(
-  //               columns: [
-  //                 DataColumn(label: Text('dhcp')),
-  //                 DataColumn(label: Text('ip')),
-  //                 DataColumn(label: Text('gw')),
-  //                 DataColumn(label: Text('mask')),
-  //                 DataColumn(label: Text('dns1')),
-  //                 DataColumn(label: Text('dns2')),
-  //
-  //               ],
-  //               rows: [
-  //                 DataRow(cells: [
-  //                   DataCell(Text(_dhcp)),
-  //                   DataCell(Text(_ip)),
-  //                   DataCell(Text(_gw)),
-  //                   DataCell(Text(_mask)),
-  //                   DataCell(Text(_dns1)),
-  //                   DataCell(Text(_dns2)),
-  //                 ]),
-  //               ],
-  //             ),
-  //           ),
-  //           // ProgressBar(
-  //           //   progress: 0.50,
-  //           //   height: 24,
-  //           //   color: Colors.redAccent,
-  //           // )
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   AnimationController? controller;
   Animation<Color>? animation;
   double progress = 0;
@@ -163,12 +32,6 @@ class _BleInfoState extends State<BleInfo> with SingleTickerProviderStateMixin{
   void initState() {
     super.initState();
 
-    // controller = AnimationController(
-    //   duration: Duration(seconds: 3),
-    //   vsync: this,
-    // );
-    //
-    // animation = controller.drive(ColorTween(begin: Colors.yellow, end: Colors.red));
     final controller = AnimationController(
       vsync: this,
       duration: Duration(seconds: 5),
@@ -268,11 +131,83 @@ class _BleInfoState extends State<BleInfo> with SingleTickerProviderStateMixin{
     ),
   );
 
+  //Camera
+  File? _image;
+
+  final picker = ImagePicker();
+
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.camera);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+        _uploadImage(_image!);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future<void> _uploadImage(File image) async {
+    final url = Uri.parse('http://example.com/upload-image');
+    final bytes = await image.readAsBytes();
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'image': base64.encode(bytes)}),
+    );
+
+    if (response.statusCode == 200) {
+      print('Image uploaded successfully.');
+    } else {
+      print('Image upload failed.');
+    }
+  }
+
+  void closeCamera() {
+    setState(() {
+      _image = null;
+    });
+  }
+
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  // Future<File> get _localFile async {
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   return File('${directory.path}/users.csv');
+  // }
+  Future<File> get _localFile async {
+    final directory = Directory('J:/JumpWatts/Dataset/mobile_app/test_proj/qr_code_demo/0.New folder_test/lamaAppR/lib/temp').path;
+    return File('$directory/users.csv');
+  }
+
+  Future<void> _writeUserToFile(String username, String password) async {
+    final file = await _localFile;
+    final csvLine = '${username.trim()},${password.trim()}\n';
+    await file.writeAsString(csvLine, mode: FileMode.append);
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      final username = _usernameController.text;
+      final password = _passwordController.text;
+      _writeUserToFile(username, password);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User created successfully')),
+      );
+      _usernameController.clear();
+      _passwordController.clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.white,
     appBar: AppBar(
-      title: Text("ble"),
+      title: Text("Ble"),
     ),
     body: Container(
       alignment: Alignment.center,
@@ -280,23 +215,6 @@ class _BleInfoState extends State<BleInfo> with SingleTickerProviderStateMixin{
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          buildHeader('Indeterminable'),
-          CircularProgressIndicator(
-            valueColor: animation,
-            backgroundColor: Colors.white,
-            strokeWidth: 8,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 10,
-            child: LinearProgressIndicator(
-              valueColor: animation,
-              backgroundColor: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 32),
-          buildHeader('Determinable'),
           SizedBox(
             width: 100,
             height: 100,
@@ -314,26 +232,33 @@ class _BleInfoState extends State<BleInfo> with SingleTickerProviderStateMixin{
             ),
           ),
           const SizedBox(height: 32),
-          SizedBox(
-            width: 200,
-            height: 30,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                LinearProgressIndicator(
-                  value: progress,
-                  valueColor: AlwaysStoppedAnimation(Colors.green),
-                  backgroundColor: Colors.white,
-                ),
-                Center(child: buildLinearProgress()),
-              ],
-            ),
+          TextFormField(
+            controller: _usernameController,
+            decoration: const InputDecoration(labelText: 'Username'),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a username';
+              }
+              return null;
+            },
           ),
-          const SizedBox(height: 32),
-          FloatingActionButton.extended(
-            onPressed: () => startDownload(),
-            label: Text('Download'),
-            icon: Icon(Icons.file_download),
+          TextFormField(
+            controller: _passwordController,
+            decoration: const InputDecoration(labelText: 'Password'),
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a password';
+              }
+              return null;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: ElevatedButton(
+              onPressed: _submitForm,
+              child: const Text('Submit'),
+            ),
           ),
         ],
       ),

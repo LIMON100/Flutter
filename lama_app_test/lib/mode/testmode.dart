@@ -13,6 +13,10 @@ import 'package:lamaAppR/Models/RestartInfo.dart';
 import 'package:lamaAppR/temp/glowing_button.dart';
 import 'package:lamaAppR/temp/glowing_button2.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+// import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
+
 
 class TestMode extends StatefulWidget {
   final Function(File)? onImageSelected;
@@ -257,6 +261,50 @@ class _TestModeState extends State<TestMode> {
   //     );
   //   }
   double progress = 0.0;
+
+  final _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  TextEditingController _textFieldController = TextEditingController();
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _textFieldController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playAudio(String url) async {
+    final bytes = await http.readBytes(Uri.parse(url));
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/audio.mp3');
+    await file.writeAsBytes(bytes);
+    final source = AudioSource.uri(Uri.parse(file.path));
+    await _audioPlayer.setAudioSource(source);
+    await _audioPlayer.play();
+    setState(() {
+      _isPlaying = true;
+    });
+  }
+
+  Future<void> _sendPostRequest(String input) async {
+    final url = Uri.parse('http://your-api-url.com/audio');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'input': input,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final url = json.decode(response.body)['url'];
+      await _playAudio(url);
+    } else {
+      throw Exception('Failed to load audio');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -291,44 +339,6 @@ class _TestModeState extends State<TestMode> {
               ],
             ),
             SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Button 3"),
-                  ),
-                ),
-                SizedBox(width: 16.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Button 4"),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Button 5"),
-                  ),
-                ),
-                SizedBox(width: 16.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Button 6"),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
             Container(
               alignment: Alignment.center,
               height: 100,
@@ -358,7 +368,22 @@ class _TestModeState extends State<TestMode> {
                 center: Text('${(progress * 100).toStringAsFixed(0)}%'),
               ),
             ),
-
+            TextField(
+              controller: _textFieldController,
+              decoration: InputDecoration(
+                hintText: 'Enter audio URL',
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                final input = _textFieldController.text;
+                await _sendPostRequest(input);
+              },
+              child: Text('Play Audio'),
+            ),
+            SizedBox(height: 16),
+            if (_isPlaying) Text('Playing Audio...'),
           ],
         ),
       ),

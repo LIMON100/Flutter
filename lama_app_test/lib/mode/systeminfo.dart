@@ -22,7 +22,7 @@ class _SystemInfoState extends State<SystemInfo> {
   //System Info
   Future<SystemsInfo> getProductApi () async{
 
-    final response = await http.get(Uri.parse('http://192.168.0.105/api/v1/system/info'));
+    final response = await http.get(Uri.parse('http://192.168.0.104/api/v1/system/info'));
     var data = jsonDecode(response.body.toString());
 
 
@@ -36,7 +36,7 @@ class _SystemInfoState extends State<SystemInfo> {
 
   //Restart check
   Future<RestartInfo> getRestartInfoApi() async {
-    final response = await http.get(Uri.parse('http://192.168.0.105/api/v1/custom=3&cmd=3001'));
+    final response = await http.get(Uri.parse('http://192.168.0.104/api/v1/custom=3&cmd=3001'));
     if (response.statusCode == 200) {
       return RestartInfo.fromJson(json.decode(response.body));
     } else {
