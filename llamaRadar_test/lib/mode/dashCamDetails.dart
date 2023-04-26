@@ -35,27 +35,27 @@ class _DashCamDetailsState extends State<DashCamDetails> {
           setState(() {
             _currentIndex = index;
           });
-          // if(index == 0)
-          // {
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => DashCam()),
-          //   );
-          // }
-          // if(index == 1)
-          // {
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => DashCamFiles()),
-          //   );
-          // }
-          // if(index == 2)
-          // {
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => DashCamDetails()),
-          //   );
-          // }
+          if(index == 0)
+          {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DashCam()),
+            );
+          }
+          if(index == 1)
+          {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DashCamFiles()),
+            );
+          }
+          if(index == 2)
+          {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DashCamDetails()),
+            );
+          }
         },
         items: [
           Icon(
