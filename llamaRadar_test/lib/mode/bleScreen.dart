@@ -23,9 +23,10 @@ class _BleScreenState extends State<BleScreen> {
   }
 
   Future<void> connectToDevice() async {
-    // var status = await Permission.bluetoothScan.request();
-    // if (status == PermissionStatus.granted) {
     try {
+      // Cancel ongoing scan
+      flutterBlue.stopScan();
+
       // Start scanning for devices with the specified service ID
       flutterBlue.scan(
         timeout: Duration(seconds: 4),
@@ -37,14 +38,11 @@ class _BleScreenState extends State<BleScreen> {
           // Connect to the target device
           await targetDevice.connect();
           // Discover services and characteristics
-          List<BluetoothService> services = await targetDevice
-              .discoverServices();
+          List<BluetoothService> services = await targetDevice.discoverServices();
           services.forEach((service) {
-            if (service.uuid ==
-                Guid("4fafc201-1fb5-459e-8fcc-c5c9c331914b")) {
+            if (service.uuid == Guid("4fafc201-1fb5-459e-8fcc-c5c9c331914b")) {
               service.characteristics.forEach((characteristic) {
-                if (characteristic.uuid ==
-                    Guid("beb5483e-36e1-4688-b7f5-ea07361b26a8")) {
+                if (characteristic.uuid == Guid("beb5483e-36e1-4688-b7f5-ea07361b26a8")) {
                   targetCharacteristic = characteristic;
                 }
               });
@@ -58,10 +56,6 @@ class _BleScreenState extends State<BleScreen> {
     } catch (e) {
       print("Error connecting to device: $e");
     }
-
-    // else{
-    //   print("PERMISSION DENIED");
-    // }
   }
 
   Future<void> disconnectFromDevice() async {
