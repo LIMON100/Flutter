@@ -71,7 +71,8 @@ class _DashCamState extends State<DashCam> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             // color: Color(0xFF6497d3),
-            color: Color(0xFF2580B3),
+            // color: Color(0xFF2580B3),
+            color: Colors.deepPurpleAccent,
           ),
         ),
       ),
@@ -136,14 +137,18 @@ class _DashCamState extends State<DashCam> {
                 // Add your camera logic here
               },
               child: Text('Open Camera'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.deepPurpleAccent.shade200, // Change button color here
+              ),
             ),
+
             SizedBox(height: 150),
             Container(
               width: 100,
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.blue,
+                color: Colors.deepPurpleAccent.shade200,
               ),
               child: InkWell(
                 onTap: () {

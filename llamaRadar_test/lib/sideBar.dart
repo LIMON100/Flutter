@@ -8,6 +8,9 @@ import 'db_icons.dart';
 import 'package:lamaradar/temp/home_page.dart';
 import 'package:camera/camera.dart';
 import 'package:lamaradar/temp/WarningPage.dart';
+import 'package:lamaradar/temp/BLEScannerScreen.dart';
+import 'package:lamaradar/temp/CollisionWarningPage.dart';
+import 'package:lamaradar/temp/bluetooth_controller.dart';
 
 class SideBar extends StatelessWidget {
   late final CameraDescription camera;
@@ -73,7 +76,12 @@ class SideBar extends StatelessWidget {
                   letterSpacing: 2.0,
                 ),
               ),
-              onTap: () => null,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CollisionWarningPage()),
+                );
+              },
             ),
             // Divider(),
             ListTile(
@@ -122,7 +130,7 @@ class SideBar extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => WarningPage(),
+                      builder: (context) => BluetoothController()
                   ),
                 );
               },

@@ -22,7 +22,7 @@ class _DashCamDetailsState extends State<DashCamDetails> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             // color: Color(0xFF6497d3),
-            color: Color(0xFF2580B3),
+            color: Colors.deepPurpleAccent,
           ),
         ),
       ),
