@@ -11,7 +11,8 @@ import 'package:lamaradar/temp/WarningPage.dart';
 import 'package:lamaradar/temp/BLEScannerScreen.dart';
 import 'package:lamaradar/temp/CollisionWarningPage.dart';
 import 'package:lamaradar/temp/bluetooth_controller.dart';
-
+import 'package:lamaradar/temp/BluetoothLightsPage.dart';
+import 'package:lamaradar/temp/BluetoothNotification.dart';
 class SideBar extends StatelessWidget {
   late final CameraDescription camera;
   @override
@@ -130,7 +131,7 @@ class SideBar extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                      builder: (context) => BluetoothController()
+                      builder: (context) => BluetoothNotification()
                   ),
                 );
               },
