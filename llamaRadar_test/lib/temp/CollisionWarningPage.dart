@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
 import 'BlinkingIconButton.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class CollisionWarningPage extends StatefulWidget {
   const CollisionWarningPage({Key? key}) : super(key: key);
@@ -157,178 +158,203 @@ class _CollisionWarningPageState extends State<CollisionWarningPage> {
     _startRightBlinking();
   }
 
+  //Notification value
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        title: const Text('Ride Info'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            // color: Color(0xFF6497d3),
-            color: Color(0xFF2580B3),
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
         ),
       ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Top warning+indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    _startLeftBlinking();
-                  },
-                  icon: Icon(
-                    Indicator.image2vector,
-                    size: 48,
-                    color: _isLeftBlinking ? Colors.orange : Colors.black,
-                  ),
-                ),
-                // BlinkingIconButton(icon: Indicator.image2vector, size: 48),
-
-                SizedBox(width: 60),
-                Icon(
-                  Warning.image2vector3,
-                  size: 48,
-                  color: _isTopBlinking ? Colors.red : Colors.green,
-                ),
-                SizedBox(width: 60),
-
-                IconButton(
-                  onPressed: () {
-                    _startRightBlinking();
-                  },
-                  icon: Icon(
-                    Indicator.image2vector__1_,
-                    size: 48,
-                    color: _isRightBlinking  ? Colors.orange : Colors.black,
-                  ),
-                ),
-              ],
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          centerTitle: true,
+          foregroundColor: Colors.black,
+          title: const Text('Ride Info'),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              // color: Color(0xFF6497d3),
+              color: Color(0xFF517fa4),
             ),
-
-            // left+right warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Warning.image2vector,
-                  size: 48,
-                  color: _isLeftBlinking ? Colors.red : Colors.green,
-                ),
-                SizedBox(width: 140),
-                Icon(
-                  Warning.image2vector2,
-                  size: 48,
-                  color: _isRightBlinking ? Colors.red : Colors.green,
-                ),
-              ],
-            ),
-
-            // ligts
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn1 = !_lightOn1;
-                      });
-                    }
-                ),
-                SizedBox(width: 140),
-                IconButton(
-                    icon: Icon(_lightOn2 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn2 = !_lightOn2;
-                      });
-                    }
-                ),
-              ],
-            ),
-
-            // Bottom warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Warning.image2vector3,
-                  size: 48,
-                  color: _isBottomBlinking ? Colors.red : Colors.green,
-                ),
-              ],
-            ),
-
-            //other buttons
-            SizedBox(width: 1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-                  onPressed: () {
-                    setState(() {
-                      _cameraOn = !_cameraOn;
-                    });
-                    // open camera if _cameraOn is true
-                  },
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
-                  onPressed: () {
-                    _startBothBlinking();
-                  },
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                    icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn1 = !_lightOn1;
-                      });
-                    }
-                ),
-              ],
-            ),
-
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: [
-            //     Text('Top: $_topCollisionValue'),
-            //     SizedBox(width: 16),
-            //     Text('Bottom: $_bottomCollisionValue'),
-            //   ],
-            // ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 120),
-                Image.asset(
-                  'images/llama_img.png',
-                  height: 100,
-                  width: 130,
-                ),
-                SizedBox(width: 16),
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      _powerOn = !_powerOn;
-                    });
-                  },
-                  backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                  child: Icon(Icons.power_settings_new),
-                ),
-              ],
-            )
-          ],
+          ),
         ),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Top warning+indicator
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      _startLeftBlinking();
+                    },
+                    icon: Icon(
+                      Indicator.image2vector,
+                      size: 48,
+                      color: _isLeftBlinking ? Colors.orange : Colors.black,
+                    ),
+                  ),
+                  // BlinkingIconButton(icon: Indicator.image2vector, size: 48),
+
+                  SizedBox(width: 60),
+                  Icon(
+                    Warning.image2vector3,
+                    size: 48,
+                    color: _isTopBlinking ? Colors.red : Colors.green,
+                  ),
+                  SizedBox(width: 60),
+
+                  IconButton(
+                    onPressed: () {
+                      _startRightBlinking();
+                    },
+                    icon: Icon(
+                      Indicator.image2vector__1_,
+                      size: 48,
+                      color: _isRightBlinking  ? Colors.orange : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+
+              // left+right warning
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Warning.image2vector,
+                    size: 48,
+                    color: _isLeftBlinking ? Colors.red : Colors.green,
+                  ),
+                  SizedBox(width: 140),
+                  Icon(
+                    Warning.image2vector2,
+                    size: 48,
+                    color: _isRightBlinking ? Colors.red : Colors.green,
+                  ),
+                ],
+              ),
+
+              // ligts
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
+                      onPressed: () {
+                        setState(() {
+                          _lightOn1 = !_lightOn1;
+                        });
+                      }
+                  ),
+                  SizedBox(width: 140),
+                  IconButton(
+                      icon: Icon(_lightOn2 ? Icons.lightbulb : Icons.lightbulb_outline),
+                      onPressed: () {
+                        setState(() {
+                          _lightOn2 = !_lightOn2;
+                        });
+                      }
+                  ),
+                ],
+              ),
+
+              // Bottom warning
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Warning.image2vector3,
+                    size: 48,
+                    color: _isBottomBlinking ? Colors.red : Colors.green,
+                  ),
+                ],
+              ),
+
+              //other buttons
+              SizedBox(width: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
+                    onPressed: () {
+                      setState(() {
+                        _cameraOn = !_cameraOn;
+                      });
+                      // open camera if _cameraOn is true
+                    },
+                  ),
+                  SizedBox(width: 20),
+                  IconButton(
+                    icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
+                    onPressed: () {
+                      _startBothBlinking();
+                    },
+                  ),
+                  SizedBox(width: 20),
+                  IconButton(
+                      icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
+                      onPressed: () {
+                        setState(() {
+                          _lightOn1 = !_lightOn1;
+                        });
+                      }
+                  ),
+                ],
+              ),
+
+              // Notificaiton
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  SizedBox(width: 20),
+                  // Text('Notification: ${_value.toString()}'),
+                  Text('Notification: []'),
+                ],
+              ),
+
+
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Text('Top: $_topCollisionValue'),
+              //     SizedBox(width: 16),
+              //     Text('Bottom: $_bottomCollisionValue'),
+              //   ],
+              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(width: 120),
+                  Image.asset(
+                    'images/llama_img.png',
+                    height: 100,
+                    width: 130,
+                  ),
+                  SizedBox(width: 16),
+                  FloatingActionButton(
+                    onPressed: () {
+                      setState(() {
+                        _powerOn = !_powerOn;
+                      });
+                    },
+                    backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                    child: Icon(Icons.power_settings_new),
+                  ),
+                ],
+              )
+            ],
+          ),
+      ),
     );
   }
   void _updateWarningSigns() {

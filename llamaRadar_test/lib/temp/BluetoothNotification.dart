@@ -266,8 +266,6 @@ class _BluetoothNotificationState extends State<BluetoothNotification> {
   List<int> _value = [];
 
   // Function to connect to the BLE device
-  // Function to connect to the BLE device
-  // Function to connect to the BLE device
   Future<void> _connectToDevice(String deviceId) async {
     // Validate MAC address format
     final RegExp macRegex = RegExp(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$');
@@ -281,6 +279,7 @@ class _BluetoothNotificationState extends State<BluetoothNotification> {
         .map((scanResult) => scanResult.device)
         .toList()
         .then((deviceList) => devices = deviceList);
+
     BluetoothDevice? device;
     if (devices.isNotEmpty) {
       device = devices.firstWhere((d) => d.id.toString() == deviceId
@@ -349,30 +348,46 @@ class _BluetoothNotificationState extends State<BluetoothNotification> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Bluetooth Notification'),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
+        ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              child: Text('Connect'),
-              onPressed: () async {
-                await _connectToDevice('94:B5:55:0C:12:AE'); // Replace with the MAC address of your device
-              },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              // color: Color(0xFF6497d3),
+              color: Color(0xFF517fa4),
             ),
-            SizedBox(height: 16),
-            Text('Notification: ${_value.toString()}'),
-            SizedBox(height: 16),
-            ElevatedButton(
-              child: Text('Disconnect'),
-              onPressed: () async {
-                await _disconnectFromDevice();
-              },
-            ),
-          ],
+          ),
+          title: Text('Bluetooth Notification'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                child: Text('Connect'),
+                onPressed: () async {
+                  await _connectToDevice('94:B5:55:0C:12:AE'); // Replace with the MAC address of your device
+                },
+              ),
+              SizedBox(height: 16),
+              Text('Notification: ${_value.toString()}'),
+              SizedBox(height: 16),
+              ElevatedButton(
+                child: Text('Disconnect'),
+                onPressed: () async {
+                  await _disconnectFromDevice();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

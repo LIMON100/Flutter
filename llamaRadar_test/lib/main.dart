@@ -90,7 +90,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: BleScreen(title: 'BLE Connection'),
+      home: BleScreen(title: ''),
     );
   }
 }

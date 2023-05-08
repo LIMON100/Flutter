@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lamaradar/sideBar.dart';
+import 'package:lamaradar/temp/glowing_button.dart';
+import 'goToRide.dart';
 
 class BleScreen extends StatefulWidget {
   BleScreen({Key? key, required this.title}) : super(key: key);
@@ -55,6 +58,83 @@ class _BleScreenState extends State<BleScreen> {
     }
   }
 
+  // ListView _buildListViewOfDevices() {
+  //   List<Widget> containers = <Widget>[];
+  //   for (BluetoothDevice device in widget.devicesList) {
+  //     containers.add(
+  //       SizedBox(
+  //         height: 50,
+  //         child: Row(
+  //           children: <Widget>[
+  //             Expanded(
+  //               flex: 2,
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: <Widget>[
+  //                   Expanded(
+  //                     child: Text(
+  //                         device.name == '' ? '(unknown device)' : device.name),
+  //                   ),
+  //                   Expanded(
+  //                     child: Text(device.id.toString()),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: TextButton(
+  //                 child: const Text(
+  //                   'Connect',
+  //                   style: TextStyle(color: Colors.black),
+  //                 ),
+  //                 onPressed: () async {
+  //                   widget.flutterBlue.stopScan();
+  //                   try {
+  //                     await device.connect();
+  //                   } on PlatformException catch (e) {
+  //                     if (e.code != 'already_connected') {
+  //                       rethrow;
+  //                     }
+  //                   } finally {
+  //                     _services = await device.discoverServices();
+  //                   }
+  //                   setState(() {
+  //                     _connectedDevice = device;
+  //                   });
+  //                 },
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //
+  //   return ListView(
+  //     padding: const EdgeInsets.all(8),
+  //     children: <Widget>[
+  //       // ElevatedButton(
+  //       //   child: Text("Pair Device to Start"),
+  //       //   onPressed: () {
+  //       //     _startScan();
+  //       //   },
+  //       // ),
+  //       Expanded(
+  //         child: GlowingButton2(
+  //           text: "Pair Device to Start",
+  //           onPressed: () {
+  //             _startScan();
+  //           },
+  //           color1: Color(0xFF517fa4),
+  //           color2: Colors.cyan,
+  //         ),
+  //       ),
+  //       ...containers,
+  //     ],
+  //   );
+  // }
+
+  //GO to another page
   ListView _buildListViewOfDevices() {
     List<Widget> containers = <Widget>[];
     for (BluetoothDevice device in widget.devicesList) {
@@ -98,6 +178,14 @@ class _BleScreenState extends State<BleScreen> {
                     setState(() {
                       _connectedDevice = device;
                     });
+
+                    // Navigate to new page after connecting to device
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GoToRide(device: device),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -106,15 +194,18 @@ class _BleScreenState extends State<BleScreen> {
         ),
       );
     }
-
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
-        ElevatedButton(
-          child: Text("Pair Device to Start"),
-          onPressed: () {
-            _startScan();
-          },
+        Center(
+          child: GlowingButton2(
+            text: "Pair Device to Start",
+            onPressed: () {
+              _startScan();
+            },
+            color1: Color(0xFF517fa4),
+            color2: Colors.cyan,
+          ),
         ),
         ...containers,
       ],
@@ -274,9 +365,9 @@ class _BleScreenState extends State<BleScreen> {
   }
 
   ListView _buildView() {
-    if (_connectedDevice != null) {
-      return _buildConnectDeviceView();
-    }
+    // if (_connectedDevice != null) {
+    //   return _buildConnectDeviceView();
+    // }
     return _buildListViewOfDevices();
   }
 
@@ -287,10 +378,11 @@ class _BleScreenState extends State<BleScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFCBBACC), Color(0xFF2580B3)],
+          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
         ),
       ),
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         drawer: SideBar(),
         appBar: AppBar(
           centerTitle: true,
@@ -299,7 +391,7 @@ class _BleScreenState extends State<BleScreen> {
           flexibleSpace: Container(
             decoration: BoxDecoration(
               // color: Color(0xFF6497d3),
-              color: Color(0xFF2580B3),
+              color: Color(0xFF517fa4),
             ),
           ),
         ),
