@@ -8,7 +8,10 @@ import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class CollisionWarningPage extends StatefulWidget {
-  const CollisionWarningPage({Key? key}) : super(key: key);
+  final BluetoothDevice device;
+
+  const CollisionWarningPage({Key? key, required this.device}) : super(key: key);
+  // const CollisionWarningPage({Key? key}) : super(key: key);
 
   @override
   _CollisionWarningPageState createState() => _CollisionWarningPageState();
@@ -38,6 +41,12 @@ class _CollisionWarningPageState extends State<CollisionWarningPage> {
   bool _emergencyOn = false;
   bool _powerOn = false;
 
+  //notificaiton variable
+  late BluetoothDevice _device;
+  BluetoothCharacteristic? _characteristic;
+  Stream<List<int>>? _stream;
+  String _value = '';
+
   // @override
   // void initState() {
   //   super.initState();
@@ -64,6 +73,8 @@ class _CollisionWarningPageState extends State<CollisionWarningPage> {
   @override
   void initState() {
     super.initState();
+    _device = widget.device;
+    _connectToDevice();
     // Start a timer to blink the warning signs
     _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
       setState(() {
@@ -102,6 +113,35 @@ class _CollisionWarningPageState extends State<CollisionWarningPage> {
           _isBottomBlinking = !_isBottomBlinking;
         }
       });
+    });
+  }
+
+  Future<void> _connectToDevice() async {
+    List<BluetoothService> services = await widget.device.discoverServices();
+    for (BluetoothService service in services) {
+      List<BluetoothCharacteristic> characteristics = await service.characteristics;
+      for (BluetoothCharacteristic characteristic in characteristics) {
+        if (characteristic.uuid.toString() == 'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
+          // _service = service;
+          _characteristic = characteristic;
+
+          // Enable notifications for the characteristic
+          await _characteristic!.setNotifyValue(true);
+
+          // Listen to the characteristic notifications
+          _characteristic!.value.listen((value) {
+            setState(() {
+              _value = value.toString();
+            });
+          });
+
+          print('Found characteristic ${characteristic.uuid}');
+          break;
+        }
+      }
+    }
+    setState(() {
+      _device = widget.device;
     });
   }
 
@@ -315,10 +355,15 @@ class _CollisionWarningPageState extends State<CollisionWarningPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                  SizedBox(width: 20),
-                  // Text('Notification: ${_value.toString()}'),
-                  Text('Notification: []'),
+                  Text(
+                    'Notifications:',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    _value[11],
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ],
               ),
 
