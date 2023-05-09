@@ -67,10 +67,7 @@ class _WifiPageState extends State<WifiPage> {
             margin: EdgeInsets.all(30.0),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CollisionWarningPage()),
-                );
+
               },
               child: Text('Go to Ride'),
             ),

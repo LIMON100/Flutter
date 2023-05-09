@@ -229,12 +229,7 @@ class _TempWarningState extends State<TempWarning> {
         ],),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pop(context);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CollisionWarningPage(),
-            ),
-          );
+
         },
         child: Icon(Icons.power_settings_new),
       ),
