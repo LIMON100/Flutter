@@ -15,29 +15,11 @@ import 'package:lamaradar/temp/BluetoothLightsPage.dart';
 import 'package:lamaradar/temp/BluetoothNotification.dart';
 import 'package:lamaradar/temp/BLEDevicePage.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:lamaradar/mode/LlamaDefenderPage.dart';
 
 class SideBar extends StatelessWidget {
 
   late final CameraDescription camera;
-
-  // void _connectToBLEDevice(BuildContext context) async {
-  //   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
-  //
-  //   // Scan for BLE devices
-  //   List<ScanResult> scanResults = await flutterBlue.scan(timeout: Duration(seconds: 10));
-  //   ScanResult scanResult = scanResults.firstWhere((result) => result.device.name == 'My Device');
-  //
-  //   // Connect to the device
-  //   BluetoothDevice device = scanResult.device;
-  //   await device.connect();
-  //
-  //   // Navigate to the BLEDevicePage
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(
-  //       builder: (context) => BLEDevicePage(device: device),
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -102,10 +84,12 @@ class SideBar extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => CollisionWarningPage()),
-                // );
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const LlamaDefender()
+                  ),
+                );
               },
             ),
             // Divider(),
