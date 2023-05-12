@@ -15,17 +15,18 @@ class _DashCamDetailsState extends State<DashCamDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        title: const Text('About'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            // color: Color(0xFF6497d3),
-            color: Colors.deepPurpleAccent,
-          ),
-        ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   foregroundColor: Colors.black,
+      //   title: const Text('About'),
+      //   flexibleSpace: Container(
+      //     decoration: BoxDecoration(
+      //       // color: Color(0xFF6497d3),
+      //       color: Colors.deepPurpleAccent,
+      //     ),
+      //   ),
+      // ),
+      backgroundColor: Colors.deepPurple.shade100,
       bottomNavigationBar: CurvedNavigationBar(
         height: 50,
         backgroundColor: Colors.indigoAccent,
@@ -76,8 +77,10 @@ class _DashCamDetailsState extends State<DashCamDetails> {
         children: [
           SizedBox(height: 60),
           Expanded(
-            child: Text(
-                ""
+            child: Center(
+              child: Text(
+                  "About"
+              ),
             ),
           ),
         ],

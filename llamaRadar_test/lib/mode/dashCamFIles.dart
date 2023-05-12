@@ -42,21 +42,21 @@ class _DashCamFilesState extends State<DashCamFiles> {
           setState(() {
             _currentIndex = index;
           });
-          if(index == 0)
+          if(_currentIndex == 0)
           {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => DashCam()),
             );
           }
-          if(index == 1)
+          if(_currentIndex == 1)
           {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => DashCamFiles()),
             );
           }
-          if(index == 2)
+          if(_currentIndex == 2)
           {
             Navigator.push(
               context,
@@ -78,6 +78,7 @@ class _DashCamFilesState extends State<DashCamFiles> {
             color: _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
           ),
         ],
+        // _currentIndex: _currentIndex, // add this line to set the selected index explicitly
       ),
 
       body: Container(

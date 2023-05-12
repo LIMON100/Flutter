@@ -6,6 +6,7 @@ import 'warning_icons.dart';
 import 'indicator_icons.dart';
 import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:just_audio/just_audio.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -41,15 +42,56 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _emergencyOn = false;
   bool _powerOn = false;
 
+  final right_redPlayer = AudioPlayer();
+  final rear_redPlayer = AudioPlayer();
+  final left_redPlayer = AudioPlayer();
+  final right_greenPlayer = AudioPlayer();
+  final rear_greenPlayer = AudioPlayer();
+  final left_greenPlayer = AudioPlayer();
+
+  bool _redLightOn = false;
+  bool _greenLightOn = false;
+
+  void _toggleRedLight() {
+    setState(() {
+      _redLightOn = !_redLightOn;
+      if (_redLightOn) {
+        // turn red light on and play red audio
+        // redPlayer2.setAsset('assets/warning_beep.mp3');
+        // redPlayer2.play();
+      } else {
+        // turn red light off
+        // redPlayer2.stop();
+      }
+    });
+  }
+
+  void _toggleGreenLight() {
+    setState(() {
+      _greenLightOn = !_greenLightOn;
+      if (_greenLightOn) {
+        // turn green light on and play green audio
+        // greenPlayer.setAsset('assets/danger_beep.mp3');
+        // greenPlayer.play();
+      } else {
+        // turn green light off
+        // greenPlayer.stop();
+      }
+    });
+  }
+
+
   //notificaiton variable
   late BluetoothDevice _device;
   BluetoothCharacteristic? _characteristic;
   Stream<List<int>>? _stream;
   String _value = '';
 
+
   @override
   void initState() {
     super.initState();
+    // _initializePlayers();
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
@@ -90,8 +132,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   //Blinking funciton
-  // bool _isLeftBlinking = false;
-  // bool _isRightBlinking = false;
   Timer? _leftBlinkTimer;
   Timer? _rightBlinkTimer;
 
@@ -99,6 +139,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   void dispose() {
     _leftBlinkTimer?.cancel();
     _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
     _stopBlinking();
     super.dispose();
   }
@@ -164,51 +210,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       }
     });
   }
-  // void _startBlinking() {
-  //   int num = int.parse(_value[1]);
-  //   _isBlinking = true;
-  //   _timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
-  //     if (_isBlinking) {
-  //       setState(() {
-  //         if (_blinkCount % 2 == 0) {
-  //           _isRed = false;
-  //           _isYellow = false;
-  //         } else {
-  //           switch (num) {
-  //             case 1:
-  //               _isRed = false;
-  //               _isYellow = true;
-  //               break;
-  //             case 2:
-  //               _isRed = true;
-  //               _isYellow = false;
-  //               break;
-  //             case 3:
-  //               _isRed = false;
-  //               _isYellow = true;
-  //               break;
-  //             case 4:
-  //               _isRed = true;
-  //               _isYellow = false;
-  //               break;
-  //             case 5:
-  //               _isRed = true;
-  //               _isYellow = false;
-  //               break;
-  //             default:
-  //               _isRed = false;
-  //               _isYellow = false;
-  //           }
-  //         }
-  //         _blinkCount++;
-  //         if (_blinkCount >= 6) {
-  //           _stopBlinking();
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
-
 
   void _stopBlinking() {
     _isBlinking = false;
@@ -289,10 +290,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
+      left_redPlayer.setAsset('assets/warning_beep.mp3');
+      left_redPlayer.play();
     } else if (_getLocation() == 'Left Notification Warning') {
       color = Colors.yellow;
+      left_greenPlayer.setAsset('assets/danger_beep.mp3');
+      left_greenPlayer.play();
     } else {
       color = Colors.green;
+      left_greenPlayer.stop();
+      left_redPlayer.stop();
     }
 
     return AnimatedOpacity(
@@ -311,14 +318,19 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getRightIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
-
     if (_getLocation() == 'Right Notification Danger') {
       color = Colors.red;
+      right_redPlayer.setAsset('assets/warning_beep.mp3');
+      right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
       color = Colors.yellow;
+      right_greenPlayer.setAsset('assets/danger_beep.mp3');
+      right_greenPlayer.play();
     } else {
       // opacity = 0.0;
       color = Colors.green;
+      right_redPlayer.stop();
+      right_greenPlayer.stop();
     }
 
     return AnimatedOpacity(
@@ -338,10 +350,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (_getLocation() == 'Rear Notification Danger') {
       color = Colors.red;
+      rear_redPlayer.setAsset('assets/warning_beep.mp3');
+      rear_redPlayer.play();
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
+      // greenPlayer.setAsset('assets/danger_beep.mp3');
+      // greenPlayer.play();
     } else {
       color = Colors.green;
+      rear_redPlayer.stop();
+      rear_greenPlayer.stop();
     }
 
     return AnimatedOpacity(
@@ -423,12 +441,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icon(
-                  //   Warning.image2vector,
-                  //   size: 48,
-                  //   color: _isLeftBlinking ? Colors.red : Colors.green,
-                  //   // color: _getColor(),
-                  // ),
                   _getLeftIcon(),
                   SizedBox(width: 15),
                   Text(

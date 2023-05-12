@@ -16,6 +16,7 @@ import 'package:lamaradar/temp/BluetoothNotification.dart';
 import 'package:lamaradar/temp/BLEDevicePage.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lamaradar/mode/LlamaDefenderPage.dart';
+import 'package:lamaradar/temp/BottomNavBar.dart';
 
 class SideBar extends StatelessWidget {
 
@@ -136,15 +137,12 @@ class SideBar extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // _connectToBLEDevice(context);
-                // if (device != null) {
-                //   Navigator.pop(context);
-                //   Navigator.of(context).push(
-                //     MaterialPageRoute(
-                //       builder: (context) => BLEDevicePage(device: device!),
-                //     ),
-                //   );
-                // }
+                // Navigator.pop(context);
+                // Navigator.of(context).push(
+                //   MaterialPageRoute(
+                //       builder: (context) => const BlinkingLightPage()
+                //   ),
+                // );
               },
             ),
             // Divider(),

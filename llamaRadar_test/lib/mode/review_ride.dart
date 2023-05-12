@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
+import 'LlamaDefenderPage.dart';
 
 class ReviewRide extends StatefulWidget {
 
@@ -32,16 +33,28 @@ class _ReviewRideState extends State<ReviewRide> {
               color: Color(0xFF517fa4),
             ),
           ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const LlamaDefender()
+                ),
+              );// Navigate to previous screen
+            },
+          ),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("REVIEW RIDE"),
-              ],
+            ],
           ),
         ),
       ),
     );
   }
 }
+
