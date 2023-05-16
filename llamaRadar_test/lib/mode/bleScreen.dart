@@ -25,6 +25,9 @@ class _BleScreenState extends State<BleScreen> {
   BluetoothDevice? _connectedDevice;
   List<BluetoothService> _services = [];
 
+  bool _isScanning = false;
+  String? _scanError;
+
   _addDeviceTolist(final BluetoothDevice device) {
     if (!widget.devicesList.contains(device)) {
       setState(() {
@@ -50,89 +53,33 @@ class _BleScreenState extends State<BleScreen> {
     });
   }
 
+  // Future<void> _startScan() async {
+  //   try {
+  //     await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
+  //   } catch (e) {
+  //     print("Error starting scan: $e");
+  //   }
+  // }
+
   Future<void> _startScan() async {
+    setState(() {
+      _isScanning = true;
+      _scanError = null;
+    });
+
     try {
       await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
     } catch (e) {
       print("Error starting scan: $e");
+      setState(() {
+        _scanError = e.toString();
+      });
     }
-  }
 
-  // ListView _buildListViewOfDevices() {
-  //   List<Widget> containers = <Widget>[];
-  //   for (BluetoothDevice device in widget.devicesList) {
-  //     containers.add(
-  //       SizedBox(
-  //         height: 50,
-  //         child: Row(
-  //           children: <Widget>[
-  //             Expanded(
-  //               flex: 2,
-  //               child: Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: <Widget>[
-  //                   Expanded(
-  //                     child: Text(
-  //                         device.name == '' ? '(unknown device)' : device.name),
-  //                   ),
-  //                   Expanded(
-  //                     child: Text(device.id.toString()),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //             Expanded(
-  //               child: TextButton(
-  //                 child: const Text(
-  //                   'Connect',
-  //                   style: TextStyle(color: Colors.black),
-  //                 ),
-  //                 onPressed: () async {
-  //                   widget.flutterBlue.stopScan();
-  //                   try {
-  //                     await device.connect();
-  //                   } on PlatformException catch (e) {
-  //                     if (e.code != 'already_connected') {
-  //                       rethrow;
-  //                     }
-  //                   } finally {
-  //                     _services = await device.discoverServices();
-  //                   }
-  //                   setState(() {
-  //                     _connectedDevice = device;
-  //                   });
-  //                 },
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
-  //   }
-  //
-  //   return ListView(
-  //     padding: const EdgeInsets.all(8),
-  //     children: <Widget>[
-  //       // ElevatedButton(
-  //       //   child: Text("Pair Device to Start"),
-  //       //   onPressed: () {
-  //       //     _startScan();
-  //       //   },
-  //       // ),
-  //       Expanded(
-  //         child: GlowingButton2(
-  //           text: "Pair Device to Start",
-  //           onPressed: () {
-  //             _startScan();
-  //           },
-  //           color1: Color(0xFF517fa4),
-  //           color2: Colors.cyan,
-  //         ),
-  //       ),
-  //       ...containers,
-  //     ],
-  //   );
-  // }
+    setState(() {
+      _isScanning = false;
+    });
+  }
 
   //GO to another page
   ListView _buildListViewOfDevices() {
@@ -143,6 +90,7 @@ class _BleScreenState extends State<BleScreen> {
           height: 50,
           child: Row(
             children: <Widget>[
+              SizedBox(height: 12),
               Expanded(
                 flex: 2,
                 child: Column(
@@ -197,16 +145,40 @@ class _BleScreenState extends State<BleScreen> {
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
-        Center(
-          child: GlowingButton2(
-            text: "Pair Device to Start",
-            onPressed: () {
-              _startScan();
-            },
-            color1: Color(0xFF517fa4),
-            color2: Colors.cyan,
+        // Center(
+        //   child: GlowingButton2(
+        //     text: "Pair Device to Start",
+        //     onPressed: () {
+        //       _startScan();
+        //     },
+        //     color1: Color(0xFF517fa4),
+        //     color2: Colors.cyan,
+        //   ),
+        // ),
+        SizedBox(height: 15),
+        if (_scanError != null)
+          Text(
+            "Error starting scan: $_scanError",
+            style: TextStyle(color: Colors.red),
           ),
-        ),
+        if (_isScanning)
+          CircularProgressIndicator()
+        else
+          Center(
+            child: GlowingButton2(
+              text: "Pair Device to Start",
+              onPressed: () {
+                _startScan();
+              },
+              color1: Color(0xFF517fa4),
+              color2: Colors.cyan,
+            ),
+          ),
+        if (_scanError != null)
+          Text(
+            "Error starting scan: $_scanError",
+            style: TextStyle(color: Colors.red),
+          ),
         ...containers,
       ],
     );

@@ -49,30 +49,9 @@ class SideBar extends StatelessWidget {
               ),
             ),
             SizedBox(height: size.height * 0.02),
-            ListTile(
-                leading: Icon(CustomIcon.scooter, color: Colors.black, size: size.width * 0.07,),
-                title: Text(
-                  'Ride History',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: size.width * 0.05,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    letterSpacing: 2.0,
-                  ),
-                ),
-                onTap: () {
-                  // Navigator.pop(context);
-                  // Navigator.of(context).push(
-                  //   MaterialPageRoute(
-                  //     builder: (context) => const LlamaWebMenu(),
-                  //   ),
-                  // );
-                }
-            ),
             // Divider(),
             ListTile(
-              leading: Icon(CustomIcon.car, color: Colors.black,size: size.width * 0.07,),
+              leading: Icon(Icons.wifi_protected_setup, color: Colors.black,size: size.width * 0.07,),
               title:
               Text(
                 'Llama Defender',
@@ -103,7 +82,7 @@ class SideBar extends StatelessWidget {
               title: Text(
                 'Dash Cam',
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  fontFamily: 'Quicksand-VariableFont_wght',
                   fontSize: size.width * 0.05,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -119,7 +98,29 @@ class SideBar extends StatelessWidget {
                 );
               },
             ),
+            ListTile(
+                leading: Icon(Icons.history, color: Colors.black, size: size.width * 0.07,),
+                title: Text(
+                  'Ride History',
+                  style: TextStyle(
+                    fontFamily: 'Quicksand-VariableFont_wght',
+                    fontSize: size.width * 0.05,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+                onTap: () {
+                  // Navigator.pop(context);
+                  // Navigator.of(context).push(
+                  //   MaterialPageRoute(
+                  //     builder: (context) => const LlamaWebMenu(),
+                  //   ),
+                  // );
+                }
+            ),
             // Divider(),
+
             ListTile(
               leading: Icon(
                 DBIcons.logo,
@@ -155,7 +156,8 @@ class SideBar extends StatelessWidget {
               Text(
                 'Exit',
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  // fontFamily: 'Montserrat',
+                  fontFamily: 'Quicksand-VariableFont_wght',
                   fontSize: size.width * 0.05,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
