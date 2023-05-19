@@ -156,11 +156,6 @@ class _BleScreenState extends State<BleScreen> {
         //   ),
         // ),
         SizedBox(height: 15),
-        if (_scanError != null)
-          Text(
-            "Error starting scan: $_scanError",
-            style: TextStyle(color: Colors.red),
-          ),
         if (_isScanning)
           CircularProgressIndicator()
         else
@@ -177,7 +172,7 @@ class _BleScreenState extends State<BleScreen> {
         if (_scanError != null)
           Text(
             "Error starting scan: $_scanError",
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: Colors.red.shade100),
           ),
         ...containers,
       ],
