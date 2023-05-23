@@ -472,393 +472,414 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          centerTitle: true,
-          foregroundColor: Colors.black,
-          title: const Text('Ride Info'),
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              // color: Color(0xFF6497d3),
-              color: Color(0xFF517fa4),
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
             ),
           ),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Top warning+indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    _startLeftBlinking();
-                    _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
-                  },
-                  icon: Icon(
-                    Indicator.image2vector,
-                    size: 48,
-                    color: _isLeftBlinking ? Colors.orange : Colors.black,
-                  ),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              centerTitle: true,
+              foregroundColor: Colors.black,
+              title: const Text('Ride Info'),
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  // color: Color(0xFF6497d3),
+                  color: Color(0xFF517fa4),
                 ),
-
-                SizedBox(width: 60),
-                Icon(
-                  Warning.image2vector3,
-                  size: 48,
-                  color: _isTopBlinking ? Colors.red : Colors.green,
-                ),
-                SizedBox(width: 60),
-
-                IconButton(
-                  onPressed: () {
-                    _startRightBlinking();
-                    _sendData([0x02, 0x01, 0xA, 0x02, 0xF]);
-                  },
-                  icon: Icon(
-                    Indicator.image2vector__1_,
-                    size: 48,
-                    color: _isRightBlinking ? Colors.orange : Colors.black,
-                  ),
-                ),
-              ],
+              ),
             ),
-
-            // left+right warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _getLeftIcon(),
-                SizedBox(width: 15),
-                Text(
-                  _getLocation(),
-                  style: TextStyle(fontSize: 20),
-                ),
-                SizedBox(width: 20),
-                _getRightIcon(),
-              ],
-            ),
-
-            // ligts
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn1 = !_lightOn1;
-                      });
-                    }
-                ),
-                SizedBox(width: 140),
-                IconButton(
-                    icon: Icon(_lightOn2 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn2 = !_lightOn2;
-                      });
-                    }
-                ),
-              ],
-            ),
-
-            // Rear warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _getRearIcon(),
-              ],
-            ),
-
-            // Blink icon for tailight, camera and distance
-            //CAM+Tailight+Distance button
-            SizedBox(width: 1),
-            // Column(
-            //   children: [
-            //     Row(
-            //       mainAxisAlignment: MainAxisAlignment.center,
-            //       children: [
-            //         Column(
-            //           children: [
-            //             Icon(Icons.square),
-            //             Text('Camera'),
-            //           ],
-            //         ),
-            //         SizedBox(width: 10),
-            //         Column(
-            //           children: [
-            //             AnimatedContainer(
-            //               duration: Duration(seconds: 1),
-            //               decoration: BoxDecoration(
-            //                 shape: BoxShape.rectangle,
-            //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-            //               ),
-            //               child: Icon(
-            //                 Icons.square,
-            //                 size: 40,
-            //                 color: Colors.black,
-            //               ),
-            //             ),
-            //             AnimatedSwitcher(
-            //               duration: Duration(seconds: 1),
-            //               child: Text(
-            //                 (_value.length > 15 && int.tryParse(_value[15]) == 3) ? '30M' : '',
-            //                 style: TextStyle(
-            //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //
-            //         SizedBox(width: 5),
-            //         Column(
-            //           children: [
-            //             AnimatedContainer(
-            //               duration: Duration(seconds: 1),
-            //               decoration: BoxDecoration(
-            //                 shape: BoxShape.rectangle,
-            //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-            //               ),
-            //               child: Icon(
-            //                 Icons.square,
-            //                 size: 40,
-            //                 color: Colors.black,
-            //               ),
-            //             ),
-            //             AnimatedSwitcher(
-            //               duration: Duration(seconds: 1),
-            //               child: Text(
-            //                 (_value.length > 15 && int.tryParse(_value[15]) == 6) ? '60M' : '',
-            //                 style: TextStyle(
-            //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //
-            //         SizedBox(width: 5),
-            //         Column(
-            //           children: [
-            //             AnimatedContainer(
-            //               duration: Duration(seconds: 1),
-            //               decoration: BoxDecoration(
-            //                 shape: BoxShape.rectangle,
-            //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-            //               ),
-            //               child: Icon(
-            //                 Icons.square,
-            //                 size: 40,
-            //                 color: Colors.black,
-            //               ),
-            //             ),
-            //             AnimatedSwitcher(
-            //               duration: Duration(seconds: 1),
-            //               child: Text(
-            //                 (_value.length > 15 && int.tryParse(_value[15]) == 9) ? '90M' : '',
-            //                 style: TextStyle(
-            //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //
-            //       ],
-            //     ),
-            //     // Text(_value[15]),
-            //     // Text(_value[16]),
-            //     SizedBox(height: 1),
-            //     Row(
-            //       mainAxisAlignment: MainAxisAlignment.center,
-            //       children: [
-            //         IconButton(
-            //           icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-            //           onPressed: () {
-            //             setState(() {
-            //               _cameraOn = !_cameraOn;
-            //               _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-            //             });
-            //             // open camera if _cameraOn is true
-            //           },
-            //         ),
-            //         SizedBox(width: 20),
-            //         IconButton(
-            //           icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
-            //           onPressed: () {
-            //             // _startBothBlinking();
-            //             _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-            //           },
-            //         ),
-            //         SizedBox(width: 20),
-            //         IconButton(
-            //           icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-            //           onPressed: () {
-            //             setState(() {
-            //               // _lightOn1 = !_lightOn1;
-            //               _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-            //             });
-            //           },
-            //         ),
-            //       ],
-            //     ),
-            //   ],
-            // ),
-
-            // Test distance
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            body: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Column(
+                    // Top warning+indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.square),
-                        Text('Camera'),
-                      ],
-                    ),
-                    SizedBox(width: 10),
-                    Column(
-                      children: [
-                        Icon(
-                          Icons.square,
-                          size: 40,
-                          color: _isBlinkingIcon1 ? Colors.red : Colors.black,
+                        IconButton(
+                          onPressed: () {
+                            _startLeftBlinking();
+                            _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
+                          },
+                          icon: Icon(
+                            Indicator.image2vector,
+                            size: 48,
+                            color: _isLeftBlinking ? Colors.orange : Colors.black,
+                          ),
                         ),
-                        Text(
-                          '30M',
-                          style: TextStyle(
-                            color: _isBlinkingIcon1 ? Colors.red : Colors.black,
+
+                        SizedBox(width: 60),
+                        Icon(
+                          Warning.image2vector3,
+                          size: 48,
+                          color: _isTopBlinking ? Colors.red : Colors.green,
+                        ),
+                        SizedBox(width: 60),
+
+                        IconButton(
+                          onPressed: () {
+                            _startRightBlinking();
+                            _sendData([0x02, 0x01, 0xA, 0x02, 0xF]);
+                          },
+                          icon: Icon(
+                            Indicator.image2vector__1_,
+                            size: 48,
+                            color: _isRightBlinking ? Colors.orange : Colors.black,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(width: 10),
-                    Column(
+
+                    // left+right warning
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.square,
-                          size: 40,
-                          color: _isBlinkingIcon2 ? Colors.red : Colors.black,
-                        ),
+                        _getLeftIcon(),
+                        SizedBox(width: 15),
                         Text(
-                          '60M',
-                          style: TextStyle(
-                            color: _isBlinkingIcon2 ? Colors.red : Colors.black,
-                          ),
+                          _getLocation(),
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        SizedBox(width: 20),
+                        _getRightIcon(),
+                      ],
+                    ),
+
+                    // ligts
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
+                                .lightbulb_outline),
+                            onPressed: () {
+                              setState(() {
+                                _lightOn1 = !_lightOn1;
+                              });
+                            }
+                        ),
+                        SizedBox(width: 140),
+                        IconButton(
+                            icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
+                                .lightbulb_outline),
+                            onPressed: () {
+                              setState(() {
+                                _lightOn2 = !_lightOn2;
+                              });
+                            }
                         ),
                       ],
                     ),
-                    SizedBox(width: 10),
+
+                    // Rear warning
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _getRearIcon(),
+                      ],
+                    ),
+
+                    // Blink icon for tailight, camera and distance
+                    //CAM+Tailight+Distance button
+                    SizedBox(width: 1),
+                    // Column(
+                    //   children: [
+                    //     Row(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         Column(
+                    //           children: [
+                    //             Icon(Icons.square),
+                    //             Text('Camera'),
+                    //           ],
+                    //         ),
+                    //         SizedBox(width: 10),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 3) ? '30M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //         SizedBox(width: 5),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 6) ? '60M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //         SizedBox(width: 5),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 9) ? '90M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //       ],
+                    //     ),
+                    //     // Text(_value[15]),
+                    //     // Text(_value[16]),
+                    //     SizedBox(height: 1),
+                    //     Row(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         IconButton(
+                    //           icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               _cameraOn = !_cameraOn;
+                    //               _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                    //             });
+                    //             // open camera if _cameraOn is true
+                    //           },
+                    //         ),
+                    //         SizedBox(width: 20),
+                    //         IconButton(
+                    //           icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
+                    //           onPressed: () {
+                    //             // _startBothBlinking();
+                    //             _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                    //           },
+                    //         ),
+                    //         SizedBox(width: 20),
+                    //         IconButton(
+                    //           icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               // _lightOn1 = !_lightOn1;
+                    //               _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                    //             });
+                    //           },
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // ),
+
+                    // Test distance
                     Column(
                       children: [
-                        Icon(
-                          Icons.square,
-                          size: 40,
-                          color: _isBlinkingIcon3 ? Colors.red : Colors.black,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                Icon(Icons.square),
+                                Text('Camera'),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon1 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '30M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon1 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon2 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '60M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon2 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon3 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '90M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon3 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        Text(
-                          '90M',
-                          style: TextStyle(
-                            color: _isBlinkingIcon3 ? Colors.red : Colors.black,
-                          ),
+                        SizedBox(height: 1),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: Icon(_cameraOn ? Icons.camera_alt : Icons
+                                  .camera_alt_outlined),
+                              onPressed: () {
+                                setState(() {
+                                  _cameraOn = !_cameraOn;
+                                  _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                                });
+                                // open camera if _cameraOn is true
+                              },
+                            ),
+                            SizedBox(width: 20),
+                            IconButton(
+                              icon: Icon(Icons.social_distance_rounded),
+                              onPressed: () {
+                                _handleButtonPress();
+                                _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                              },
+                            ),
+                            SizedBox(width: 20),
+                            IconButton(
+                              icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
+                                  .lightbulb_outline),
+                              onPressed: () {
+                                setState(() {
+                                  // _lightOn1 = !_lightOn1;
+                                  _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
+
+                    // Stop ride
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SizedBox(width: 50),
+                        GlowingButton2(
+                          text: "Stop Ride",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) =>
+                                  BleScreen(title: '',)),
+                            );
+                          },
+                          color1: Color(0xFF517fa4),
+                          color2: Colors.cyan,
+                        ),
+                      ],
+                    ),
+                    // Image with power button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(width: 120),
+                        Image.asset(
+                          'images/llama_img_web2.jpg',
+                          height: 100,
+                          width: 130,
+                        ),
+                        SizedBox(width: 16),
+                        FloatingActionButton(
+                          onPressed: () {
+                            setState(() {
+                              _powerOn = !_powerOn;
+                            });
+                          },
+                          backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                          child: Icon(Icons.power_settings_new),
+                        ),
+                      ],
+                    )
                   ],
                 ),
-                SizedBox(height: 1),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-                      onPressed: () {
-                        setState(() {
-                          _cameraOn = !_cameraOn;
-                          _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                        });
-                        // open camera if _cameraOn is true
-                      },
-                    ),
-                    SizedBox(width: 20),
-                    IconButton(
-                      icon: Icon(Icons.social_distance_rounded),
-                      onPressed: () {
-                        _handleButtonPress();
-                        _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                      },
-                    ),
-                    SizedBox(width: 20),
-                    IconButton(
-                      icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                      onPressed: () {
-                        setState(() {
-                          // _lightOn1 = !_lightOn1;
-                          _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-
-            // Stop ride
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // SizedBox(width: 50),
-                GlowingButton2(
-                  text: "Stop Ride",
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BleScreen(title: '',)),
-                    );
-                  },
-                  color1: Color(0xFF517fa4),
-                  color2: Colors.cyan,
-                ),
-              ],
-            ),
-            // Image with power button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 120),
-                Image.asset(
-                  'images/llama_img_web2.jpg',
-                  height: 100,
-                  width: 130,
-                ),
-                SizedBox(width: 16),
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      _powerOn = !_powerOn;
-                    });
-                  },
-                  backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                  child: Icon(Icons.power_settings_new),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 }
