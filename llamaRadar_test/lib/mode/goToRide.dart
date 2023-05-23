@@ -83,12 +83,22 @@ class _GoToRideState extends State<GoToRide> {
           ],
         ),
         backgroundColor: Colors.transparent,
-        body: Padding(
-          padding: EdgeInsets.only(top: 500.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Center(
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    // Your widget content
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 100.0),
+              child: Align(
+                alignment: Alignment.bottomCenter,
                 child: GlowingButton2(
                   text: "Go to ride",
                   onPressed: () {
@@ -101,8 +111,8 @@ class _GoToRideState extends State<GoToRide> {
                   color2: Colors.cyan,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
