@@ -12,6 +12,11 @@ import 'indicator_icons.dart';
 import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
+import 'package:flutter_dialogs/flutter_dialogs.dart';
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -44,6 +49,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   bool _redLightOn = false;
   bool _greenLightOn = false;
+
+  // for popup dashcam windows
+  // late Timer _timer;
+  VlcPlayerController? _controller;
+
 
   void _toggleRedLight() {
     setState(() {
@@ -90,6 +100,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
+    initializePlayer();
   }
 
   Future<void> _connectToDevice() async {
@@ -162,19 +173,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _leftBlinkTimer;
   Timer? _rightBlinkTimer;
 
-  @override
-  void dispose() {
-    _leftBlinkTimer?.cancel();
-    _rightBlinkTimer?.cancel();
-    right_redPlayer.dispose();
-    right_greenPlayer.dispose();
-    rear_greenPlayer.dispose();
-    rear_redPlayer.dispose();
-    left_greenPlayer.dispose();
-    left_redPlayer.dispose();
-    _stopBlinking();
-    super.dispose();
-  }
 
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
@@ -330,6 +328,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+    // showStreamPopup();
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
@@ -358,6 +357,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
+  int right_danger_counter = 0;
   Widget _getRightIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -366,6 +366,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
+      if (right_danger_counter >= 8) {
+        showStreamPopup();
+        right_danger_counter = 0;
+      }
+      right_danger_counter = right_danger_counter + 1;
+      print("FIND RIGHT NOTIFICAITON COUNTER");
+      print(right_danger_counter);
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -468,6 +475,124 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
       _startBlinking3();
     }
+  }
+
+  // Open pop-up window for dashcam rear warning
+  Future<void> initializePlayer() async {
+    if (_controller != null) {
+      await _controller!.dispose();
+      _controller = null;
+    }
+
+    _controller = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mov',
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+
+    await _controller!.initialize();
+  }
+
+  // void showStreamPopup() async {
+  //   if (_controller == null) {
+  //     return;
+  //   }
+  //
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Text('RTSP Stream'),
+  //             SizedBox(height: 16),
+  //             Container(
+  //               width: MediaQuery.of(context).size.width,
+  //               height: MediaQuery.of(context).size.width * 9 / 16,
+  //               child: VlcPlayer(
+  //                 controller: _controller!,
+  //                 aspectRatio: 16 / 9,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //
+  //   // Close the pop-up window after 4 seconds
+  //   await Future.delayed(Duration(seconds: 4));
+  //   Navigator.of(context).pop();
+  //
+  //   // Terminate the current VlcPlayerController
+  //   await initializePlayer();
+  // }
+
+  void showStreamPopup() {
+    if (_controller == null) {
+      return;
+    }
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Dashcam'),
+                SizedBox(height: 16),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width * 9 / 16,
+                  child: VlcPlayer(
+                    controller: _controller!,
+                    aspectRatio: 16 / 9,
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigator.of(context).pop();
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => CollisionWarningPage2(device: widget.device)),
+                      );
+                  },
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          );
+        },
+      ).then((_) {
+        // Close the pop-up window after 4 seconds
+        Future.delayed(Duration(seconds: 5)).then((_) {
+          Navigator.of(context).pop();
+        });
+      });
+    });
+  }
+
+
+  // Dispose function
+  @override
+  void dispose() {
+    _leftBlinkTimer?.cancel();
+    _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
+    _stopBlinking();
+    super.dispose();
+    _controller?.dispose();
   }
 
   @override
