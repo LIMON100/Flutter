@@ -17,6 +17,7 @@ import 'package:lamaradar/temp/BLEDevicePage.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lamaradar/mode/LlamaDefenderPage.dart';
 import 'package:lamaradar/temp/BottomNavBar.dart';
+import 'package:lamaradar/temp/BleWriteTest.dart';
 
 class SideBar extends StatelessWidget {
 
@@ -141,7 +142,7 @@ class SideBar extends StatelessWidget {
                 // Navigator.pop(context);
                 // Navigator.of(context).push(
                 //   MaterialPageRoute(
-                //       builder: (context) => const BlinkingLightPage()
+                //       builder: (context) => BleWriteTest2()
                 //   ),
                 // );
               },

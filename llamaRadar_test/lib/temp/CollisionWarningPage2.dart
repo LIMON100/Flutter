@@ -4,17 +4,34 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+=======
+import 'package:lamaradar/mode/bleScreen.dart';
+import 'BlinkingIconsButton.dart';
+import 'glowing_button.dart';
+>>>>>>> test
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
 import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
+<<<<<<< HEAD
+=======
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
+import 'package:flutter_dialogs/flutter_dialogs.dart';
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+>>>>>>> test
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
 
   const CollisionWarningPage2({Key? key, required this.device}) : super(key: key);
+<<<<<<< HEAD
   // const CollisionWarningPage({Key? key}) : super(key: key);
+=======
+>>>>>>> test
 
   @override
   _CollisionWarningPage2State createState() => _CollisionWarningPage2State();
@@ -43,6 +60,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _redLightOn = false;
   bool _greenLightOn = false;
 
+<<<<<<< HEAD
+=======
+  // for popup dashcam windows
+  // late Timer _timer;
+  VlcPlayerController? _controller;
+
+
+>>>>>>> test
   void _toggleRedLight() {
     setState(() {
       _redLightOn = !_redLightOn;
@@ -88,6 +113,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
+<<<<<<< HEAD
+=======
+    initializePlayer();
+>>>>>>> test
   }
 
   Future<void> _connectToDevice() async {
@@ -131,6 +160,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // Send data part
+<<<<<<< HEAD
   // Future<void> _sendData() async {
   //   if (_characteristic_write != null) {
   //     // final dataToSend = [0x02, 0x01, 0x10, 0xA, 0x02, 0x15, 0xF];
@@ -162,12 +192,29 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Future<void> _sendData(List<int> dataToSend) async {
   //   if (_characteristic_write != null) {
   //     List<int> byteData = dataToSend;
+=======
+  Future<void> _sendData(List<int> dataToSend) async {
+    if (_characteristic_write != null) {
+      // List<int> byteData = utf8.encode(dataToSend);
+      await _characteristic_write!.write(dataToSend);
+      // Wait for the response from the BLE device
+      final response = await _characteristic_write!.value.first;
+    }
+  }
+
+  //BYTE ARRAY
+
+  // Future<void> _sendData(List<int> dataToSend) async {
+  //   if (_characteristic_write != null) {
+  //     Uint8List byteData = Uint8List.fromList(dataToSend);
+>>>>>>> test
   //     await _characteristic_write!.write(byteData);
   //     // Wait for the response from the BLE device
   //     final response = await _characteristic_write!.value.first;
   //   }
   // }
 
+<<<<<<< HEAD
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
       Uint8List byteData = Uint8List.fromList(dataToSend);
@@ -177,6 +224,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
+=======
+>>>>>>> test
   final _random = Random();
   int _generateRandomNumber(int min, int max) {
     return (min + (max - min) * _random.nextDouble()).toInt();
@@ -186,6 +235,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _leftBlinkTimer;
   Timer? _rightBlinkTimer;
 
+<<<<<<< HEAD
   @override
   void dispose() {
     _leftBlinkTimer?.cancel();
@@ -228,6 +278,53 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         _isRightBlinking = false;
       });
     });
+=======
+
+  void _startLeftBlinking() {
+    if (_leftBlinkTimer != null) {
+      _leftBlinkTimer!.cancel();
+      _leftBlinkTimer = null;
+      setState(() {
+        _isLeftBlinking = false;
+      });
+    } else {
+      _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
+        setState(() {
+          _isLeftBlinking = !_isLeftBlinking;
+        });
+      });
+      // Stop the blinking after 3 seconds
+      Future.delayed(Duration(seconds: 30)).then((_) {
+        _leftBlinkTimer?.cancel();
+        setState(() {
+          _isLeftBlinking = false;
+        });
+      });
+    }
+  }
+
+  void _startRightBlinking() {
+    if (_rightBlinkTimer != null) {
+      _rightBlinkTimer!.cancel();
+      _rightBlinkTimer = null;
+      setState(() {
+        _isRightBlinking = false;
+      });
+    } else {
+      _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
+        setState(() {
+          _isRightBlinking = !_isRightBlinking;
+        });
+      });
+      // Stop the blinking after 3 seconds
+      Future.delayed(Duration(seconds: 30)).then((_) {
+        _rightBlinkTimer?.cancel();
+        setState(() {
+          _isRightBlinking = false;
+        });
+      });
+    }
+>>>>>>> test
   }
 
   void _startBothBlinking() {
@@ -338,6 +435,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+<<<<<<< HEAD
+=======
+    // showStreamPopup();
+>>>>>>> test
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
@@ -366,6 +467,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
+<<<<<<< HEAD
+=======
+  int right_danger_counter = 0;
+>>>>>>> test
   Widget _getRightIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -374,6 +479,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
+<<<<<<< HEAD
+=======
+      if (right_danger_counter >= 6) {
+        showStreamPopup();
+        right_danger_counter = 0;
+      }
+      right_danger_counter = right_danger_counter + 1;
+      print("FIND RIGHT NOTIFICAITON COUNTER");
+      print(right_danger_counter);
+>>>>>>> test
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -426,6 +541,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   final _writeController = TextEditingController();
 
+<<<<<<< HEAD
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -615,6 +731,594 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           ],
         ),
       ),
+=======
+  // blink for distance
+  void _startBlinking2(int value) {
+    Timer _blinkTimer;
+    bool _isBlinking = false;
+
+    _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
+      setState(() {
+        _isBlinking = !_isBlinking;
+      });
+    });
+
+    // Stop the blinking after 3 seconds
+    Future.delayed(Duration(seconds: 3)).then((_) {
+      _blinkTimer?.cancel();
+      setState(() {
+        _isBlinking = false;
+      });
+    });
+  }
+
+  bool _isBlinkingIcon1 = false;
+  bool _isBlinkingIcon2 = false;
+  bool _isBlinkingIcon3 = false;
+
+  void _startBlinking3() {
+    Timer _blinkTimer;
+    bool _isBlinking = false;
+
+    _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+      setState(() {
+        _isBlinkingIcon1 = (int.tryParse(_value[15]) == 3) ? !_isBlinkingIcon1 : false;
+        _isBlinkingIcon2 = (int.tryParse(_value[15]) == 6) ? !_isBlinkingIcon2 : false;
+        _isBlinkingIcon3 = (int.tryParse(_value[15]) == 9) ? !_isBlinkingIcon1 : false;
+        _isBlinking = !_isBlinking;
+      });
+    });
+    // Stop the blinking after 3 seconds
+    Future.delayed(Duration(seconds: 3)).then((_) {
+      _blinkTimer?.cancel();
+      setState(() {
+        _isBlinking = false;
+      });
+    });
+  }
+
+
+  void _handleButtonPress() {
+    if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
+      _startBlinking3();
+    }
+  }
+
+  // Open pop-up window for dashcam rear warning
+  Future<void> initializePlayer() async {
+    if (_controller != null) {
+      await _controller!.dispose();
+      _controller = null;
+    }
+
+    _controller = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mov',
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+
+    await _controller!.initialize();
+  }
+
+  // void showStreamPopup() async {
+  //   if (_controller == null) {
+  //     return;
+  //   }
+  //
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Text('RTSP Stream'),
+  //             SizedBox(height: 16),
+  //             Container(
+  //               width: MediaQuery.of(context).size.width,
+  //               height: MediaQuery.of(context).size.width * 9 / 16,
+  //               child: VlcPlayer(
+  //                 controller: _controller!,
+  //                 aspectRatio: 16 / 9,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //
+  //   // Close the pop-up window after 4 seconds
+  //   await Future.delayed(Duration(seconds: 4));
+  //   Navigator.of(context).pop();
+  //
+  //   // Terminate the current VlcPlayerController
+  //   await initializePlayer();
+  // }
+
+  void showStreamPopup() {
+    if (_controller == null) {
+      return;
+    }
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Dashcam'),
+                SizedBox(height: 16),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width * 9 / 16,
+                  child: VlcPlayer(
+                    controller: _controller!,
+                    aspectRatio: 16 / 9,
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigator.of(context).pop();
+                    // initializePlayer();
+                    // Navigator.pop(context);
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //       builder: (context) => CollisionWarningPage2(device: widget.device)),
+                    //   );
+                  },
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      // ).then((_) {
+      //   // Close the pop-up window after 4 seconds
+      //   Future.delayed(Duration(seconds: 5)).then((_) {
+      //     Navigator.of(context).pop();
+      //   });
+      // });
+    });
+    Future.delayed(Duration(seconds: 5)).then((_) {
+      Navigator.of(context).pop();
+      initializePlayer();
+    });
+  }
+
+
+  // Dispose function
+  @override
+  void dispose() {
+    _leftBlinkTimer?.cancel();
+    _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
+    _stopBlinking();
+    super.dispose();
+    _controller?.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
+            ),
+          ),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              centerTitle: true,
+              foregroundColor: Colors.black,
+              title: const Text('Ride Info'),
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  // color: Color(0xFF6497d3),
+                  color: Color(0xFF517fa4),
+                ),
+              ),
+            ),
+            body: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    // Top warning+indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            _startLeftBlinking();
+                            _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
+                          },
+                          icon: Icon(
+                            Indicator.image2vector,
+                            size: 48,
+                            color: _isLeftBlinking ? Colors.orange : Colors.black,
+                          ),
+                        ),
+
+                        SizedBox(width: 60),
+                        Icon(
+                          Warning.image2vector3,
+                          size: 48,
+                          color: _isTopBlinking ? Colors.red : Colors.green,
+                        ),
+                        SizedBox(width: 60),
+
+                        IconButton(
+                          onPressed: () {
+                            _startRightBlinking();
+                            _sendData([0x02, 0x01, 0xA, 0x02, 0xF]);
+                          },
+                          icon: Icon(
+                            Indicator.image2vector__1_,
+                            size: 48,
+                            color: _isRightBlinking ? Colors.orange : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // left+right warning
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _getLeftIcon(),
+                        SizedBox(width: 15),
+                        Text(
+                          _getLocation(),
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        SizedBox(width: 20),
+                        _getRightIcon(),
+                      ],
+                    ),
+
+                    // ligts
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
+                                .lightbulb_outline),
+                            onPressed: () {
+                              setState(() {
+                                _lightOn1 = !_lightOn1;
+                              });
+                            }
+                        ),
+                        SizedBox(width: 140),
+                        IconButton(
+                            icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
+                                .lightbulb_outline),
+                            onPressed: () {
+                              setState(() {
+                                _lightOn2 = !_lightOn2;
+                              });
+                            }
+                        ),
+                      ],
+                    ),
+
+                    // Rear warning
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _getRearIcon(),
+                      ],
+                    ),
+
+                    // Blink icon for tailight, camera and distance
+                    //CAM+Tailight+Distance button
+                    SizedBox(width: 1),
+                    // Column(
+                    //   children: [
+                    //     Row(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         Column(
+                    //           children: [
+                    //             Icon(Icons.square),
+                    //             Text('Camera'),
+                    //           ],
+                    //         ),
+                    //         SizedBox(width: 10),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 3) ? '30M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //         SizedBox(width: 5),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 6) ? '60M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //         SizedBox(width: 5),
+                    //         Column(
+                    //           children: [
+                    //             AnimatedContainer(
+                    //               duration: Duration(seconds: 1),
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.rectangle,
+                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
+                    //               ),
+                    //               child: Icon(
+                    //                 Icons.square,
+                    //                 size: 40,
+                    //                 color: Colors.black,
+                    //               ),
+                    //             ),
+                    //             AnimatedSwitcher(
+                    //               duration: Duration(seconds: 1),
+                    //               child: Text(
+                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 9) ? '90M' : '',
+                    //                 style: TextStyle(
+                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //
+                    //       ],
+                    //     ),
+                    //     // Text(_value[15]),
+                    //     // Text(_value[16]),
+                    //     SizedBox(height: 1),
+                    //     Row(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         IconButton(
+                    //           icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               _cameraOn = !_cameraOn;
+                    //               _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                    //             });
+                    //             // open camera if _cameraOn is true
+                    //           },
+                    //         ),
+                    //         SizedBox(width: 20),
+                    //         IconButton(
+                    //           icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
+                    //           onPressed: () {
+                    //             // _startBothBlinking();
+                    //             _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                    //           },
+                    //         ),
+                    //         SizedBox(width: 20),
+                    //         IconButton(
+                    //           icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               // _lightOn1 = !_lightOn1;
+                    //               _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                    //             });
+                    //           },
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // ),
+
+                    // Test distance
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                Icon(Icons.square),
+                                Text('Camera'),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon1 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '30M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon1 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon2 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '60M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon2 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                Icon(
+                                  Icons.square,
+                                  size: 40,
+                                  color: _isBlinkingIcon3 ? Colors.red : Colors
+                                      .black,
+                                ),
+                                Text(
+                                  '90M',
+                                  style: TextStyle(
+                                    color: _isBlinkingIcon3 ? Colors.red : Colors
+                                        .black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 1),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: Icon(_cameraOn ? Icons.camera_alt : Icons
+                                  .camera_alt_outlined),
+                              onPressed: () {
+                                setState(() {
+                                  _cameraOn = !_cameraOn;
+                                  _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                                });
+                                // open camera if _cameraOn is true
+                              },
+                            ),
+                            SizedBox(width: 20),
+                            IconButton(
+                              icon: Icon(Icons.social_distance_rounded),
+                              onPressed: () {
+                                _handleButtonPress();
+                                _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                              },
+                            ),
+                            SizedBox(width: 20),
+                            IconButton(
+                              icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
+                                  .lightbulb_outline),
+                              onPressed: () {
+                                setState(() {
+                                  // _lightOn1 = !_lightOn1;
+                                  _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    // Stop ride
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SizedBox(width: 50),
+                        GlowingButton2(
+                          text: "Stop Ride",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) =>
+                                  BleScreen(title: '',)),
+                            );
+                          },
+                          color1: Color(0xFF517fa4),
+                          color2: Colors.cyan,
+                        ),
+                      ],
+                    ),
+                    // Image with power button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(width: 120),
+                        Image.asset(
+                          'images/llama_img_web2.jpg',
+                          height: 100,
+                          width: 130,
+                        ),
+                        SizedBox(width: 16),
+                        FloatingActionButton(
+                          onPressed: () {
+                            setState(() {
+                              _powerOn = !_powerOn;
+                            });
+                          },
+                          backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                          child: Icon(Icons.power_settings_new),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+>>>>>>> test
     );
   }
 }
