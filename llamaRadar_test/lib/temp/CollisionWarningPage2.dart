@@ -366,7 +366,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
-      if (right_danger_counter >= 8) {
+      if (right_danger_counter >= 6) {
         showStreamPopup();
         right_danger_counter = 0;
       }
@@ -557,11 +557,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 ElevatedButton(
                   onPressed: () {
                     // Navigator.of(context).pop();
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => CollisionWarningPage2(device: widget.device)),
-                      );
+                    // initializePlayer();
+                    // Navigator.pop(context);
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //       builder: (context) => CollisionWarningPage2(device: widget.device)),
+                    //   );
                   },
                   child: Text('Close'),
                 ),
@@ -569,12 +570,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             ),
           );
         },
-      ).then((_) {
-        // Close the pop-up window after 4 seconds
-        Future.delayed(Duration(seconds: 5)).then((_) {
-          Navigator.of(context).pop();
-        });
-      });
+      );
+      // ).then((_) {
+      //   // Close the pop-up window after 4 seconds
+      //   Future.delayed(Duration(seconds: 5)).then((_) {
+      //     Navigator.of(context).pop();
+      //   });
+      // });
+    });
+    Future.delayed(Duration(seconds: 5)).then((_) {
+      Navigator.of(context).pop();
+      initializePlayer();
     });
   }
 
