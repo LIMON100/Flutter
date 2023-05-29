@@ -60,9 +60,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   VlcPlayerController? _controller;
 
   // Wifi connection
-  final String ssid = "CARDV-8c8b"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
-  final String password = "12345678";
-  final String ssidPrefix = "CARDV";
+  final String ssid = "Mah"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
+  final String password = "@@@@####";
+  final String ssidPrefix = "Mah";
   List<String> availableNetworks = [];
 
 
@@ -81,8 +81,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   void initState() {
     super.initState();
     // _initializePlayers();
-    // _connect();
-    _scanNetworks();
+    _connect();
+    // _scanNetworks();
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
@@ -90,47 +90,19 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // wifi connection
-  // Future<bool> _checkPermissions() async {
-  //   if (Platform.isIOS || await Permission.location.request().isGranted) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
-  //
-  // void _connect() async {
-  //   if (await _checkPermissions()) {
-  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
-  //   }
-  //
-  //   else {
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: Text('Permission Error'),
-  //           content: Text('Please turn on Wi-Fi first.'),
-  //           actions: [
-  //             ElevatedButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: Text('OK'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
-  // }
   Future<bool> _checkPermissions() async {
-    // Add your permission check logic here
-    return true;
+    if (Platform.isIOS || await Permission.location.request().isGranted) {
+      return true;
+    }
+    return false;
   }
 
-  void _connect(String ssid, String password) async {
+  void _connect() async {
     if (await _checkPermissions()) {
-      FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("Connect initiated: $value"));
-    } else {
+      FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
+    }
+
+    else {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -150,23 +122,51 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       );
     }
   }
+  // Future<bool> _checkPermissions() async {
+  //   // Add your permission check logic here
+  //   return true;
+  // }
+  //
+  // void _connect(String ssid, String password) async {
+  //   if (await _checkPermissions()) {
+  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("Connect initiated: $value"));
+  //   } else {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text('Permission Error'),
+  //           content: Text('Please turn on Wi-Fi first.'),
+  //           actions: [
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: Text('OK'),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+  //
+  // void _scanNetworks() async {
+  //   availableNetworks.clear();
+  //   await FlutterIotWifi.scan();
+  //
+  //   List<String> networks = await FlutterIotWifi.list();
+  //   for (String network in networks) {
+  //     if (network.startsWith(ssidPrefix)) {
+  //       availableNetworks.add(network);
+  //     }
+  //   }
+  //
+  //   setState(() {});
+  // }
 
-  void _scanNetworks() async {
-    availableNetworks.clear();
-    await FlutterIotWifi.scan();
 
-    List<String> networks = await FlutterIotWifi.list();
-    for (String network in networks) {
-      if (network.startsWith(ssidPrefix)) {
-        availableNetworks.add(network);
-      }
-    }
-
-    setState(() {});
-  }
-
-
-
+  // BLE notification
   Future<void> _connectToDevice() async {
     List<BluetoothService> services = await widget.device.discoverServices();
     for (BluetoothService service in services) {
@@ -740,6 +740,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
                       ],
                     ),
+
+                    // Available Wifi list
+                    // ListView.builder(
+                    //   itemCount: availableNetworks.length,
+                    //   itemBuilder: (context, index) {
+                    //     String network = availableNetworks[index];
+                    //     return ListTile(
+                    //       title: Text(network),
+                    //       subtitle: Text(network),
+                    //       onTap: () {
+                    //         // Call the connect method with the selected network's SSID and password
+                    //         _connect(network, "your_password_here");
+                    //       },
+                    //     );
+                    //   },
+                    // ),
 
                     // Rear warning
                     Row(
