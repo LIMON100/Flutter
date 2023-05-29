@@ -6,6 +6,13 @@ import 'package:lamaradar/temp/glowing_button.dart';
 import 'package:lamaradar/temp/BLEDevicePage.dart';
 import 'package:lamaradar/temp/CollisionWarningPage2.dart';
 
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 class GoToRide extends StatefulWidget {
   final BluetoothDevice device;
 
@@ -20,24 +27,8 @@ class _GoToRideState extends State<GoToRide> {
   BluetoothDevice? _connectedDevice;
   bool _isDisconnected = false;
 
-  // Future<void> _disconnectFromDevice() async {
-  //   // if (!_isConnected || widget.device == null) {
-  //   //   print('Not connected to a device');
-  //   //   return;
-  //   // }
-  //
-  //   await widget.device.disconnect();
-  //   print('Disconnected from ${widget.device.name}');
-  //
-  //   setState(() {
-  //     _isDisconnected = false;
-  //     // widget.device = null;
-  //   });
-  // }
-
+  // BLE disconnect
   void _disconnectFromDevice() {
-    // Check if the device is connected or perform any necessary checks
-    // ...
 
     setState(() {
       _isDisconnected = true;
@@ -100,7 +91,7 @@ class _GoToRideState extends State<GoToRide> {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: GlowingButton2(
-                  text: "Go to ride",
+                  text: "Turn on wifi & Go to ride",
                   onPressed: () {
                     Navigator.push(
                       context,
