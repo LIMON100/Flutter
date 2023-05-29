@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
+import 'package:wifi_iot/wifi_iot.dart';
 import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
@@ -17,6 +20,8 @@ import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -54,34 +59,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // late Timer _timer;
   VlcPlayerController? _controller;
 
+  // Wifi connection
+  final String ssid = "CARDV-8c8b"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
+  final String password = "12345678";
+  final String ssidPrefix = "CARDV";
+  List<String> availableNetworks = [];
 
-  void _toggleRedLight() {
-    setState(() {
-      _redLightOn = !_redLightOn;
-      if (_redLightOn) {
-        // turn red light on and play red audio
-        // redPlayer2.setAsset('assets/warning_beep.mp3');
-        // redPlayer2.play();
-      } else {
-        // turn red light off
-        // redPlayer2.stop();
-      }
-    });
-  }
-
-  void _toggleGreenLight() {
-    setState(() {
-      _greenLightOn = !_greenLightOn;
-      if (_greenLightOn) {
-        // turn green light on and play green audio
-        // greenPlayer.setAsset('assets/danger_beep.mp3');
-        // greenPlayer.play();
-      } else {
-        // turn green light off
-        // greenPlayer.stop();
-      }
-    });
-  }
 
 
   //notificaiton variable
@@ -91,17 +74,98 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Stream<List<int>>? _stream;
   String _value = '';
   bool isDataMatched = false;
+  bool _isDisconnected = false;
 
 
   @override
   void initState() {
     super.initState();
     // _initializePlayers();
+    // _connect();
+    _scanNetworks();
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
     initializePlayer();
   }
+
+  // wifi connection
+  // Future<bool> _checkPermissions() async {
+  //   if (Platform.isIOS || await Permission.location.request().isGranted) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
+  //
+  // void _connect() async {
+  //   if (await _checkPermissions()) {
+  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
+  //   }
+  //
+  //   else {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text('Permission Error'),
+  //           content: Text('Please turn on Wi-Fi first.'),
+  //           actions: [
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: Text('OK'),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+  Future<bool> _checkPermissions() async {
+    // Add your permission check logic here
+    return true;
+  }
+
+  void _connect(String ssid, String password) async {
+    if (await _checkPermissions()) {
+      FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("Connect initiated: $value"));
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Permission Error'),
+            content: Text('Please turn on Wi-Fi first.'),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _scanNetworks() async {
+    availableNetworks.clear();
+    await FlutterIotWifi.scan();
+
+    List<String> networks = await FlutterIotWifi.list();
+    for (String network in networks) {
+      if (network.startsWith(ssidPrefix)) {
+        availableNetworks.add(network);
+      }
+    }
+
+    setState(() {});
+  }
+
+
 
   Future<void> _connectToDevice() async {
     List<BluetoothService> services = await widget.device.discoverServices();
@@ -143,6 +207,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
+  // Disconnect BLE
+  void _disconnectFromDevice() {
+
+    setState(() {
+      _isDisconnected = true;
+    });
+
+    // Perform the disconnection logic asynchronously
+    _performDisconnection();
+  }
+
+  Future<void> _performDisconnection() async {
+    await widget.device.disconnect();
+    print('Disconnected from ${widget.device.name}');
+  }
+
   // Send data part
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
@@ -153,16 +233,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  //BYTE ARRAY
-
-  // Future<void> _sendData(List<int> dataToSend) async {
-  //   if (_characteristic_write != null) {
-  //     Uint8List byteData = Uint8List.fromList(dataToSend);
-  //     await _characteristic_write!.write(byteData);
-  //     // Wait for the response from the BLE device
-  //     final response = await _characteristic_write!.value.first;
-  //   }
-  // }
 
   final _random = Random();
   int _generateRandomNumber(int min, int max) {
@@ -220,10 +290,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  void _startBothBlinking() {
-    _startLeftBlinking();
-    _startRightBlinking();
-  }
+  // void _startBothBlinking() {
+  //   _startLeftBlinking();
+  //   _startRightBlinking();
+  // }
 
   //Blink with value
   bool _isBlinking = false;
@@ -366,7 +436,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
-      if (right_danger_counter >= 6) {
+      if (right_danger_counter >= 8) {
         showStreamPopup();
         right_danger_counter = 0;
       }
@@ -494,41 +564,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     await _controller!.initialize();
   }
 
-  // void showStreamPopup() async {
-  //   if (_controller == null) {
-  //     return;
-  //   }
-  //
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return Dialog(
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             Text('RTSP Stream'),
-  //             SizedBox(height: 16),
-  //             Container(
-  //               width: MediaQuery.of(context).size.width,
-  //               height: MediaQuery.of(context).size.width * 9 / 16,
-  //               child: VlcPlayer(
-  //                 controller: _controller!,
-  //                 aspectRatio: 16 / 9,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  //
-  //   // Close the pop-up window after 4 seconds
-  //   await Future.delayed(Duration(seconds: 4));
-  //   Navigator.of(context).pop();
-  //
-  //   // Terminate the current VlcPlayerController
-  //   await initializePlayer();
-  // }
 
   void showStreamPopup() {
     if (_controller == null) {
@@ -571,12 +606,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           );
         },
       );
-      // ).then((_) {
-      //   // Close the pop-up window after 4 seconds
-      //   Future.delayed(Duration(seconds: 5)).then((_) {
-      //     Navigator.of(context).pop();
-      //   });
-      // });
     });
     Future.delayed(Duration(seconds: 5)).then((_) {
       Navigator.of(context).pop();
@@ -723,138 +752,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
                     SizedBox(width: 1),
-                    // Column(
-                    //   children: [
-                    //     Row(
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         Column(
-                    //           children: [
-                    //             Icon(Icons.square),
-                    //             Text('Camera'),
-                    //           ],
-                    //         ),
-                    //         SizedBox(width: 10),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 3) ? '30M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //         SizedBox(width: 5),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 6) ? '60M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //         SizedBox(width: 5),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 9) ? '90M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //       ],
-                    //     ),
-                    //     // Text(_value[15]),
-                    //     // Text(_value[16]),
-                    //     SizedBox(height: 1),
-                    //     Row(
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         IconButton(
-                    //           icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-                    //           onPressed: () {
-                    //             setState(() {
-                    //               _cameraOn = !_cameraOn;
-                    //               _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                    //             });
-                    //             // open camera if _cameraOn is true
-                    //           },
-                    //         ),
-                    //         SizedBox(width: 20),
-                    //         IconButton(
-                    //           icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
-                    //           onPressed: () {
-                    //             // _startBothBlinking();
-                    //             _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                    //           },
-                    //         ),
-                    //         SizedBox(width: 20),
-                    //         IconButton(
-                    //           icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    //           onPressed: () {
-                    //             setState(() {
-                    //               // _lightOn1 = !_lightOn1;
-                    //               _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                    //             });
-                    //           },
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ],
-                    // ),
 
                     // Test distance
                     Column(
@@ -971,6 +868,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         GlowingButton2(
                           text: "Stop Ride",
                           onPressed: () {
+                            _disconnectFromDevice();
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) =>
