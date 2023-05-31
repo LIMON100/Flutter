@@ -62,7 +62,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Wifi connection
   final String ssid = "Mah"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
   final String password = "@@@@####";
-  final String ssidPrefix = "Mah";
   List<String> availableNetworks = [];
 
 
@@ -75,14 +74,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   String _value = '';
   bool isDataMatched = false;
   bool _isDisconnected = false;
+  bool isConnected = false;
+  List<dynamic> wifiNetworks = [];
 
 
   @override
   void initState() {
     super.initState();
-    // _initializePlayers();
-    _connect();
-    // _scanNetworks();
+    // _connect();
+    _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
@@ -97,12 +97,76 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return false;
   }
 
-  void _connect() async {
+  void _scanWifiNetworks(BuildContext context) async {
+    // if (isConnected) {
+    //   FlutterIotWifi.disconnect().then((value) {
+    //     setState(() {
+    //       isConnected = false;
+    //     });
+    //     print("Disconnect initiated: $value");
+    //   });
+    // }
     if (await _checkPermissions()) {
-      FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
+      try {
+        bool? isSuccess = await FlutterIotWifi.scan();
+        if (isSuccess!) {
+          List<dynamic> networks = await FlutterIotWifi.list();
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                child: Container(
+                  width: 300, // Adjust the width as needed
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: networks.length,
+                    itemBuilder: (context, index) {
+                      final wifiNetwork = networks[index];
+                      return ListTile(
+                        title: Text(wifiNetwork.toString()),
+                        onTap: () {
+                          _connect(context, wifiNetwork.toString());
+                          Navigator.of(context).pop(); // Close the dialog after selection
+                        },
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          print('Failed to scan Wi-Fi networks');
+        }
+      } catch (e) {
+        print('Failed to scan Wi-Fi networks: $e');
+      }
     }
+  }
 
-    else {
+  // Try with dialog window
+  void _connect(BuildContext context, String ssid) async {
+    if (await _checkPermissions()) {
+      if (isConnected) {
+        FlutterIotWifi.disconnect().then((value) {
+          setState(() {
+            isConnected = false;
+          });
+          print("Disconnect initiated: $value");
+        });
+      } else {
+        FlutterIotWifi.connect(ssid, password).then((value) {
+          setState(() {
+            isConnected = true;
+          });
+          print("Connect initiated: $value");
+        });
+      }
+      // Delay the pop to ensure the connection process is completed
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.of(context).pop(); // Close the dialog window
+      });
+    } else {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -122,15 +186,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       );
     }
   }
-  // Future<bool> _checkPermissions() async {
-  //   // Add your permission check logic here
-  //   return true;
-  // }
-  //
-  // void _connect(String ssid, String password) async {
+
+  // void _connect() async {
   //   if (await _checkPermissions()) {
-  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("Connect initiated: $value"));
-  //   } else {
+  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
+  //   }
+  //   else {
   //     showDialog(
   //       context: context,
   //       builder: (BuildContext context) {
@@ -150,21 +211,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //     );
   //   }
   // }
-  //
-  // void _scanNetworks() async {
-  //   availableNetworks.clear();
-  //   await FlutterIotWifi.scan();
-  //
-  //   List<String> networks = await FlutterIotWifi.list();
-  //   for (String network in networks) {
-  //     if (network.startsWith(ssidPrefix)) {
-  //       availableNetworks.add(network);
-  //     }
-  //   }
-  //
-  //   setState(() {});
-  // }
-
 
   // BLE notification
   Future<void> _connectToDevice() async {
