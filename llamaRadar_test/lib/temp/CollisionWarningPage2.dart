@@ -61,7 +61,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Wifi connection
   final String ssid = "Mah"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
-  final String password = "@@@@####";
+  final String password = "12345678";
   List<String> availableNetworks = [];
 
 
@@ -97,50 +97,111 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return false;
   }
 
+  // void _scanWifiNetworks(BuildContext context) async {
+  //   // if (isConnected) {
+  //   //   FlutterIotWifi.disconnect().then((value) {
+  //   //     setState(() {
+  //   //       isConnected = false;
+  //   //     });
+  //   //     print("Disconnect initiated: $value");
+  //   //   });
+  //   // }
+  //   if (await _checkPermissions()) {
+  //     try {
+  //       bool? isSuccess = await FlutterIotWifi.scan();
+  //       if (isSuccess!) {
+  //         // Wait for the scan process to complete
+  //         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+  //
+  //         List<dynamic> networks = await FlutterIotWifi.list();
+  //         showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return Dialog(
+  //               child: Container(
+  //                 width: 300, // Adjust the width as needed
+  //                 child: ListView.builder(
+  //                   shrinkWrap: true,
+  //                   itemCount: networks.length,
+  //                   itemBuilder: (context, index) {
+  //                     final wifiNetwork = networks[index];
+  //                     return ListTile(
+  //                       title: Text(wifiNetwork.toString()),
+  //                       onTap: () {
+  //                         _connect(context, wifiNetwork.toString());
+  //                         Navigator.of(context).pop(); // Close the dialog after selection
+  //                       },
+  //                     );
+  //                   },
+  //                 ),
+  //               ),
+  //             );
+  //           },
+  //         );
+  //       } else {
+  //         print('Failed to scan Wi-Fi networks');
+  //       }
+  //     } catch (e) {
+  //       print('Failed to scan Wi-Fi networks: $e');
+  //     }
+  //   }
+  // }
   void _scanWifiNetworks(BuildContext context) async {
-    // if (isConnected) {
-    //   FlutterIotWifi.disconnect().then((value) {
-    //     setState(() {
-    //       isConnected = false;
-    //     });
-    //     print("Disconnect initiated: $value");
-    //   });
-    // }
-    if (await _checkPermissions()) {
-      try {
-        bool? isSuccess = await FlutterIotWifi.scan();
-        if (isSuccess!) {
-          List<dynamic> networks = await FlutterIotWifi.list();
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                child: Container(
-                  width: 300, // Adjust the width as needed
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: networks.length,
-                    itemBuilder: (context, index) {
-                      final wifiNetwork = networks[index];
-                      return ListTile(
-                        title: Text(wifiNetwork.toString()),
-                        onTap: () {
-                          _connect(context, wifiNetwork.toString());
-                          Navigator.of(context).pop(); // Close the dialog after selection
-                        },
-                      );
-                    },
-                  ),
+    if (isConnected) {
+      FlutterIotWifi.disconnect().then((value) {
+        setState(() {
+          isConnected = false;
+        });
+        print("Disconnect initiated: $value");
+
+        // Start the Wi-Fi scan after disconnecting
+        _startWifiScan(context);
+      });
+    } else if (await _checkPermissions()) {
+      // Start the Wi-Fi scan directly
+      _startWifiScan(context);
+    }
+  }
+
+  void _startWifiScan(BuildContext context) async {
+    try {
+      bool? isSuccess = await FlutterIotWifi.scan();
+      if (isSuccess!) {
+        // Wait for the scan process to complete
+        await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+
+        List<dynamic> networks = await FlutterIotWifi.list();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return Dialog(
+              child: Container(
+                width: 300, // Adjust the width as needed
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: networks.length,
+                  itemBuilder: (context, index) {
+                    final wifiNetwork = networks[index];
+                    return ListTile(
+                      title: Text(wifiNetwork.toString()),
+                      onTap: () {
+                        _connect(context, wifiNetwork.toString());
+                        Navigator.of(context).pop(); // Close the dialog after selection
+                      },
+                    );
+                  },
                 ),
-              );
-            },
-          );
-        } else {
-          print('Failed to scan Wi-Fi networks');
-        }
-      } catch (e) {
-        print('Failed to scan Wi-Fi networks: $e');
+              ),
+            );
+          },
+        );
+      } else {
+        print('Failed to scan Wi-Fi networks');
+        await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+        _startWifiScan(context);
       }
+    } catch (e) {
+      print('Failed to scan Wi-Fi networks: $e');
     }
   }
 
@@ -595,10 +656,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
-    if (_controller != null) {
-      await _controller!.dispose();
-      _controller = null;
-    }
+    // if (_controller != null) {
+    //   await _controller!.dispose();
+    //   _controller = null;
+    // }
 
     _controller = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mov',
