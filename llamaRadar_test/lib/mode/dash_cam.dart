@@ -1210,8 +1210,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   //WIFI
   // final String ssid = 'CAMERA';
-  final String ssid = 'CARDV'; //CARDV-8c8b Mahmudur @ SF Networking
-  final  password = '12345678';
+  final String ssid = 'Mahudur'; //CARDV-8c8b Mahmudur @ SF Networking
+  final  password = '@@@@####';
 
   //IP Address
   final String ipAddress = '192.168.1.254';
@@ -1219,6 +1219,8 @@ class _HomeState extends State<Home> {
   //files
   final String url = 'http://192.168.1.254';
   bool isConnected = false;
+  bool isCameraStreaming = true;
+  List<dynamic> wifiNetworks = [];
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -1228,7 +1230,93 @@ class _HomeState extends State<Home> {
     return false;
   }
 
-  void _connect(BuildContext context) async {
+  // void _connect(BuildContext context) async {
+  //   if (await _checkPermissions()) {
+  //     if (isConnected) {
+  //       FlutterIotWifi.disconnect().then((value) {
+  //         setState(() {
+  //           isConnected = false;
+  //         });
+  //         print("Disconnect initiated: $value");
+  //       });
+  //     } else {
+  //       FlutterIotWifi.connect(ssid, password, prefix: true).then((value) {
+  //         setState(() {
+  //           isConnected = true;
+  //         });
+  //         print("Connect initiated: $value");
+  //       });
+  //     }
+  //   } else {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text('Permission Error'),
+  //           content: Text('Please turn on Wi-Fi first.'),
+  //           actions: [
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: Text('OK'),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+  // Test connect part
+  void _scanWifiNetworks(BuildContext context) async {
+    if (isConnected) {
+      FlutterIotWifi.disconnect().then((value) {
+        setState(() {
+          isConnected = false;
+        });
+        print("Disconnect initiated: $value");
+      });
+    }
+    else if (await _checkPermissions()) {
+      try {
+        bool? isSuccess = await FlutterIotWifi.scan();
+        if (isSuccess!) {
+          List<dynamic> networks = await FlutterIotWifi.list();
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                child: Container(
+                  width: 300, // Adjust the width as needed
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: networks.length,
+                    itemBuilder: (context, index) {
+                      final wifiNetwork = networks[index];
+                      return ListTile(
+                        title: Text(wifiNetwork.toString()),
+                        onTap: () {
+                          _connect(context, wifiNetwork.toString());
+                          Navigator.of(context).pop(); // Close the dialog after selection
+                        },
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          print('Failed to scan Wi-Fi networks');
+        }
+      } catch (e) {
+        print('Failed to scan Wi-Fi networks: $e');
+      }
+    }
+  }
+
+  // Try with dialog window
+  void _connect(BuildContext context, String ssid) async {
     if (await _checkPermissions()) {
       if (isConnected) {
         FlutterIotWifi.disconnect().then((value) {
@@ -1238,13 +1326,17 @@ class _HomeState extends State<Home> {
           print("Disconnect initiated: $value");
         });
       } else {
-        FlutterIotWifi.connect(ssid, password, prefix: true).then((value) {
+        FlutterIotWifi.connect(ssid, password).then((value) {
           setState(() {
             isConnected = true;
           });
           print("Connect initiated: $value");
         });
       }
+      // Delay the pop to ensure the connection process is completed
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.of(context).pop(); // Close the dialog window
+      });
     } else {
       showDialog(
         context: context,
@@ -1368,6 +1460,23 @@ class _HomeState extends State<Home> {
   final _ssidnamecontroller = TextEditingController();
   final _ssidpasscontroller = TextEditingController();
 
+  // VLC PLAYER
+  VlcPlayerController? _controller;
+
+  Future<void> initializePlayer() async {
+    if (_controller != null) {
+      await _controller!.dispose();
+    }
+
+    _controller = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mov',
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+
+    await _controller!.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1378,17 +1487,46 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _isCameraReady
-                  ? AspectRatio(
-                aspectRatio: _cameraController.value.aspectRatio,
-                child: CameraPreview(_cameraController),
-              )
-                  : VlcPlayer(
-                controller: _videoPlayerController,
-                aspectRatio: 16 / 9,
-                placeholder: Center(child: CircularProgressIndicator()),
+              // _isCameraReady
+              //     ? AspectRatio(
+              //   aspectRatio: _cameraController.value.aspectRatio,
+              //   child: CameraPreview(_cameraController),
+              // )
+              //     : VlcPlayer(
+              //   controller: _videoPlayerController,
+              //   aspectRatio: 16 / 9,
+              //   placeholder: Center(child: CircularProgressIndicator()),
+              // ),
+              // Container(
+              //   height: 350,
+              //   width: 400,
+              //   child: isCameraStreaming
+              //       ? VlcPlayer(
+              //     controller: _videoPlayerController,
+              //     aspectRatio: 16 / 9,
+              //     placeholder: Center(child: CircularProgressIndicator()),
+              //   )
+              //       : Image.asset(
+              //     'images/test_background2.jpg',
+              //     fit: BoxFit.fitWidth, // Adjust the fit property based on your requirements
+              //   ),
+              // ),
+              Container(
+                height: 350,
+                width: 400,
+                child: isCameraStreaming && _controller != null
+                    ? VlcPlayer(
+                  controller: _controller!,
+                  aspectRatio: 16 / 9,
+                  placeholder: Center(child: CircularProgressIndicator()),
+                )
+                    : Image.asset(
+                  'images/test_background2.jpg',
+                  fit: BoxFit.fitWidth,
+                ),
               ),
-              SizedBox(height: 15),
+
+              SizedBox(height: 83),
               // ElevatedButton(
               //   onPressed: () {
               //     _videoPlayerController.play();
@@ -1404,21 +1542,27 @@ class _HomeState extends State<Home> {
               //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
               //   ),
               // ),
-              GlowingButton2(
-                text: "Open Camera",
-                onPressed: () {
-                  _videoPlayerController.play();
-                  playVlc();
-                  VlcPlayer(
-                    controller: _videoPlayerController,
-                    aspectRatio: 16 / 9,
-                    placeholder: Center(child: CircularProgressIndicator()),
-                  );
-                },
-                color1: Color(0xFF517fa4),
-                color2: Colors.deepPurpleAccent,
-              ),
-              SizedBox(height: 10),
+
+            GlowingButton2(
+              text: "Open Camera",
+              onPressed: () {
+                initializePlayer();
+                _controller!.play();
+                playVlc();
+                VlcPlayer(
+                  controller: _controller!,
+                  aspectRatio: 16 / 9,
+                  placeholder: Center(child: CircularProgressIndicator()),
+                );
+                setState(() {
+                  isCameraStreaming = true;
+                });
+              },
+              color1: Color(0xFF517fa4),
+              color2: Colors.deepPurpleAccent,
+            ),
+
+            SizedBox(height: 5),
               // ElevatedButton(
               //   onPressed: () {
               //     _videoPlayerController.stop();
@@ -1430,19 +1574,55 @@ class _HomeState extends State<Home> {
               //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
               //   ),
               // ),
-              GlowingButton2(
-                text: "Stop Camera",
-                onPressed: () {
-                  _videoPlayerController.stop();
-                  Image.asset('images/new_lama.jpg');
-                },
-                color1: Color(0xFF517fa4),
-                color2: Colors.deepPurple,
-              ),
-              SizedBox(height: 100),
+              // GlowingButton2(
+              //   text: "Stop Camera",
+              //   onPressed: () {
+              //     _videoPlayerController.stop();
+              //     // _videoPlayerController.dispose();
+              //     initializePlayer();
+              //     setState(() {
+              //       isCameraStreaming = false;
+              //     });
+              //   },
+              //   color1: Color(0xFF517fa4),
+              //   color2: Colors.deepPurple,
+              // ),
+            // GlowingButton2(
+            //   text: "Stop Camera",
+            //   onPressed: () async {
+            //     if (isCameraStreaming) {
+            //       await _controller!.stop();
+            //       initializePlayer();
+            //       _controller = null;
+            //       setState(() {
+            //         isCameraStreaming = false;
+            //       });
+            //     }
+            //   },
+            //   color1: Color(0xFF517fa4),
+            //   color2: Colors.deepPurple,
+            // ),
+
+            GlowingButton2(
+              text: "Stop Camera",
+              onPressed: () async {
+                if (_controller != null) {
+                  await _controller!.stop();
+                  await _controller!.dispose();
+                }
+                _controller = null;
+                setState(() {
+                  isCameraStreaming = false;
+                });
+              },
+              color1: Color(0xFF517fa4),
+              color2: Colors.deepPurple,
+            ),
+              SizedBox(height: 60),
               InkWell(
                 onTap: () {
-                  _connect(context);
+                  // _connect(context);
+                  _scanWifiNetworks(context);
                 },
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
