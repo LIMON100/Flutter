@@ -2,36 +2,31 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-=======
 import 'package:lamaradar/mode/bleScreen.dart';
+import 'package:wifi_iot/wifi_iot.dart';
 import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
->>>>>>> test
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
 import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
-<<<<<<< HEAD
-=======
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
->>>>>>> test
+import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
 
   const CollisionWarningPage2({Key? key, required this.device}) : super(key: key);
-<<<<<<< HEAD
-  // const CollisionWarningPage({Key? key}) : super(key: key);
-=======
->>>>>>> test
 
   @override
   _CollisionWarningPage2State createState() => _CollisionWarningPage2State();
@@ -47,6 +42,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _cameraOn = false;
   bool _lightOn1 = false;
   bool _lightOn2 = false;
+  bool _tailight = false;
   bool _emergencyOn = false;
   bool _powerOn = false;
 
@@ -60,41 +56,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _redLightOn = false;
   bool _greenLightOn = false;
 
-<<<<<<< HEAD
-=======
   // for popup dashcam windows
   // late Timer _timer;
   VlcPlayerController? _controller;
 
+  // Wifi connection
+  final String ssid = "Mah"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
+  final String password = "12345678";
+  List<String> availableNetworks = [];
 
->>>>>>> test
-  void _toggleRedLight() {
-    setState(() {
-      _redLightOn = !_redLightOn;
-      if (_redLightOn) {
-        // turn red light on and play red audio
-        // redPlayer2.setAsset('assets/warning_beep.mp3');
-        // redPlayer2.play();
-      } else {
-        // turn red light off
-        // redPlayer2.stop();
-      }
-    });
-  }
-
-  void _toggleGreenLight() {
-    setState(() {
-      _greenLightOn = !_greenLightOn;
-      if (_greenLightOn) {
-        // turn green light on and play green audio
-        // greenPlayer.setAsset('assets/danger_beep.mp3');
-        // greenPlayer.play();
-      } else {
-        // turn green light off
-        // greenPlayer.stop();
-      }
-    });
-  }
 
 
   //notificaiton variable
@@ -104,21 +74,182 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Stream<List<int>>? _stream;
   String _value = '';
   bool isDataMatched = false;
+  bool _isDisconnected = false;
+  bool isConnected = false;
+  List<dynamic> wifiNetworks = [];
 
 
   @override
   void initState() {
     super.initState();
-    // _initializePlayers();
+    // _connect();
+    _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
-<<<<<<< HEAD
-=======
     initializePlayer();
->>>>>>> test
   }
 
+  // wifi connection
+  Future<bool> _checkPermissions() async {
+    if (Platform.isIOS || await Permission.location.request().isGranted) {
+      return true;
+    }
+    return false;
+  }
+
+  // void _scanWifiNetworks(BuildContext context) async {
+  //   // if (isConnected) {
+  //   //   FlutterIotWifi.disconnect().then((value) {
+  //   //     setState(() {
+  //   //       isConnected = false;
+  //   //     });
+  //   //     print("Disconnect initiated: $value");
+  //   //   });
+  //   // }
+  //   if (await _checkPermissions()) {
+  //     try {
+  //       bool? isSuccess = await FlutterIotWifi.scan();
+  //       if (isSuccess!) {
+  //         // Wait for the scan process to complete
+  //         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+  //
+  //         List<dynamic> networks = await FlutterIotWifi.list();
+  //         showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return Dialog(
+  //               child: Container(
+  //                 width: 300, // Adjust the width as needed
+  //                 child: ListView.builder(
+  //                   shrinkWrap: true,
+  //                   itemCount: networks.length,
+  //                   itemBuilder: (context, index) {
+  //                     final wifiNetwork = networks[index];
+  //                     return ListTile(
+  //                       title: Text(wifiNetwork.toString()),
+  //                       onTap: () {
+  //                         _connect(context, wifiNetwork.toString());
+  //                         Navigator.of(context).pop(); // Close the dialog after selection
+  //                       },
+  //                     );
+  //                   },
+  //                 ),
+  //               ),
+  //             );
+  //           },
+  //         );
+  //       } else {
+  //         print('Failed to scan Wi-Fi networks');
+  //       }
+  //     } catch (e) {
+  //       print('Failed to scan Wi-Fi networks: $e');
+  //     }
+  //   }
+  // }
+  void _scanWifiNetworks(BuildContext context) async {
+    if (isConnected) {
+      FlutterIotWifi.disconnect().then((value) {
+        setState(() {
+          isConnected = false;
+        });
+        print("Disconnect initiated: $value");
+
+        // Start the Wi-Fi scan after disconnecting
+        _startWifiScan(context);
+      });
+    } else if (await _checkPermissions()) {
+      // Start the Wi-Fi scan directly
+      _startWifiScan(context);
+    }
+  }
+
+  void _startWifiScan(BuildContext context) async {
+    try {
+      bool? isSuccess = await FlutterIotWifi.scan();
+      if (isSuccess!) {
+        // Wait for the scan process to complete
+        await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+
+        List<dynamic> networks = await FlutterIotWifi.list();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return Dialog(
+              child: Container(
+                width: 300, // Adjust the width as needed
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: networks.length,
+                  itemBuilder: (context, index) {
+                    final wifiNetwork = networks[index];
+                    return ListTile(
+                      title: Text(wifiNetwork.toString()),
+                      onTap: () {
+                        _connect(context, wifiNetwork.toString());
+                        Navigator.of(context).pop(); // Close the dialog after selection
+                      },
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        print('Failed to scan Wi-Fi networks');
+        await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+        _startWifiScan(context);
+      }
+    } catch (e) {
+      print('Failed to scan Wi-Fi networks: $e');
+    }
+  }
+
+  // Try with dialog window
+  void _connect(BuildContext context, String ssid) async {
+    if (await _checkPermissions()) {
+      if (isConnected) {
+        FlutterIotWifi.disconnect().then((value) {
+          setState(() {
+            isConnected = false;
+          });
+          print("Disconnect initiated: $value");
+        });
+      } else {
+        FlutterIotWifi.connect(ssid, password).then((value) {
+          setState(() {
+            isConnected = true;
+          });
+          print("Connect initiated: $value");
+        });
+      }
+      // Delay the pop to ensure the connection process is completed
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.of(context).pop(); // Close the dialog window
+      });
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Permission Error'),
+            content: Text('Please turn on Wi-Fi first.'),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  // BLE notification
   Future<void> _connectToDevice() async {
     List<BluetoothService> services = await widget.device.discoverServices();
     for (BluetoothService service in services) {
@@ -159,40 +290,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
+  // Disconnect BLE
+  void _disconnectFromDevice() {
+
+    setState(() {
+      _isDisconnected = true;
+    });
+
+    // Perform the disconnection logic asynchronously
+    _performDisconnection();
+  }
+
+  Future<void> _performDisconnection() async {
+    await widget.device.disconnect();
+    print('Disconnected from ${widget.device.name}');
+  }
+
   // Send data part
-<<<<<<< HEAD
-  // Future<void> _sendData() async {
-  //   if (_characteristic_write != null) {
-  //     // final dataToSend = [0x02, 0x01, 0x10, 0xA, 0x02, 0x15, 0xF];
-  //     final dataToSend = [0x02, 0x01, 0xC, 0x01, 0x10];
-  //     // await characteristic!.write(dataToSend);
-  //     await _characteristic_write!.write(utf8.encode(dataToSend.toString()));
-  //     // Wait for the response from the BLE device
-  //     final response = await _characteristic_write!.value.first;
-  //     if (response.isNotEmp
-  //     ty && response[0] == 0x01) {
-  //       setState(() {
-  //         isDataMatched = true;
-  //       });
-  //     }
-  //   }
-  // }
-
-  // Future<void> _sendData() async {
-  //   if (characteristic != null) {
-  //     final dataToSend = [0x02, 0x01, 0xD, 0x01, 0x11];
-  //     List<int> byteData = utf8.encode(dataToSend.toString());
-  //     await characteristic!.write(byteData);
-  //     // Wait for the response from the BLE device
-  //     final response = await characteristic!.value.first;
-  //   }
-  // }
-
-  //BYTE ARRAY
-  // Future<void> _sendData(List<int> dataToSend) async {
-  //   if (_characteristic_write != null) {
-  //     List<int> byteData = dataToSend;
-=======
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
       // List<int> byteData = utf8.encode(dataToSend);
@@ -202,30 +316,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  //BYTE ARRAY
-
-  // Future<void> _sendData(List<int> dataToSend) async {
-  //   if (_characteristic_write != null) {
-  //     Uint8List byteData = Uint8List.fromList(dataToSend);
->>>>>>> test
-  //     await _characteristic_write!.write(byteData);
-  //     // Wait for the response from the BLE device
-  //     final response = await _characteristic_write!.value.first;
-  //   }
-  // }
-
-<<<<<<< HEAD
-  Future<void> _sendData(List<int> dataToSend) async {
-    if (_characteristic_write != null) {
-      Uint8List byteData = Uint8List.fromList(dataToSend);
-      await _characteristic_write!.write(byteData);
-      // Wait for the response from the BLE device
-      final response = await _characteristic_write!.value.first;
-    }
-  }
-
-=======
->>>>>>> test
   final _random = Random();
   int _generateRandomNumber(int min, int max) {
     return (min + (max - min) * _random.nextDouble()).toInt();
@@ -235,50 +325,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _leftBlinkTimer;
   Timer? _rightBlinkTimer;
 
-<<<<<<< HEAD
-  @override
-  void dispose() {
-    _leftBlinkTimer?.cancel();
-    _rightBlinkTimer?.cancel();
-    right_redPlayer.dispose();
-    right_greenPlayer.dispose();
-    rear_greenPlayer.dispose();
-    rear_redPlayer.dispose();
-    left_greenPlayer.dispose();
-    left_redPlayer.dispose();
-    _stopBlinking();
-    super.dispose();
-  }
-
-  void _startLeftBlinking() {
-    _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-      setState(() {
-        _isLeftBlinking = !_isLeftBlinking;
-      });
-    });
-    // Stop the blinking after 3 seconds
-    Future.delayed(Duration(seconds: 3)).then((_) {
-      _leftBlinkTimer?.cancel();
-      setState(() {
-        _isLeftBlinking = false;
-      });
-    });
-  }
-
-  void _startRightBlinking() {
-    _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 50), (_) {
-      setState(() {
-        _isRightBlinking = !_isRightBlinking;
-      });
-    });
-    // Stop the blinking after 3 seconds
-    Future.delayed(Duration(seconds: 3)).then((_) {
-      _rightBlinkTimer?.cancel();
-      setState(() {
-        _isRightBlinking = false;
-      });
-    });
-=======
 
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
@@ -324,12 +370,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         });
       });
     }
->>>>>>> test
-  }
-
-  void _startBothBlinking() {
-    _startLeftBlinking();
-    _startRightBlinking();
   }
 
   //Blink with value
@@ -435,10 +475,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
-<<<<<<< HEAD
-=======
     // showStreamPopup();
->>>>>>> test
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
@@ -467,10 +504,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-<<<<<<< HEAD
-=======
   int right_danger_counter = 0;
->>>>>>> test
   Widget _getRightIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -479,16 +513,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
-<<<<<<< HEAD
-=======
-      if (right_danger_counter >= 6) {
+      if (right_danger_counter >= 8) {
         showStreamPopup();
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
       print("FIND RIGHT NOTIFICAITON COUNTER");
       print(right_danger_counter);
->>>>>>> test
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -541,197 +572,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   final _writeController = TextEditingController();
 
-<<<<<<< HEAD
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          centerTitle: true,
-          foregroundColor: Colors.black,
-          title: const Text('Ride Info'),
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              // color: Color(0xFF6497d3),
-              color: Color(0xFF517fa4),
-            ),
-          ),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Top warning+indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    _startLeftBlinking();
-                  },
-                  icon: Icon(
-                    Indicator.image2vector,
-                    size: 48,
-                    color: _isLeftBlinking ? Colors.orange : Colors.black,
-                  ),
-                ),
-                // BlinkingIconButton(icon: Indicator.image2vector, size: 48),
-
-                SizedBox(width: 60),
-                Icon(
-                  Warning.image2vector3,
-                  size: 48,
-                  color: _isTopBlinking ? Colors.red : Colors.green,
-                ),
-                SizedBox(width: 60),
-
-                IconButton(
-                  onPressed: () {
-                    _startRightBlinking();
-                  },
-                  icon: Icon(
-                    Indicator.image2vector__1_,
-                    size: 48,
-                    color: _isRightBlinking  ? Colors.orange : Colors.black,
-                  ),
-                ),
-              ],
-            ),
-
-            // left+right warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _getLeftIcon(),
-                SizedBox(width: 15),
-                Text(
-                  _getLocation(),
-                  style: TextStyle(fontSize: 20),
-                ),
-                SizedBox(width: 20),
-                _getRightIcon(),
-              ],
-            ),
-
-            // ligts
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn1 = !_lightOn1;
-                      });
-                    }
-                ),
-                SizedBox(width: 140),
-                IconButton(
-                    icon: Icon(_lightOn2 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn2 = !_lightOn2;
-                      });
-                    }
-                ),
-              ],
-            ),
-
-            // Rear warning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _getRearIcon(),
-              ],
-            ),
-
-            //other buttons
-            SizedBox(width: 1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-                  onPressed: () {
-                    setState(() {
-                      _cameraOn = !_cameraOn;
-                    });
-                    // open camera if _cameraOn is true
-                  },
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
-                  onPressed: () {
-                    _startBothBlinking();
-                  },
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                    icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    onPressed: () {
-                      setState(() {
-                        _lightOn1 = !_lightOn1;
-                      });
-                    }
-                ),
-              ],
-            ),
-
-            // test data send
-
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                ElevatedButton(
-                  onPressed: () {
-                    _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                  },
-                  // onPressed: showInfo,
-                  child: const Text('Right button pressed'),
-                ),
-                const SizedBox(height: 16),
-                if (isDataMatched)
-                  const Text('Data matched')
-                else
-                  const Text('Data not matched'),
-              ],
-            ),
-
-            // Image with power button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 120),
-                Image.asset(
-                  'images/llama_img.png',
-                  height: 100,
-                  width: 130,
-                ),
-                SizedBox(width: 16),
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      _powerOn = !_powerOn;
-                    });
-                  },
-                  backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                  child: Icon(Icons.power_settings_new),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-=======
   // blink for distance
   void _startBlinking2(int value) {
     Timer _blinkTimer;
@@ -786,10 +626,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
-    if (_controller != null) {
-      await _controller!.dispose();
-      _controller = null;
-    }
+    // if (_controller != null) {
+    //   await _controller!.dispose();
+    //   _controller = null;
+    // }
 
     _controller = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mov',
@@ -801,41 +641,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     await _controller!.initialize();
   }
 
-  // void showStreamPopup() async {
-  //   if (_controller == null) {
-  //     return;
-  //   }
-  //
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return Dialog(
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             Text('RTSP Stream'),
-  //             SizedBox(height: 16),
-  //             Container(
-  //               width: MediaQuery.of(context).size.width,
-  //               height: MediaQuery.of(context).size.width * 9 / 16,
-  //               child: VlcPlayer(
-  //                 controller: _controller!,
-  //                 aspectRatio: 16 / 9,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  //
-  //   // Close the pop-up window after 4 seconds
-  //   await Future.delayed(Duration(seconds: 4));
-  //   Navigator.of(context).pop();
-  //
-  //   // Terminate the current VlcPlayerController
-  //   await initializePlayer();
-  // }
 
   void showStreamPopup() {
     if (_controller == null) {
@@ -878,12 +683,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           );
         },
       );
-      // ).then((_) {
-      //   // Close the pop-up window after 4 seconds
-      //   Future.delayed(Duration(seconds: 5)).then((_) {
-      //     Navigator.of(context).pop();
-      //   });
-      // });
     });
     Future.delayed(Duration(seconds: 5)).then((_) {
       Navigator.of(context).pop();
@@ -935,8 +734,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             ),
             body: SingleChildScrollView(
               child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                margin: EdgeInsets.only(top: 15),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -979,6 +777,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // left+right warning
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -994,6 +793,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // ligts
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1020,257 +820,131 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // Rear warning
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _getRearIcon(),
-                      ],
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _getRearIcon(),
+                        ],
+                      ),
                     ),
 
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
-                    SizedBox(width: 1),
-                    // Column(
-                    //   children: [
-                    //     Row(
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         Column(
-                    //           children: [
-                    //             Icon(Icons.square),
-                    //             Text('Camera'),
-                    //           ],
-                    //         ),
-                    //         SizedBox(width: 10),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 3) ? '30M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 3) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //         SizedBox(width: 5),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 6) ? '60M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 6) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //         SizedBox(width: 5),
-                    //         Column(
-                    //           children: [
-                    //             AnimatedContainer(
-                    //               duration: Duration(seconds: 1),
-                    //               decoration: BoxDecoration(
-                    //                 shape: BoxShape.rectangle,
-                    //                 color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-                    //               ),
-                    //               child: Icon(
-                    //                 Icons.square,
-                    //                 size: 40,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ),
-                    //             AnimatedSwitcher(
-                    //               duration: Duration(seconds: 1),
-                    //               child: Text(
-                    //                 (_value.length > 15 && int.tryParse(_value[15]) == 9) ? '90M' : '',
-                    //                 style: TextStyle(
-                    //                   color: (_value.length > 15 && int.tryParse(_value[15]) == 9) ? Colors.red : Colors.black,
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //
-                    //       ],
-                    //     ),
-                    //     // Text(_value[15]),
-                    //     // Text(_value[16]),
-                    //     SizedBox(height: 1),
-                    //     Row(
-                    //       mainAxisAlignment: MainAxisAlignment.center,
-                    //       children: [
-                    //         IconButton(
-                    //           icon: Icon(_cameraOn ? Icons.camera_alt : Icons.camera_alt_outlined),
-                    //           onPressed: () {
-                    //             setState(() {
-                    //               _cameraOn = !_cameraOn;
-                    //               _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                    //             });
-                    //             // open camera if _cameraOn is true
-                    //           },
-                    //         ),
-                    //         SizedBox(width: 20),
-                    //         IconButton(
-                    //           icon: Icon(_emergencyOn ? Icons.emergency_sharp : Icons.emergency_outlined),
-                    //           onPressed: () {
-                    //             // _startBothBlinking();
-                    //             _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                    //           },
-                    //         ),
-                    //         SizedBox(width: 20),
-                    //         IconButton(
-                    //           icon: Icon(_lightOn1 ? Icons.lightbulb : Icons.lightbulb_outline),
-                    //           onPressed: () {
-                    //             setState(() {
-                    //               // _lightOn1 = !_lightOn1;
-                    //               _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                    //             });
-                    //           },
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ],
-                    // ),
-
-                    // Test distance
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Column(
-                              children: [
-                                Icon(Icons.square),
-                                Text('Camera'),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon1 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '30M',
-                                  style: TextStyle(
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 2),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  Icon(Icons.square),
+                                  Text('Camera'),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon1 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon2 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '60M',
-                                  style: TextStyle(
+                                  Text(
+                                    '30M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon1 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon2 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon3 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '90M',
-                                  style: TextStyle(
+                                  Text(
+                                    '60M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon2 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon3 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 1),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: Icon(_cameraOn ? Icons.camera_alt : Icons
-                                  .camera_alt_outlined),
-                              onPressed: () {
-                                setState(() {
-                                  _cameraOn = !_cameraOn;
-                                  _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                                });
-                                // open camera if _cameraOn is true
-                              },
-                            ),
-                            SizedBox(width: 20),
-                            IconButton(
-                              icon: Icon(Icons.social_distance_rounded),
-                              onPressed: () {
-                                _handleButtonPress();
-                                _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                              },
-                            ),
-                            SizedBox(width: 20),
-                            IconButton(
-                              icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
-                                  .lightbulb_outline),
-                              onPressed: () {
-                                setState(() {
-                                  // _lightOn1 = !_lightOn1;
-                                  _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+                                  Text(
+                                    '90M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon3 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 1),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: Icon(_cameraOn ? Icons.camera_alt : Icons
+                                    .camera_alt_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _cameraOn = !_cameraOn;
+                                    _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                                  });
+                                  // open camera if _cameraOn is true
+                                },
+                              ),
+                              SizedBox(width: 20),
+                              IconButton(
+                                icon: Icon(Icons.social_distance_rounded),
+                                onPressed: () {
+                                  _handleButtonPress();
+                                  _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                                },
+                              ),
+                              SizedBox(width: 20),
+                              IconButton(
+                                icon: Icon(_tailight ? Icons.lightbulb : Icons
+                                    .lightbulb_outline),
+                                onPressed: () {
+                                  setState(() {
+                                    _tailight = !_tailight;
+                                    _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
                     // Stop ride
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1278,6 +952,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         GlowingButton2(
                           text: "Stop Ride",
                           onPressed: () {
+                            _disconnectFromDevice();
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) =>
@@ -1289,27 +964,32 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
                       ],
                     ),
+
                     // Image with power button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: 120),
-                        Image.asset(
-                          'images/llama_img_web2.jpg',
-                          height: 100,
-                          width: 130,
-                        ),
-                        SizedBox(width: 16),
-                        FloatingActionButton(
-                          onPressed: () {
-                            setState(() {
-                              _powerOn = !_powerOn;
-                            });
-                          },
-                          backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                          child: Icon(Icons.power_settings_new),
-                        ),
-                      ],
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 120),
+                          Image.asset(
+                            'images/llama_img_web2.jpg',
+                            height: 100,
+                            width: 130,
+                          ),
+                          SizedBox(width: 16),
+                          FloatingActionButton(
+                            onPressed: () {
+                              setState(() {
+                                _powerOn = !_powerOn;
+                              });
+                            },
+                            backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                            child: Icon(Icons.power_settings_new),
+                          ),
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -1318,7 +998,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           ),
         );
       }
->>>>>>> test
     );
   }
 }
