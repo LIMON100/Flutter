@@ -42,6 +42,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _cameraOn = false;
   bool _lightOn1 = false;
   bool _lightOn2 = false;
+  bool _tailight = false;
   bool _emergencyOn = false;
   bool _powerOn = false;
 
@@ -248,31 +249,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  // void _connect() async {
-  //   if (await _checkPermissions()) {
-  //     FlutterIotWifi.connect(ssid, password, prefix: true).then((value) => print("connect initiated: $value"));
-  //   }
-  //   else {
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: Text('Permission Error'),
-  //           content: Text('Please turn on Wi-Fi first.'),
-  //           actions: [
-  //             ElevatedButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: Text('OK'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
-  // }
-
   // BLE notification
   Future<void> _connectToDevice() async {
     List<BluetoothService> services = await widget.device.discoverServices();
@@ -340,7 +316,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-
   final _random = Random();
   int _generateRandomNumber(int min, int max) {
     return (min + (max - min) * _random.nextDouble()).toInt();
@@ -396,11 +371,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
     }
   }
-
-  // void _startBothBlinking() {
-  //   _startLeftBlinking();
-  //   _startRightBlinking();
-  // }
 
   //Blink with value
   bool _isBlinking = false;
@@ -764,8 +734,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             ),
             body: SingleChildScrollView(
               child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                margin: EdgeInsets.only(top: 15),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -808,6 +777,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // left+right warning
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -823,6 +793,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // ligts
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -848,142 +819,132 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       ],
                     ),
 
-                    // Available Wifi list
-                    // ListView.builder(
-                    //   itemCount: availableNetworks.length,
-                    //   itemBuilder: (context, index) {
-                    //     String network = availableNetworks[index];
-                    //     return ListTile(
-                    //       title: Text(network),
-                    //       subtitle: Text(network),
-                    //       onTap: () {
-                    //         // Call the connect method with the selected network's SSID and password
-                    //         _connect(network, "your_password_here");
-                    //       },
-                    //     );
-                    //   },
-                    // ),
-
                     // Rear warning
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _getRearIcon(),
-                      ],
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _getRearIcon(),
+                        ],
+                      ),
                     ),
 
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
-                    SizedBox(width: 1),
-
-                    // Test distance
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Column(
-                              children: [
-                                Icon(Icons.square),
-                                Text('Camera'),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon1 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '30M',
-                                  style: TextStyle(
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 2),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  Icon(Icons.square),
+                                  Text('Camera'),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon1 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon2 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '60M',
-                                  style: TextStyle(
+                                  Text(
+                                    '30M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon1 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon2 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.square,
-                                  size: 40,
-                                  color: _isBlinkingIcon3 ? Colors.red : Colors
-                                      .black,
-                                ),
-                                Text(
-                                  '90M',
-                                  style: TextStyle(
+                                  Text(
+                                    '60M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon2 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 10),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.square,
+                                    size: 40,
                                     color: _isBlinkingIcon3 ? Colors.red : Colors
                                         .black,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 1),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: Icon(_cameraOn ? Icons.camera_alt : Icons
-                                  .camera_alt_outlined),
-                              onPressed: () {
-                                setState(() {
-                                  _cameraOn = !_cameraOn;
-                                  _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                                });
-                                // open camera if _cameraOn is true
-                              },
-                            ),
-                            SizedBox(width: 20),
-                            IconButton(
-                              icon: Icon(Icons.social_distance_rounded),
-                              onPressed: () {
-                                _handleButtonPress();
-                                _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                              },
-                            ),
-                            SizedBox(width: 20),
-                            IconButton(
-                              icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
-                                  .lightbulb_outline),
-                              onPressed: () {
-                                setState(() {
-                                  // _lightOn1 = !_lightOn1;
-                                  _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+                                  Text(
+                                    '90M',
+                                    style: TextStyle(
+                                      color: _isBlinkingIcon3 ? Colors.red : Colors
+                                          .black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 1),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: Icon(_cameraOn ? Icons.camera_alt : Icons
+                                    .camera_alt_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _cameraOn = !_cameraOn;
+                                    _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
+                                  });
+                                  // open camera if _cameraOn is true
+                                },
+                              ),
+                              SizedBox(width: 20),
+                              IconButton(
+                                icon: Icon(Icons.social_distance_rounded),
+                                onPressed: () {
+                                  _handleButtonPress();
+                                  _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                                },
+                              ),
+                              SizedBox(width: 20),
+                              IconButton(
+                                icon: Icon(_tailight ? Icons.lightbulb : Icons
+                                    .lightbulb_outline),
+                                onPressed: () {
+                                  setState(() {
+                                    _tailight = !_tailight;
+                                    _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
                     // Stop ride
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1003,27 +964,32 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
                       ],
                     ),
+
                     // Image with power button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: 120),
-                        Image.asset(
-                          'images/llama_img_web2.jpg',
-                          height: 100,
-                          width: 130,
-                        ),
-                        SizedBox(width: 16),
-                        FloatingActionButton(
-                          onPressed: () {
-                            setState(() {
-                              _powerOn = !_powerOn;
-                            });
-                          },
-                          backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                          child: Icon(Icons.power_settings_new),
-                        ),
-                      ],
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 120),
+                          Image.asset(
+                            'images/llama_img_web2.jpg',
+                            height: 100,
+                            width: 130,
+                          ),
+                          SizedBox(width: 16),
+                          FloatingActionButton(
+                            onPressed: () {
+                              setState(() {
+                                _powerOn = !_powerOn;
+                              });
+                            },
+                            backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                            child: Icon(Icons.power_settings_new),
+                          ),
+                        ],
+                      ),
                     )
                   ],
                 ),
