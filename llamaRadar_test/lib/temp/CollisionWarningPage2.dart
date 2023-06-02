@@ -646,10 +646,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     if (_controller == null) {
       return;
     }
-
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
             child: Column(
