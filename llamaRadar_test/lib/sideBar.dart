@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lamaradar/custom_icon_icons.dart';
 import 'package:lamaradar/mode/dash_cam.dart';
+import 'package:lamaradar/temp/BLEScannerPage.dart';
 import 'package:lamaradar/temp/VideoRecordingScreen.dart';
 import 'db_icons.dart';
 import 'package:camera/camera.dart';
@@ -335,7 +336,7 @@ class SideBar extends StatelessWidget {
                     // Navigator.pop(context);
                     // Navigator.of(context).push(
                     //   MaterialPageRoute(
-                    //       builder: (context) => const VideoRecordingScreen (), //AccessPointWidget()
+                    //       builder: (context) => const BLEScannerPage (), //AccessPointWidget()
                     //   ),
                     // );
                   },
