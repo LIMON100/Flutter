@@ -40,26 +40,6 @@ class _DashCamState extends State<DashCam> {
     // _initializeCamera();
   }
 
-  // Future<void> _initializeCamera() async {
-  //   // Get available cameras
-  //   _cameras = await availableCameras();
-  //   if (_cameras.length > 0) {
-  //     // Select the first available camera
-  //     _cameraController = CameraController(_cameras[0], ResolutionPreset.high);
-  //
-  //     // Add a listener to know when the camera is initialized
-  //     _cameraController.initialize().then((_) {
-  //       if (!mounted) {
-  //         return;
-  //       }
-  //       setState(() {
-  //         _isCameraReady = true;
-  //       });
-  //     });
-  //   }
-  // }
-
-
   @override
   void dispose() {
     _cameraController.dispose();
@@ -157,7 +137,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //WIFI
-  // final String ssid = 'CAMERA';
   final String ssid = 'Mahudur'; //CARDV-8c8b Mahmudur @ SF Networking
   final  password = '12345678';
 
@@ -177,54 +156,6 @@ class _HomeState extends State<Home> {
     }
     return false;
   }
-
-  //  connect part
-  // void _scanWifiNetworks(BuildContext context) async {
-  //   if (isConnected) {
-  //     FlutterIotWifi.disconnect().then((value) {
-  //       setState(() {
-  //         isConnected = false;
-  //       });
-  //       print("Disconnect initiated: $value");
-  //     });
-  //   }
-  //   else if (await _checkPermissions()) {
-  //     try {
-  //       bool? isSuccess = await FlutterIotWifi.scan();
-  //       if (isSuccess!) {
-  //         List<dynamic> networks = await FlutterIotWifi.list();
-  //         showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return Dialog(
-  //               child: Container(
-  //                 width: 300, // Adjust the width as needed
-  //                 child: ListView.builder(
-  //                   shrinkWrap: true,
-  //                   itemCount: networks.length,
-  //                   itemBuilder: (context, index) {
-  //                     final wifiNetwork = networks[index];
-  //                     return ListTile(
-  //                       title: Text(wifiNetwork.toString()),
-  //                       onTap: () {
-  //                         _connect(context, wifiNetwork.toString());
-  //                         Navigator.of(context).pop(); // Close the dialog after selection
-  //                       },
-  //                     );
-  //                   },
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         );
-  //       } else {
-  //         print('Failed to scan Wi-Fi networks');
-  //       }
-  //     } catch (e) {
-  //       print('Failed to scan Wi-Fi networks: $e');
-  //     }
-  //   }
-  // }
 
   void _scanWifiNetworks(BuildContext context) async {
     if (isConnected) {
@@ -284,7 +215,6 @@ class _HomeState extends State<Home> {
       print('Failed to scan Wi-Fi networks: $e');
     }
   }
-
 
   // Try with dialog window
   void _connect(BuildContext context, String ssid) async {
@@ -381,53 +311,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-
-  // late CameraController _cameraController;
-  // late List<CameraDescription> _cameras;
-  // bool _isCameraReady = false;
-  // bool _isFlashOn = false;
-  //
-  //
-  // final String new_ssid = 'LLAMATEST';
-  // final String new_ssidpass ='12345678';
-  //
-  // Future<void> changeSSID() async {
-  //   String url = 'http://192.168.1.254/ ?custom=1&cmd=3003&str=$new_ssid';
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //
-  //     if (response.statusCode == 200) {
-  //       print('SSID changed to. $new_ssid');
-  //     } else {
-  //       print('Error occured: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
-  //
-  //
-  //
-  // Future<void> changeSSIDPASS() async {
-  //   String url = 'http://192.168.1.254/ ?custom=1&cmd=3004&str=$new_ssidpass';
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //
-  //     if (response.statusCode == 200) {
-  //       print('SSID Pass changed to. $new_ssidpass');
-  //     } else {
-  //       print('Error occured: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
-  //
-  // final _ssidnamecontroller = TextEditingController();
-  // final _ssidpasscontroller = TextEditingController();
-
   // VLC PLAYER
   VlcPlayerController? _controller;
 
@@ -455,30 +338,6 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // _isCameraReady
-              //     ? AspectRatio(
-              //   aspectRatio: _cameraController.value.aspectRatio,
-              //   child: CameraPreview(_cameraController),
-              // )
-              //     : VlcPlayer(
-              //   controller: _videoPlayerController,
-              //   aspectRatio: 16 / 9,
-              //   placeholder: Center(child: CircularProgressIndicator()),
-              // ),
-              // Container(
-              //   height: 350,
-              //   width: 400,
-              //   child: isCameraStreaming
-              //       ? VlcPlayer(
-              //     controller: _videoPlayerController,
-              //     aspectRatio: 16 / 9,
-              //     placeholder: Center(child: CircularProgressIndicator()),
-              //   )
-              //       : Image.asset(
-              //     'images/test_background2.jpg',
-              //     fit: BoxFit.fitWidth, // Adjust the fit property based on your requirements
-              //   ),
-              // ),
               Container(
                 height: 350,
                 width: 400,
@@ -494,183 +353,66 @@ class _HomeState extends State<Home> {
                 ),
               ),
 
-              SizedBox(height: 83),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     _videoPlayerController.play();
-              //     playVlc();
-              //     VlcPlayer(
-              //       controller: _videoPlayerController,
-              //       aspectRatio: 16 / 9,
-              //       placeholder: Center(child: CircularProgressIndicator()),
-              //     );
-              //   },
-              //   child: Text('Open Camera'),
-              //   style: ElevatedButton.styleFrom(
-              //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
-              //   ),
-              // ),
-
-            GlowingButton2(
-              text: "Open Camera",
-              onPressed: () {
-                initializePlayer();
-                _controller!.play();
-                playVlc();
-                VlcPlayer(
-                  controller: _controller!,
-                  aspectRatio: 16 / 9,
-                  placeholder: Center(child: CircularProgressIndicator()),
-                );
-                setState(() {
-                  isCameraStreaming = true;
-                });
-              },
-              color1: Color(0xFF517fa4),
-              color2: Colors.deepPurpleAccent,
-            ),
-
-            SizedBox(height: 5),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     _videoPlayerController.stop();
-              //     Image.asset('images/new_lama.jpg');
-              //     //showImage();
-              //   },
-              //   child: Text('Stop Camera'),
-              //   style: ElevatedButton.styleFrom(
-              //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
-              //   ),
-              // ),
-              // GlowingButton2(
-              //   text: "Stop Camera",
-              //   onPressed: () {
-              //     _videoPlayerController.stop();
-              //     // _videoPlayerController.dispose();
-              //     initializePlayer();
-              //     setState(() {
-              //       isCameraStreaming = false;
-              //     });
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurple,
-              // ),
-            // GlowingButton2(
-            //   text: "Stop Camera",
-            //   onPressed: () async {
-            //     if (isCameraStreaming) {
-            //       await _controller!.stop();
-            //       initializePlayer();
-            //       _controller = null;
-            //       setState(() {
-            //         isCameraStreaming = false;
-            //       });
-            //     }
-            //   },
-            //   color1: Color(0xFF517fa4),
-            //   color2: Colors.deepPurple,
-            // ),
-
-            GlowingButton2(
-              text: "Stop Camera",
-              onPressed: () async {
-                if (_controller != null) {
-                  await _controller!.stop();
-                  await _controller!.dispose();
-                }
-                _controller = null;
-                setState(() {
-                  isCameraStreaming = false;
-                });
-              },
-              color1: Color(0xFF517fa4),
-              color2: Colors.deepPurple,
-            ),
               SizedBox(height: 60),
-              InkWell(
-                onTap: () {
-                  // _connect(context);
-                  _scanWifiNetworks(context);
+              GlowingButton2(
+                text: "Open Camera",
+                onPressed: () {
+                  initializePlayer();
+                  _controller!.play();
+                  playVlc();
+                  VlcPlayer(
+                    controller: _controller!,
+                    aspectRatio: 16 / 9,
+                    placeholder: Center(child: CircularProgressIndicator()),
+                  );
+                  setState(() {
+                    isCameraStreaming = true;
+                  });
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.wifi,
-                      color: isConnected ? Colors.green : Colors.black,
-                      size: 50,
-                    ),
-                    Text(
-                      isConnected ? 'Disconnected' : 'Connect WIFI',
-                      style: TextStyle(
-                        color: isConnected ? Colors.green : Colors.black,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
+                color1: Color(0xFF517fa4),
+                color2: Colors.deepPurpleAccent,
               ),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     changeSSID();
-              //   },
-              //   child: Text('Change SSID to LLAMATEST'),
-              //   style: ElevatedButton.styleFrom(
-              //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
-              //   ),
-              // ),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     changeSSIDPASS();
-              //   },
-              //   child: Text('Change PASS to 12345678'),
-              //   style: ElevatedButton.styleFrom(
-              //     primary: Colors.deepPurpleAccent.shade200, // Change button color here
-              //   ),
-              // ),
 
-              // Padding(
-              //   padding: const EdgeInsets.all(1.0),
-              //   child: TextFormField(
-              //     controller: _ssidnamecontroller,
-              //     decoration: const InputDecoration(hintText: 'SSID NAME'),
-              //   ),
-              // ),
-
-
-
-              // Container(
-              //   width: 100,
-              //   height: 100,
-              //   decoration: BoxDecoration(
-              //     shape: BoxShape.circle,
-              //     color: Colors.deepPurpleAccent.shade200,
-              //   ),
-              //   child: InkWell(
-              //     onTap: () {
-              //       //connectToWifi('wifi_name', 'wifi_pass');
-              //      // _connectToWifi();
-              //       connectToWiFi();
-              //       // Do something when the button is pressed
-              //     },
-              //     child: Column(
-              //       mainAxisAlignment: MainAxisAlignment.center,
-              //       children: [
-              //         Icon(
-              //           Icons.wifi,
-              //           color: Colors.white,
-              //         ),
-              //         Text(
-              //           'Connect WIFI',
-              //           style: TextStyle(
-              //             color: Colors.white,
-              //             fontSize: 12,
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // )
+              SizedBox(height: 5),
+              GlowingButton2(
+                text: "Stop Camera",
+                onPressed: () async {
+                  if (_controller != null) {
+                    await _controller!.stop();
+                    await _controller!.dispose();
+                  }
+                  _controller = null;
+                  setState(() {
+                    isCameraStreaming = false;
+                  });
+                },
+                color1: Color(0xFF517fa4),
+                color2: Colors.deepPurple,
+              ),
+                SizedBox(height: 60),
+                InkWell(
+                  onTap: () {
+                    // _connect(context);
+                    _scanWifiNetworks(context);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.wifi,
+                        color: isConnected ? Colors.green : Colors.black,
+                        size: 50,
+                      ),
+                      Text(
+                        isConnected ? 'Disconnected' : 'Connect WIFI',
+                        style: TextStyle(
+                          color: isConnected ? Colors.green : Colors.black,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -678,7 +420,6 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
 
 
 class Files extends StatefulWidget {
@@ -773,33 +514,6 @@ class _FilesState extends State<Files> {
                     );
                   }),
             ),
-
-            /// MAIN BODY
-            // Container(
-            //   margin: const EdgeInsets.only(top: 30),
-            //   width: double.infinity,
-            //   height: 350,
-            //   child: Column(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       Icon(
-            //         icons[current],
-            //         size: 200,
-            //         color: Colors.deepPurple,
-            //       ),
-            //       const SizedBox(
-            //         height: 10,
-            //       ),
-            //       Text(
-            //         items[current],
-            //         style: GoogleFonts.laila(
-            //             fontWeight: FontWeight.w500,
-            //             fontSize: 30,
-            //             color: Colors.deepPurple),
-            //       ),
-            //     ],
-            //   ),
-            // ),
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
