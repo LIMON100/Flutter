@@ -36,27 +36,37 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  http: ^0.13.5
+#  http: ^0.13.5
   modal_progress_hud_nsn: ^0.3.0
-  file_picker: ^4.1.6
-  image_picker: ^0.8.7+1
-  flutter_bloc: ^8.1.2
-  dio: ^5.1.1
   path_provider: ^2.0.5
   liquid_progress_indicator: ^0.4.0
   mime: ^1.0.4
-#  wifi_iot: ^0.3.18
-  wifi_scan: ^0.4.0+1
   lite_rolling_switch: ^1.0.1
-  flutter_blue: ^0.8.0
-  get: ^4.6.5
-  wifi_info_flutter: ^2.0.0
   permission_handler: ^10.2.0
   camera: ^0.10.4
   connectivity: ^3.0.6
-  fluttertoast: ^8.2.1
   curved_navigation_bar: ^1.0.3
   audioplayers: ^0.20.1
+  google_fonts: ^2.3.2
+  google_maps_flutter: ^2.2.5
+  location: ^4.4.0
+  flutter_blue_plus: ^1.4.0
+  collection: ^1.15.0
+  just_audio: ^0.9.32
+  http: ^0.13.5
+  flutter_vlc_player: ^7.2.0
+  flutter_awesome_alert_box: ^2.1.1
+  video_player: ^2.6.1
+  flutter_dialogs: ^2.1.0
+  wifi_scan: ^0.4.0+1
+  overlay_support: ^2.1.0
+  wifi_iot: ^0.3.18
+  flutter_iot_wifi: ^0.0.3
+#  wifi_configuration: ^1.2.1
+  webview_flutter: ^4.2.1
+  flutter_webview_plugin: ^0.4.0
+  flutter_widget_from_html: ^0.9.1
+
 
 dev_dependencies:
   flutter_test:
@@ -87,12 +97,16 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/warning_beep.mp3
+    - assets/danger_beep.mp3
     - images/llamalogo_no_txt.jpg
     - images/new_lama.jpg
     - images/test.jpg
     - images/llama_img.png
     - images/test_background.jpg
+    - images/test_background2.jpg
     - images/llama_img_web.jpg
+    - images/llama_img_web2.jpg
     - images/background_img_demo.jpg
     - images/icons/
 

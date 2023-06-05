@@ -333,12 +333,12 @@ class SideBar extends StatelessWidget {
                     ),
                   ),
                   onTap: () {
-                    // Navigator.pop(context);
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //       builder: (context) => const BLEScannerPage (), //AccessPointWidget()
-                    //   ),
-                    // );
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const BLEScannerPage (), //AccessPointWidget()
+                      ),
+                    );
                   },
                 );
               },

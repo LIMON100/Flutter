@@ -53,14 +53,6 @@ class _BleScreenState extends State<BleScreen> {
     });
   }
 
-  // Future<void> _startScan() async {
-  //   try {
-  //     await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
-  //   } catch (e) {
-  //     print("Error starting scan: $e");
-  //   }
-  // }
-
   Future<void> _startScan() async {
     setState(() {
       _isScanning = true;
@@ -145,16 +137,6 @@ class _BleScreenState extends State<BleScreen> {
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
-        // Center(
-        //   child: GlowingButton2(
-        //     text: "Pair Device to Start",
-        //     onPressed: () {
-        //       _startScan();
-        //     },
-        //     color1: Color(0xFF517fa4),
-        //     color2: Colors.cyan,
-        //   ),
-        // ),
         SizedBox(height: 15),
         if (_isScanning)
           CircularProgressIndicator()
@@ -168,11 +150,6 @@ class _BleScreenState extends State<BleScreen> {
               color1: Color(0xFF517fa4),
               color2: Colors.cyan,
             ),
-          ),
-        if (_scanError != null)
-          Text(
-            "Error starting scan: $_scanError",
-            style: TextStyle(color: Colors.red.shade100),
           ),
         ...containers,
       ],
@@ -278,7 +255,6 @@ class _BleScreenState extends State<BleScreen> {
         ),
       );
     }
-
     return buttons;
   }
 
@@ -322,7 +298,6 @@ class _BleScreenState extends State<BleScreen> {
             children: characteristicsWidget),
       );
     }
-
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
