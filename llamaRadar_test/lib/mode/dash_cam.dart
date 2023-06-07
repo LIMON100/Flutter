@@ -5,8 +5,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:lamaradar/mode/dashCamDetails.dart';
-import 'package:lamaradar/mode/dashCamFIles.dart';
 import '../temp/glowing_button.dart';
 import 'bleScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,7 +19,7 @@ import 'package:html/parser.dart' show parse;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-
+import 'package:intl/intl.dart';
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -39,8 +37,8 @@ class CircleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 100,
-        height: 90,
+        width: 75,
+        height: 70,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
@@ -49,8 +47,8 @@ class CircleButton extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
+              color: Colors.black,
+              fontSize: 8,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -72,14 +70,11 @@ class _DashCamState extends State<DashCam> {
 
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
-  // bool _isCameraReady = false;
-  // bool _isFlashOn = false;
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    // _initializeCamera();
   }
 
   @override
@@ -114,7 +109,10 @@ class _DashCamState extends State<DashCam> {
             IconButton(
               icon: Icon(Icons.settings),
               onPressed: () {
-
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => TestSettings()),
+                // );
               },
             ),
           ],
@@ -131,10 +129,11 @@ class _DashCamState extends State<DashCam> {
           ),
           flexibleSpace: Container(
             decoration: BoxDecoration(
+                color: Color(0xFF517fa4)
               // color: Color(0xFF6497d3),
               // color: Color(0xFF2580B3),
               // color: Colors.deepPurpleAccent,
-              color: Colors.deepPurple[400],
+              // color: Colors.deepPurple[400],
             ),
           ),
         ),
@@ -187,8 +186,15 @@ class _HomeState extends State<Home> {
   //files
   final String url = 'http://192.168.1.254';
   bool isConnected = false;
-  bool isCameraStreaming = true;
+  bool isCameraStreaming = false;
+  bool isFront = false;
+  bool isSensor = false;
   List<dynamic> wifiNetworks = [];
+
+  // Recording variable
+  bool isRecording = false;
+  Color buttonColor = Colors.deepPurpleAccent;
+  String buttonText = 'Start Recording';
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -257,7 +263,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // Try with dialog window
+  // dialog window
   void _connect(BuildContext context, String ssid) async {
     if (await _checkPermissions()) {
       if (isConnected) {
@@ -352,6 +358,7 @@ class _HomeState extends State<Home> {
   Future<void> stopRecordingCmd() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
 
+
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -414,7 +421,98 @@ class _HomeState extends State<Home> {
     }
   }
 
+  String getCurrentDate() {
+    var now = DateTime.now();
+    var formatter = DateFormat('yyyy-MM-dd');
+    String formattedDate = formatter.format(now);
+    return formattedDate;
+  }
 
+  String getCurrentTime() {
+    var now = DateTime.now();
+    var formatter = DateFormat('HH:mm:ss');
+    String formattedTime = formatter.format(now);
+    return formattedTime;
+  }
+
+  Future<void> setDateOfCam() async {
+    String currentDate = getCurrentDate();
+    print(currentDate);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentDate'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('Date error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> setTimeOfCam() async {
+    String currentTime = getCurrentTime();
+    print(currentTime);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('Time error: ${response.statusCode}');
+    }
+  }
+// 2 -3
+  Future<void> camFront() async {
+    String currentTime = getCurrentTime();
+    print(currentTime);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> camBehind() async {
+    String currentTime = getCurrentTime();
+    print(currentTime);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+
+  Future<void> dashCamReset() async {
+    String currentTime = getCurrentTime();
+    print(currentTime);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('System reset Error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> gSensorSens() async {
+    String currentTime = getCurrentTime();
+    print(currentTime);
+    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('G sensor Error: ${response.statusCode}');
+    }
+  }
   // retrieving files
 
   List<String> fileList = [];
@@ -433,18 +531,80 @@ class _HomeState extends State<Home> {
 
 //  final String webUrl = 'http://192.168.1.254/';
 
+  // open close camera
+  Widget buildCameraButton() {
+    return Positioned(
+      top: 10,
+      child: CircleButton(
+        onPressed: () async {
+          if (isCameraStreaming) {
+            // Stop Camera
+            if (_controller != null) {
+              await _controller!.stop();
+              await _controller!.dispose();
+            }
+            _controller = null;
+          } else {
+            // Open Camera
+            initializePlayer();
+            _controller!.play();
+            playVlc();
+            VlcPlayer(
+              controller: _controller!,
+              aspectRatio: 16 / 9,
+              placeholder: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          setState(() {
+            isCameraStreaming = !isCameraStreaming;
+          });
+        },
+        color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+        text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+      ),
+    );
+  }
+
+  // Recording part
+  Widget buildRecordingButton() {
+    return Positioned(
+      top: 10,
+      child: CircleButton(
+        onPressed: () async {
+          setDateOfCam();
+          setTimeOfCam();
+          if (isRecording) {
+            // Stop record
+            stopRecordingCmd();
+          } else {
+            // Start Recording
+            changeToVideoMode();
+            // setDateOfCam();
+            // setTimeOfCam();
+            startRecordingCmd();
+          }
+          setState(() {
+            isRecording = !isRecording;
+          });
+        },
+        color: isRecording ? Colors.red : Color(0xFFa8caba),
+        text: isRecording ? 'Stop Recording' : 'Start Recording',
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[100],
+      backgroundColor: Colors.transparent,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
-                height: 350,
+                height: 400,
                 width: 400,
                 child: isCameraStreaming && _controller != null
                     ? VlcPlayer(
@@ -453,190 +613,50 @@ class _HomeState extends State<Home> {
                   placeholder: Center(child: CircularProgressIndicator()),
                 )
                     : Image.asset(
-                  'images/test_background2.jpg',
+                  'images/test_background3.jpg',
                   fit: BoxFit.fitWidth,
                 ),
               ),
 
-              SizedBox(height: 5),
-              // GlowingButton2(
-              //   text: "Open Camera",
-              //   onPressed: () {
-              //     initializePlayer();
-              //     _controller!.play();
-              //     playVlc();
-              //     VlcPlayer(
-              //       controller: _controller!,
-              //       aspectRatio: 16 / 9,
-              //       placeholder: Center(child: CircularProgressIndicator()),
-              //     );
-              //     setState(() {
-              //       isCameraStreaming = true;
-              //     });
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurpleAccent,
-              // ),
-              //
-              // SizedBox(height: 5),
-              // GlowingButton2(
-              //   text: "Stop Camera",
-              //   onPressed: () async {
-              //     if (_controller != null) {
-              //       await _controller!.stop();
-              //       await _controller!.dispose();
-              //     }
-              //     _controller = null;
-              //     setState(() {
-              //       isCameraStreaming = false;
-              //     });
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurple,
-              // ),
-              // SizedBox(height: 10),
-              // // image capture
-              // // http://192.168.1.254/?custom=1&cmd=1001
-              // // file retreive test
-              // // GlowingButton2(
-              // //   text: "Files",
-              // //   onPressed: () {
-              // //     //send record command
-              // //     fetchFiles();
-              // //     print(fileList);
-              // //     //_videoPlayerController.startRecording("/sdcard/test/");
-              // //   },
-              // //   color1: Color(0xFF517fa4),
-              // //   color2: Colors.deepPurple,
-              // // ),
-              // GlowingButton2(
-              //   text: "Start Recording",
-              //   onPressed: () {
-              //     //send record command
-              //     changeToVideoMode();
-              //     startRecordingCmd();
-              //     //_videoPlayerController.startRecording("/sdcard/test/");
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurple,
-              // ),
-              // SizedBox(height: 10),
-              //
-              // GlowingButton2(
-              //   text: "Stop Recording",
-              //   onPressed: () {
-              //     //send stop command
-              //     stopRecordingCmd();
-              //     //_videoPlayerController.stopRecording();
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurple,
-              // ),
-              // SizedBox(height: 10),
-              // GlowingButton2(
-              //   text: "Capture",
-              //   onPressed: () {
-              //     //send stop command
-              //     changeToPhotoMode();
-              //     takePicture();
-              //     changeToVideoMode();
-              //   },
-              //   color1: Color(0xFF517fa4),
-              //   color2: Colors.deepPurple,
-              // ),
-
-              //test round button
-              Column(
-                children: [
-                  Positioned(
-                    // right: 70,
-                    child: CircleButton(
-                      onPressed: () {
-                        //send record command
-                        changeToVideoMode();
-                        startRecordingCmd();
-                        //_videoPlayerController.startRecording("/sdcard/test/");
-                      },
-                      color: Colors.deepPurpleAccent,
-                      text: 'Start Recording',
-                    ),
-                  ),
-                  SizedBox(height: 1),
-                  Row(
-                    children:[
-                      SizedBox(width: 1),
-                    Positioned(
-                      right: 10,
-                      child: CircleButton(
-                        onPressed: () {
-                          //send stop command
-                          stopRecordingCmd();
-                          //_videoPlayerController.stopRecording();
-                        },
-                        color: Colors.deepPurpleAccent,
-                        text: 'Stop Recording',
-                      ),
-                    ),
-                    SizedBox(width: 1),
+              SizedBox(height: 30),
+            SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    // Start and stop camera
                     Center(
-                      child: Positioned(
-                        top: 10,
-                        child: GlowingButton2(
-                            text: "Open Camera",
-                            onPressed: () {
-                              initializePlayer();
-                              _controller!.play();
-                              playVlc();
-                              VlcPlayer(
-                                controller: _controller!,
-                                aspectRatio: 16 / 9,
-                                placeholder: Center(child: CircularProgressIndicator()),
-                              );
-                              setState(() {
-                                isCameraStreaming = true;
-                              });
-                            },
-                            color1: Color(0xFF517fa4),
-                            color2: Colors.deepPurpleAccent,
-                          ),
-                      ),
+                      child: buildCameraButton(),
                     ),
-                      SizedBox(width: 1),
-                      Positioned(
-                        top: 2,
-                        child: CircleButton(
-                          onPressed: () {
-                            changeToPhotoMode();
-                            takePicture();
-                            changeToVideoMode();
-                          },
-                          color: Colors.deepPurpleAccent,
-                          text: 'Capture',
-                        ),
-                      ),
 
-                    ],
-                  ),
-                  Positioned(
-                    top: 2,
-                    child: CircleButton(
-                      onPressed: () async {
-                        if (_controller != null) {
-                          await _controller!.stop();
-                          await _controller!.dispose();
-                        }
-                        _controller = null;
-                        setState(() {
-                          isCameraStreaming = false;
-                        });
-                      },
-                      color: Colors.deepPurpleAccent,
-                      text: 'Stop Camera',
+                    SizedBox(height: 5),
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center, // Align buttons in the center
+                        children: [
+                          buildRecordingButton(),
+                          SizedBox(width: 15),
+                          Align(
+                            alignment: Alignment.center,
+                            child: CircleButton(
+                              onPressed: () {
+                                changeToPhotoMode();
+                                takePicture();
+                                changeToVideoMode();
+                              },
+                              color: Color(0xFFa8caba),
+                              text: 'Capture',
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              SizedBox(height: 20),
+            ),
+
+            SizedBox(height: 40),
                 InkWell(
                   onTap: () {
                     // _connect(context);
@@ -675,9 +695,8 @@ class Files extends StatefulWidget {
 }
 
 class _FilesState extends State<Files> {
-
-// class Files extends StatelessWidget {
   int _currentIndex = 0;
+  // VlcPlayerController? _controller
 
   List<String> items = [
     "All",
@@ -692,10 +711,18 @@ class _FilesState extends State<Files> {
     Icons.photo,
   ];
   int current = 0;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _controller = (context as _HomeState)._controller;
+  //   // _cameras = (context as _HomeState)._cameras;
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[100],
+      backgroundColor: Colors.transparent,
       body: Container(
 
         width: double.infinity,
@@ -797,86 +824,27 @@ class _FilesState extends State<Files> {
   }
 }
 
-// class About extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.deepPurple.shade100,
-//       body: Container(
-//         alignment: Alignment.center,
-//         child: Text("About"),
-//       ),
-//     );
-//   }
-// }
-
-
-
-//
-// class About extends StatelessWidget {
-//   final String url = 'http://192.168.1.254/CARDV/';
-//
-//   Future<void> fetchFiles() async {
-//     try {
-//       final response = await http.get(Uri.parse(url));
-//       if (response.statusCode == 200) {
-//         // Dosyaları çekme işlemlerini burada yapabilirsiniz
-//         print('Dosyalar çekildi: ${response.body}');
-//       } else {
-//         print('Dosyaları çekerken bir hata oluştu. Kod: ${response.statusCode}');
-//       }
-//     } catch (error) {
-//       print('Dosyaları çekerken bir hata oluştu: $error');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.deepPurple.shade100,
-//       body: Container(
-//         alignment: Alignment.center,
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Text(
-//               "About",
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               child: Text('Dosyaları Çek'),
-//               onPressed: () {
-//                 fetchFiles();
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 class About extends StatelessWidget {
   final String url = 'http://192.168.1.254/CARDV/PHOTO/';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade100,
+      // backgroundColor: Colors.deepPurple.shade100,
+      backgroundColor: Colors.transparent,
       body: Container(
         alignment: Alignment.center,
         child: ElevatedButton(
           child: Text('Display Files'),
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => WebviewScaffold(
-                url: url,
-                appBar: AppBar(
-                  title: Text('Files'),
-                ),
-              ),
-            ));
+            // Navigator.of(context).push(MaterialPageRoute(
+            //   builder: (context) => WebviewScaffold(
+            //     url: url,
+            //     appBar: AppBar(
+            //       title: Text('Files'),
+            //     ),
+            //   ),
+            // ));
           },
         ),
       ),
