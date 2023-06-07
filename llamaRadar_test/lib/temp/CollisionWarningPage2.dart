@@ -12,7 +12,7 @@ import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
-import 'BlinkingIconButton.dart';
+// import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -98,55 +98,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return false;
   }
 
-  // void _scanWifiNetworks(BuildContext context) async {
-  //   // if (isConnected) {
-  //   //   FlutterIotWifi.disconnect().then((value) {
-  //   //     setState(() {
-  //   //       isConnected = false;
-  //   //     });
-  //   //     print("Disconnect initiated: $value");
-  //   //   });
-  //   // }
-  //   if (await _checkPermissions()) {
-  //     try {
-  //       bool? isSuccess = await FlutterIotWifi.scan();
-  //       if (isSuccess!) {
-  //         // Wait for the scan process to complete
-  //         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
-  //
-  //         List<dynamic> networks = await FlutterIotWifi.list();
-  //         showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return Dialog(
-  //               child: Container(
-  //                 width: 300, // Adjust the width as needed
-  //                 child: ListView.builder(
-  //                   shrinkWrap: true,
-  //                   itemCount: networks.length,
-  //                   itemBuilder: (context, index) {
-  //                     final wifiNetwork = networks[index];
-  //                     return ListTile(
-  //                       title: Text(wifiNetwork.toString()),
-  //                       onTap: () {
-  //                         _connect(context, wifiNetwork.toString());
-  //                         Navigator.of(context).pop(); // Close the dialog after selection
-  //                       },
-  //                     );
-  //                   },
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         );
-  //       } else {
-  //         print('Failed to scan Wi-Fi networks');
-  //       }
-  //     } catch (e) {
-  //       print('Failed to scan Wi-Fi networks: $e');
-  //     }
-  //   }
-  // }
   void _scanWifiNetworks(BuildContext context) async {
     if (isConnected) {
       FlutterIotWifi.disconnect().then((value) {
@@ -429,27 +380,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  Color _getColor() {
-    if (_value.isEmpty || _value.length < 29) {
-      return Colors.black;
-    }
-    switch (int.parse(_value[28])) {
-      case 1:
-      case 3:
-        return _getLocation() == 'Right Notification Warning'
-            ? Colors.yellow
-            : Colors.black;
-      case 2:
-      case 4:
-      case 5:
-        return _getLocation() == 'Rear Notification Danger'
-            ? Colors.red
-            : Colors.black;
-      default:
-        return Colors.black;
-    }
-  }
-
   Widget _getCircle(Color color) {
     double opacity = 1.0;
     if (_getLocation() == 'Left Notification Danger' ||
@@ -655,7 +585,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Dashcam'),
+                Text('Rear Dashcam'),
                 SizedBox(height: 16),
                 Container(
                   width: MediaQuery.of(context).size.width,
@@ -973,10 +903,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(width: 120),
-                          Image.asset(
-                            'images/llama_img_web2.jpg',
-                            height: 100,
-                            width: 130,
+                          Container(
+                            color: Colors.transparent,
+                            child: Image.asset(
+                              'images/llama_img_web3.jpg',
+                              height: 100,
+                              width: 130,
+                            ),
                           ),
                           SizedBox(width: 16),
                           FloatingActionButton(
