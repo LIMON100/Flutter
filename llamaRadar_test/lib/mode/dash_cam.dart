@@ -58,162 +58,6 @@ class CircleButton extends StatelessWidget {
     );
   }
 }
-//
-//
-// class DashCam extends StatefulWidget {
-//   const DashCam({Key? key}) : super(key: key);
-//
-//   @override
-//   _DashCamState createState() => _DashCamState();
-// }
-//
-// class _DashCamState extends State<DashCam> {
-//   late List<Widget> _children;
-//   int _currentIndex = 0;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _children = [
-//       Home(),
-//       Files(),
-//       About(),
-//     ];
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       decoration: const BoxDecoration(
-//         gradient: LinearGradient(
-//           begin: Alignment.topLeft,
-//           end: Alignment.bottomRight,
-//           colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-//         ),
-//       ),
-//       child: Scaffold(
-//         backgroundColor: Colors.transparent,
-//         appBar: AppBar(
-//           centerTitle: true,
-//           foregroundColor: Colors.black,
-//           title: const Text('Dash Cam'),
-//           actions: <Widget>[
-//             DropdownButton<String>(
-//               onChanged: (String? newValue) {
-//                 setState(() {
-//                   switch (newValue) {
-//                     case 'Option 1':
-//                     // Call function for Option 1
-//                       functionForOption1();
-//                       break;
-//                     case 'Option 2':
-//                     // Call function for Option 2
-//                       functionForOption2();
-//                       break;
-//                     case 'Option 3':
-//                     // Call function for Option 3
-//                       functionForOption3();
-//                       break;
-//                     case 'Option 4':
-//                     // Call function for Option 3
-//                       functionForOption4();
-//                       break;
-//                   }
-//                 });
-//               },
-//               items: <String>[
-//                 'FrontCam',
-//                 'Back Cam',
-//                 'G sensor',
-//                 'System Reset',
-//               ].map((String value) {
-//                 return DropdownMenuItem<String>(
-//                   value: value,
-//                   child: Text(value),
-//                 );
-//               }).toList(),
-//             ),
-//           ],
-//           leading: IconButton(
-//             icon: Icon(Icons.arrow_back),
-//             onPressed: () {
-//               Navigator.pop(context);
-//               Navigator.of(context).push(
-//                 MaterialPageRoute(builder: (context) => BleScreen(title: '')),
-//               ); // Navigate to previous screen
-//             },
-//           ),
-//           flexibleSpace: Container(
-//             decoration: BoxDecoration(
-//               color: Colors.deepPurple[400],
-//             ),
-//           ),
-//         ),
-//         body: _children[_currentIndex],
-//         bottomNavigationBar: CurvedNavigationBar(
-//           height: 50,
-//           backgroundColor: Colors.indigoAccent,
-//           color: Colors.indigo.shade200,
-//           animationDuration: Duration(milliseconds: 300),
-//           onTap: (index) {
-//             setState(() {
-//               _currentIndex = index;
-//             });
-//           },
-//           items: [
-//             Icon(
-//               Icons.home,
-//               color: _currentIndex == 0 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//             Icon(
-//               Icons.image,
-//               color: _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//             Icon(
-//               Icons.history,
-//               color: _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-// Future<void> functionForOption1() async {
-//     final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
-//     if (response.statusCode == 200) {
-//         print('Cam changed');
-//     } else {
-//       print('Cam error: ${response.statusCode}');
-//     }
-// }
-//
-// Future<void> functionForOption2() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
-//   if (response.statusCode == 200) {
-//       print('Cam changed');
-//   } else {
-//     print('Cam error: ${response.statusCode}');
-//   }
-// }
-//
-// Future<void> functionForOption3() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
-//   if (response.statusCode == 200) {
-//       print('sensor activated');
-//   } else {
-//     print('G sensor Error: ${response.statusCode}');
-//   }
-// }
-// Future<void> functionForOption4() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
-//   if (response.statusCode == 200) {
-//       print('system is reset');
-//   } else {
-//     print('System reset Error: ${response.statusCode}');
-//   }
-// }
 
 class DashCam extends StatefulWidget {
   const DashCam({Key? key}) : super(key: key);
@@ -226,23 +70,46 @@ class _DashCamState extends State<DashCam> {
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
   int _currentIndex = 0;
+  bool isCameraStreaming = false;
+  late VlcPlayerController _videoPlayerController;
 
   @override
   void initState() {
     super.initState();
+    _videoPlayerController = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mov',
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+  }
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      _videoPlayerController.stop();
+      _videoPlayerController.dispose();
+    } else {
+      _videoPlayerController = VlcPlayerController.network(
+        'rtsp://192.168.1.254/xxxx.mov',
+        hwAcc: HwAcc.full,
+        autoPlay: true,
+        options: VlcPlayerOptions(),
+      );
+      _videoPlayerController.initialize().then((_) {
+        _videoPlayerController.play();
+      });
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
   }
 
   @override
   void dispose() {
-    _cameraController.dispose();
+    _videoPlayerController.dispose();
     super.dispose();
   }
-
-  final List<Widget> _children = [
-    Home(),
-    Files(),
-    About(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -282,14 +149,26 @@ class _DashCamState extends State<DashCam> {
           ),
           flexibleSpace: Container(
             decoration: BoxDecoration(color: Color(0xFF517fa4)
-                // color: Color(0xFF6497d3),
-                // color: Color(0xFF2580B3),
-                // color: Colors.deepPurpleAccent,
-                // color: Colors.deepPurple[400],
                 ),
           ),
         ),
-        body: _children[_currentIndex],
+        // body: _children[_currentIndex],
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            Home(
+              toggleCameraStreaming: toggleCameraStreaming,
+              isCameraStreaming: isCameraStreaming,
+              videoPlayerController: _videoPlayerController,
+            ),
+            Files(
+              isCameraStreaming: isCameraStreaming,
+            ),
+            About(
+              isCameraStreaming: isCameraStreaming,
+            ),
+          ],
+        ),
         bottomNavigationBar: CurvedNavigationBar(
           height: 50,
           backgroundColor: Colors.indigoAccent,
@@ -324,23 +203,35 @@ class _DashCamState extends State<DashCam> {
   }
 }
 
+// Home class
 class Home extends StatefulWidget {
+  final Function toggleCameraStreaming;
+  final bool isCameraStreaming;
+  final VlcPlayerController videoPlayerController;
+
+  Home({
+    required this.toggleCameraStreaming,
+    required this.isCameraStreaming,
+    required this.videoPlayerController,
+  });
+
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   //WIFI
-  final String ssid = 'Car'; //CARDV-8c8b Mahmudur @ SF Networking
+  final String ssid = 'CARDV';
   final password = '12345678';
+  bool isConnected = false;
+  bool isCameraStreaming = false;
+
 
   //IP Address
   final String ipAddress = '192.168.1.254';
 
   //files
   final String url = 'http://192.168.1.254';
-  bool isConnected = false;
-  bool isCameraStreaming = false;
   bool isFront = false;
   bool isSensor = false;
   List<dynamic> wifiNetworks = [];
@@ -349,6 +240,38 @@ class _HomeState extends State<Home> {
   bool isRecording = false;
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
+
+  // Rtsp Streaming
+  @override
+  void initState() {
+    super.initState();
+    isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
+    initializePlayer();
+  }
+
+  Future<void> initializePlayer() async {
+    await widget.videoPlayerController.initialize();
+    widget.videoPlayerController.play();
+
+    setState(() {
+      isCameraStreaming = true;
+    });
+  }
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      // Stop Camera
+      widget.videoPlayerController.stop();
+    } else {
+      // Open Camera
+      widget.videoPlayerController.play();
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
+  }
+
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -465,39 +388,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final VlcPlayerController _videoPlayerController =
-      VlcPlayerController.network(
-    'rtsp://192.168.1.254/xxxx.mov',
-    hwAcc: HwAcc.full,
-    autoPlay: true,
-    options: VlcPlayerOptions(),
-  );
-
-  void playVlc() {
-    VlcPlayer(
-      controller: _videoPlayerController,
-      aspectRatio: 16 / 9,
-      placeholder: Center(child: CircularProgressIndicator()),
-    );
-  }
-
-  // VLC PLAYER
-  VlcPlayerController? _controller;
-
-  Future<void> initializePlayer() async {
-    if (_controller != null) {
-      await _controller!.dispose();
-    }
-
-    _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mov',
-      hwAcc: HwAcc.full,
-      autoPlay: true,
-      options: VlcPlayerOptions(),
-    );
-
-    await _controller!.initialize();
-  }
 
   Future<void> startRecordingCmd() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
@@ -687,34 +577,17 @@ class _HomeState extends State<Home> {
       print('File error: ${response.statusCode}');
     }
   }
-  
+
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
         child: CircleButton(
-          onPressed: () async {
-            if (isCameraStreaming) {
-              // Stop Camera
-              if (_controller != null) {
-                await _controller!.stop();
-                await _controller!.dispose();
-              }
-              _controller = null;
-            } else {
-              // Open Camera
-              initializePlayer();
-              _controller!.play();
-              playVlc();
-              VlcPlayer(
-                controller: _controller!,
-                aspectRatio: 16 / 9,
-                placeholder: Center(child: CircularProgressIndicator()),
-              );
-            }
-
+          onPressed: () {
+            widget.toggleCameraStreaming();
             setState(() {
+              // Update the local variable instead
               isCameraStreaming = !isCameraStreaming;
             });
           },
@@ -725,7 +598,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-// Recording part
+  // Recording part
   Widget buildRecordingButton() {
     return Align(
       alignment: Alignment.topCenter,
@@ -769,16 +642,17 @@ class _HomeState extends State<Home> {
               Container(
                 height: 400,
                 width: 400,
-                child: isCameraStreaming && _controller != null
+                // child: isCameraStreaming && _controller != null
+                child: isCameraStreaming && widget.videoPlayerController != null
                     ? VlcPlayer(
-                        controller: _controller!,
-                        aspectRatio: 16 / 9,
-                        placeholder: Center(child: CircularProgressIndicator()),
-                      )
+                  controller: widget.videoPlayerController,
+                  aspectRatio: 16 / 9,
+                  placeholder: Center(child: CircularProgressIndicator()),
+                  )
                     : Image.asset(
-                        'images/test_background3.jpg',
-                        fit: BoxFit.fitWidth,
-                      ),
+                  'images/test_background3.jpg',
+                  fit: BoxFit.fitWidth,
+                ),
               ),
               SizedBox(height: 30),
               SingleChildScrollView(
@@ -851,6 +725,12 @@ class _HomeState extends State<Home> {
 }
 
 class Files extends StatefulWidget {
+  final bool isCameraStreaming;
+
+  Files({
+    required this.isCameraStreaming,
+  });
+
   @override
   _FilesState createState() => _FilesState();
 }
@@ -872,13 +752,6 @@ class _FilesState extends State<Files> {
     Icons.photo,
   ];
   int current = 0;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _controller = (context as _HomeState)._controller;
-  //   // _cameras = (context as _HomeState)._cameras;
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -984,7 +857,21 @@ class _FilesState extends State<Files> {
   }
 }
 
-class About extends StatelessWidget {
+
+class About extends StatefulWidget {
+  final bool isCameraStreaming;
+
+  About({
+    required this.isCameraStreaming,
+  });
+
+  @override
+  _AboutState createState() => _AboutState();
+}
+
+
+// class About extends StatelessWidget {
+class _AboutState extends State<About> {
   final String url = 'http://192.168.1.254/CARDV/PHOTO/';
 
   @override
@@ -992,21 +879,26 @@ class About extends StatelessWidget {
     return Scaffold(
       // backgroundColor: Colors.deepPurple.shade100,
       backgroundColor: Colors.transparent,
-      body: Container(
-        alignment: Alignment.center,
-        child: ElevatedButton(
-          child: Text('Display Files'),
-          onPressed: () {
-            // Navigator.of(context).push(MaterialPageRoute(
-            //   builder: (context) => WebviewScaffold(
-            //     url: url,
-            //     appBar: AppBar(
-            //       title: Text('Files'),
-            //     ),
-            //   ),
-            // ));
-          },
+      body: Column(
+        children:[
+          Text(widget.isCameraStreaming.toString()),
+          Container(
+          alignment: Alignment.center,
+          child: ElevatedButton(
+            child: Text('Display Files'),
+            onPressed: () {
+              // Navigator.of(context).push(MaterialPageRoute(
+              //   builder: (context) => WebviewScaffold(
+              //     url: url,
+              //     appBar: AppBar(
+              //       title: Text('Files'),
+              //     ),
+              //   ),
+              // ));
+            },
+          ),
         ),
+      ],
       ),
     );
   }
