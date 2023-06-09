@@ -5,6 +5,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:lamaradar/mode/settings.dart';
 import '../temp/glowing_button.dart';
 import 'bleScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -57,7 +58,162 @@ class CircleButton extends StatelessWidget {
     );
   }
 }
-
+//
+//
+// class DashCam extends StatefulWidget {
+//   const DashCam({Key? key}) : super(key: key);
+//
+//   @override
+//   _DashCamState createState() => _DashCamState();
+// }
+//
+// class _DashCamState extends State<DashCam> {
+//   late List<Widget> _children;
+//   int _currentIndex = 0;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _children = [
+//       Home(),
+//       Files(),
+//       About(),
+//     ];
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       decoration: const BoxDecoration(
+//         gradient: LinearGradient(
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//           colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
+//         ),
+//       ),
+//       child: Scaffold(
+//         backgroundColor: Colors.transparent,
+//         appBar: AppBar(
+//           centerTitle: true,
+//           foregroundColor: Colors.black,
+//           title: const Text('Dash Cam'),
+//           actions: <Widget>[
+//             DropdownButton<String>(
+//               onChanged: (String? newValue) {
+//                 setState(() {
+//                   switch (newValue) {
+//                     case 'Option 1':
+//                     // Call function for Option 1
+//                       functionForOption1();
+//                       break;
+//                     case 'Option 2':
+//                     // Call function for Option 2
+//                       functionForOption2();
+//                       break;
+//                     case 'Option 3':
+//                     // Call function for Option 3
+//                       functionForOption3();
+//                       break;
+//                     case 'Option 4':
+//                     // Call function for Option 3
+//                       functionForOption4();
+//                       break;
+//                   }
+//                 });
+//               },
+//               items: <String>[
+//                 'FrontCam',
+//                 'Back Cam',
+//                 'G sensor',
+//                 'System Reset',
+//               ].map((String value) {
+//                 return DropdownMenuItem<String>(
+//                   value: value,
+//                   child: Text(value),
+//                 );
+//               }).toList(),
+//             ),
+//           ],
+//           leading: IconButton(
+//             icon: Icon(Icons.arrow_back),
+//             onPressed: () {
+//               Navigator.pop(context);
+//               Navigator.of(context).push(
+//                 MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+//               ); // Navigate to previous screen
+//             },
+//           ),
+//           flexibleSpace: Container(
+//             decoration: BoxDecoration(
+//               color: Colors.deepPurple[400],
+//             ),
+//           ),
+//         ),
+//         body: _children[_currentIndex],
+//         bottomNavigationBar: CurvedNavigationBar(
+//           height: 50,
+//           backgroundColor: Colors.indigoAccent,
+//           color: Colors.indigo.shade200,
+//           animationDuration: Duration(milliseconds: 300),
+//           onTap: (index) {
+//             setState(() {
+//               _currentIndex = index;
+//             });
+//           },
+//           items: [
+//             Icon(
+//               Icons.home,
+//               color: _currentIndex == 0 ? Colors.white : Colors.blueGrey.shade700,
+//             ),
+//             Icon(
+//               Icons.image,
+//               color: _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
+//             ),
+//             Icon(
+//               Icons.history,
+//               color: _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+// Future<void> functionForOption1() async {
+//     final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
+//     if (response.statusCode == 200) {
+//         print('Cam changed');
+//     } else {
+//       print('Cam error: ${response.statusCode}');
+//     }
+// }
+//
+// Future<void> functionForOption2() async {
+//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
+//   if (response.statusCode == 200) {
+//       print('Cam changed');
+//   } else {
+//     print('Cam error: ${response.statusCode}');
+//   }
+// }
+//
+// Future<void> functionForOption3() async {
+//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
+//   if (response.statusCode == 200) {
+//       print('sensor activated');
+//   } else {
+//     print('G sensor Error: ${response.statusCode}');
+//   }
+// }
+// Future<void> functionForOption4() async {
+//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
+//   if (response.statusCode == 200) {
+//       print('system is reset');
+//   } else {
+//     print('System reset Error: ${response.statusCode}');
+//   }
+// }
 
 class DashCam extends StatefulWidget {
   const DashCam({Key? key}) : super(key: key);
@@ -67,7 +223,6 @@ class DashCam extends StatefulWidget {
 }
 
 class _DashCamState extends State<DashCam> {
-
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
   int _currentIndex = 0;
@@ -109,10 +264,10 @@ class _DashCamState extends State<DashCam> {
             IconButton(
               icon: Icon(Icons.settings),
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => TestSettings()),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DashSettings()),
+                );
               },
             ),
           ],
@@ -121,30 +276,27 @@ class _DashCamState extends State<DashCam> {
             onPressed: () {
               Navigator.pop(context);
               Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => BleScreen(title: '')
-                ),
-              );// Navigate to previous screen
+                MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+              ); // Navigate to previous screen
             },
           ),
           flexibleSpace: Container(
-            decoration: BoxDecoration(
-                color: Color(0xFF517fa4)
-              // color: Color(0xFF6497d3),
-              // color: Color(0xFF2580B3),
-              // color: Colors.deepPurpleAccent,
-              // color: Colors.deepPurple[400],
-            ),
+            decoration: BoxDecoration(color: Color(0xFF517fa4)
+                // color: Color(0xFF6497d3),
+                // color: Color(0xFF2580B3),
+                // color: Colors.deepPurpleAccent,
+                // color: Colors.deepPurple[400],
+                ),
           ),
         ),
-        body:_children[_currentIndex],
+        body: _children[_currentIndex],
         bottomNavigationBar: CurvedNavigationBar(
           height: 50,
           backgroundColor: Colors.indigoAccent,
           color: Colors.indigo.shade200,
           animationDuration: Duration(milliseconds: 300),
           // currentIndex: _currentIndex,
-          onTap: (index){
+          onTap: (index) {
             setState(() {
               _currentIndex = index;
             });
@@ -152,15 +304,18 @@ class _DashCamState extends State<DashCam> {
           items: [
             Icon(
               Icons.home,
-              color: _currentIndex == 0 ? Colors.white : Colors.blueGrey.shade700,
+              color:
+                  _currentIndex == 0 ? Colors.white : Colors.blueGrey.shade700,
             ),
             Icon(
               Icons.image,
-              color: _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
+              color:
+                  _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
             ),
             Icon(
               Icons.history,
-              color: _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
+              color:
+                  _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
             ),
           ],
         ),
@@ -168,7 +323,6 @@ class _DashCamState extends State<DashCam> {
     );
   }
 }
-
 
 class Home extends StatefulWidget {
   @override
@@ -178,7 +332,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   //WIFI
   final String ssid = 'Car'; //CARDV-8c8b Mahmudur @ SF Networking
-  final  password = '12345678';
+  final password = '12345678';
 
   //IP Address
   final String ipAddress = '192.168.1.254';
@@ -226,12 +380,15 @@ class _HomeState extends State<Home> {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
         // Wait for the scan process to complete
-        await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+        await Future.delayed(
+            Duration(seconds: 2)); // Adjust the delay as needed
 
         List<dynamic> networks = await FlutterIotWifi.list();
         showDialog(
-          context: context, // Use a parent context instead of the current context
-          builder: (BuildContext dialogContext) { // Use a different variable for the dialog context
+          context:
+              context, // Use a parent context instead of the current context
+          builder: (BuildContext dialogContext) {
+            // Use a different variable for the dialog context
             return Dialog(
               child: Container(
                 width: 300, // Adjust the width as needed
@@ -244,7 +401,8 @@ class _HomeState extends State<Home> {
                       title: Text(wifiNetwork.toString()),
                       onTap: () {
                         _connect(context, wifiNetwork.toString());
-                        Navigator.of(dialogContext).pop(); // Close the dialog after selection using the dialog context
+                        Navigator.of(dialogContext)
+                            .pop(); // Close the dialog after selection using the dialog context
                       },
                     );
                   },
@@ -255,7 +413,8 @@ class _HomeState extends State<Home> {
         );
       } else {
         print('Failed to scan Wi-Fi networks');
-        await Future.delayed(Duration(seconds: 6)); // Adjust the delay as needed
+        await Future.delayed(
+            Duration(seconds: 6)); // Adjust the delay as needed
         _startWifiScan(context);
       }
     } catch (e) {
@@ -306,7 +465,8 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final VlcPlayerController _videoPlayerController = VlcPlayerController.network(
+  final VlcPlayerController _videoPlayerController =
+      VlcPlayerController.network(
     'rtsp://192.168.1.254/xxxx.mov',
     hwAcc: HwAcc.full,
     autoPlay: true,
@@ -358,7 +518,6 @@ class _HomeState extends State<Home> {
   Future<void> stopRecordingCmd() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
 
-
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -381,13 +540,13 @@ class _HomeState extends State<Home> {
       if (response.statusCode == 200) {
         print('Changed to Photo Mode');
       } else {
-        print('Error occured while changing photo mode: ${response.statusCode}');
+        print(
+            'Error occured while changing photo mode: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
-
 
   Future<void> changeToVideoMode() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=1';
@@ -398,7 +557,8 @@ class _HomeState extends State<Home> {
       if (response.statusCode == 200) {
         print('Changed to Video Mode');
       } else {
-        print('Error occured while changing to video mode: ${response.statusCode}');
+        print(
+            'Error occured while changing to video mode: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
@@ -438,10 +598,11 @@ class _HomeState extends State<Home> {
   Future<void> setDateOfCam() async {
     String currentDate = getCurrentDate();
     print(currentDate);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentDate'));
+    final response = await http.get(
+        Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentDate'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        print('Date setted');
       });
     } else {
       print('Date error: ${response.statusCode}');
@@ -451,23 +612,25 @@ class _HomeState extends State<Home> {
   Future<void> setTimeOfCam() async {
     String currentTime = getCurrentTime();
     print(currentTime);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
+    final response = await http.get(
+        Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        print('Time setted');
       });
     } else {
       print('Time error: ${response.statusCode}');
     }
   }
+
 // 2 -3
   Future<void> camFront() async {
-    String currentTime = getCurrentTime();
-    print(currentTime);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        //fileList = json.decode(response.body);
+        print('Cam changed');
       });
     } else {
       print('Cam error: ${response.statusCode}');
@@ -475,26 +638,24 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> camBehind() async {
-    String currentTime = getCurrentTime();
-    print(currentTime);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        //fileList = json.decode(response.body);
+        print('Cam changed');
       });
     } else {
       print('Cam error: ${response.statusCode}');
     }
   }
 
-
   Future<void> dashCamReset() async {
-    String currentTime = getCurrentTime();
-    print(currentTime);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
+    final response =
+        await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        print('system is reset');
       });
     } else {
       print('System reset Error: ${response.statusCode}');
@@ -502,12 +663,11 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> gSensorSens() async {
-    String currentTime = getCurrentTime();
-    print(currentTime);
-    final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
     if (response.statusCode == 200) {
       setState(() {
-        fileList = json.decode(response.body);
+        print('sensor activated');
       });
     } else {
       print('G sensor Error: ${response.statusCode}');
@@ -516,7 +676,6 @@ class _HomeState extends State<Home> {
   // retrieving files
 
   List<String> fileList = [];
-
 
   Future<void> fetchFiles() async {
     final response = await http.get(Uri.parse('http://192.168.1.254'));
@@ -528,71 +687,75 @@ class _HomeState extends State<Home> {
       print('File error: ${response.statusCode}');
     }
   }
-
-//  final String webUrl = 'http://192.168.1.254/';
-
-  // open close camera
+  
   Widget buildCameraButton() {
-    return Positioned(
-      top: 10,
-      child: CircleButton(
-        onPressed: () async {
-          if (isCameraStreaming) {
-            // Stop Camera
-            if (_controller != null) {
-              await _controller!.stop();
-              await _controller!.dispose();
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: CircleButton(
+          onPressed: () async {
+            if (isCameraStreaming) {
+              // Stop Camera
+              if (_controller != null) {
+                await _controller!.stop();
+                await _controller!.dispose();
+              }
+              _controller = null;
+            } else {
+              // Open Camera
+              initializePlayer();
+              _controller!.play();
+              playVlc();
+              VlcPlayer(
+                controller: _controller!,
+                aspectRatio: 16 / 9,
+                placeholder: Center(child: CircularProgressIndicator()),
+              );
             }
-            _controller = null;
-          } else {
-            // Open Camera
-            initializePlayer();
-            _controller!.play();
-            playVlc();
-            VlcPlayer(
-              controller: _controller!,
-              aspectRatio: 16 / 9,
-              placeholder: Center(child: CircularProgressIndicator()),
-            );
-          }
 
-          setState(() {
-            isCameraStreaming = !isCameraStreaming;
-          });
-        },
-        color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
-        text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+            setState(() {
+              isCameraStreaming = !isCameraStreaming;
+            });
+          },
+          color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+          text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+        ),
       ),
     );
   }
 
-  // Recording part
+// Recording part
   Widget buildRecordingButton() {
-    return Positioned(
-      top: 10,
-      child: CircleButton(
-        onPressed: () async {
-          setDateOfCam();
-          setTimeOfCam();
-          if (isRecording) {
-            // Stop record
-            stopRecordingCmd();
-          } else {
-            // Start Recording
-            changeToVideoMode();
-            // setDateOfCam();
-            // setTimeOfCam();
-            startRecordingCmd();
-          }
-          setState(() {
-            isRecording = !isRecording;
-          });
-        },
-        color: isRecording ? Colors.red : Color(0xFFa8caba),
-        text: isRecording ? 'Stop Recording' : 'Start Recording',
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: CircleButton(
+          onPressed: () async {
+            setDateOfCam();
+            setTimeOfCam();
+            if (isRecording) {
+              // Stop record
+              stopRecordingCmd();
+            } else {
+              // Start Recording
+              changeToVideoMode();
+              // setDateOfCam();
+              // setTimeOfCam();
+              startRecordingCmd();
+            }
+            setState(() {
+              isRecording = !isRecording;
+            });
+          },
+          color: isRecording ? Colors.red : Color(0xFFa8caba),
+          text: isRecording ? 'Stop Recording' : 'Start Recording',
+        ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -608,78 +771,77 @@ class _HomeState extends State<Home> {
                 width: 400,
                 child: isCameraStreaming && _controller != null
                     ? VlcPlayer(
-                  controller: _controller!,
-                  aspectRatio: 16 / 9,
-                  placeholder: Center(child: CircularProgressIndicator()),
-                )
+                        controller: _controller!,
+                        aspectRatio: 16 / 9,
+                        placeholder: Center(child: CircularProgressIndicator()),
+                      )
                     : Image.asset(
-                  'images/test_background3.jpg',
-                  fit: BoxFit.fitWidth,
-                ),
+                        'images/test_background3.jpg',
+                        fit: BoxFit.fitWidth,
+                      ),
               ),
-
               SizedBox(height: 30),
-            SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    // Start and stop camera
-                    Center(
-                      child: buildCameraButton(),
-                    ),
-
-                    SizedBox(height: 5),
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center, // Align buttons in the center
-                        children: [
-                          buildRecordingButton(),
-                          SizedBox(width: 15),
-                          Align(
-                            alignment: Alignment.center,
-                            child: CircleButton(
-                              onPressed: () {
-                                changeToPhotoMode();
-                                takePicture();
-                                changeToVideoMode();
-                              },
-                              color: Color(0xFFa8caba),
-                              text: 'Capture',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(height: 40),
-                InkWell(
-                  onTap: () {
-                    // _connect(context);
-                    _scanWifiNetworks(context);
-                  },
+              SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.wifi,
-                        color: isConnected ? Colors.green : Colors.black,
-                        size: 50,
+                      // Start and stop camera
+                      Center(
+                        child: buildCameraButton(),
                       ),
-                      Text(
-                        isConnected ? 'Disconnected' : 'Connect WIFI',
-                        style: TextStyle(
-                          color: isConnected ? Colors.green : Colors.black,
-                          fontSize: 20,
+
+                      SizedBox(height: 5),
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .center, // Align buttons in the center
+                          children: [
+                            buildRecordingButton(),
+                            SizedBox(width: 15),
+                            Align(
+                              alignment: Alignment.center,
+                              child: CircleButton(
+                                onPressed: () {
+                                  changeToPhotoMode();
+                                  takePicture();
+                                  changeToVideoMode();
+                                },
+                                color: Color(0xFFa8caba),
+                                text: 'Capture',
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+              ),
+              SizedBox(height: 40),
+              InkWell(
+                onTap: () {
+                  // _connect(context);
+                  _scanWifiNetworks(context);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.wifi,
+                      color: isConnected ? Colors.green : Colors.black,
+                      size: 50,
+                    ),
+                    Text(
+                      isConnected ? 'Disconnected' : 'Connect WIFI',
+                      style: TextStyle(
+                        color: isConnected ? Colors.green : Colors.black,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -687,7 +849,6 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
 
 class Files extends StatefulWidget {
   @override
@@ -724,7 +885,6 @@ class _FilesState extends State<Files> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-
         width: double.infinity,
         height: double.infinity,
         margin: const EdgeInsets.all(45),
@@ -761,7 +921,7 @@ class _FilesState extends State<Files> {
                                   : BorderRadius.circular(10),
                               border: current == index
                                   ? Border.all(
-                                  color: Colors.deepPurpleAccent, width: 2)
+                                      color: Colors.deepPurpleAccent, width: 2)
                                   : null,
                             ),
                             child: Center(
