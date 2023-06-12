@@ -164,9 +164,9 @@ class _DashCamState extends State<DashCam> {
             Files(
               isCameraStreaming: isCameraStreaming,
             ),
-            About(
-              isCameraStreaming: isCameraStreaming,
-            ),
+            // About(
+            //   isCameraStreaming: isCameraStreaming,
+            // ),
           ],
         ),
         bottomNavigationBar: CurvedNavigationBar(
@@ -191,11 +191,11 @@ class _DashCamState extends State<DashCam> {
               color:
                   _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
             ),
-            Icon(
-              Icons.history,
-              color:
-                  _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
-            ),
+            // Icon(
+            //   Icons.history,
+            //   color:
+            //       _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
+            // ),
           ],
         ),
       ),
@@ -858,48 +858,40 @@ class _FilesState extends State<Files> {
 }
 
 
-class About extends StatefulWidget {
-  final bool isCameraStreaming;
-
-  About({
-    required this.isCameraStreaming,
-  });
-
-  @override
-  _AboutState createState() => _AboutState();
-}
-
+// class About extends StatefulWidget {
+//   final bool isCameraStreaming;
+//
+//   About({
+//     required this.isCameraStreaming,
+//   });
+//
+//   @override
+//   _AboutState createState() => _AboutState();
+// }
 
 // class About extends StatelessWidget {
-class _AboutState extends State<About> {
-  final String url = 'http://192.168.1.254/CARDV/PHOTO/';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // backgroundColor: Colors.deepPurple.shade100,
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children:[
-          Text(widget.isCameraStreaming.toString()),
-          Container(
-          alignment: Alignment.center,
-          child: ElevatedButton(
-            child: Text('Display Files'),
-            onPressed: () {
-              // Navigator.of(context).push(MaterialPageRoute(
-              //   builder: (context) => WebviewScaffold(
-              //     url: url,
-              //     appBar: AppBar(
-              //       title: Text('Files'),
-              //     ),
-              //   ),
-              // ));
-            },
-          ),
-        ),
-      ],
-      ),
-    );
-  }
-}
+// class _AboutState extends State<About> {
+//   final String url = 'http://192.168.1.254/CARDV/PHOTO/';
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       // backgroundColor: Colors.deepPurple.shade100,
+//       backgroundColor: Colors.transparent,
+//       body: Column(
+//         children:[
+//           Text(widget.isCameraStreaming.toString()),
+//           Container(
+//           alignment: Alignment.center,
+//           child: ElevatedButton(
+//             child: Text('Display Files'),
+//             onPressed: () {
+//
+//             },
+//           ),
+//         ),
+//       ],
+//       ),
+//     );
+//   }
+// }
