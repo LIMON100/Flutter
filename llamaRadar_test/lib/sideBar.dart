@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lamaradar/custom_icon_icons.dart';
 import 'package:lamaradar/mode/dash_cam.dart';
+import 'package:lamaradar/temp/test_dash_cam.dart';
+import 'package:lamaradar/temp/testdashcam2.dart';
 import 'db_icons.dart';
 import 'package:camera/camera.dart';
 import 'package:lamaradar/mode/LlamaDefenderPage.dart';
-import 'package:lamaradar/temp/BleWriteTest.dart';
 
 class SideBar extends StatelessWidget {
 
@@ -117,12 +118,7 @@ class SideBar extends StatelessWidget {
                     ),
                   ),
                   onTap: () {
-                    // Navigator.pop(context);
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const LlamaWebMenu(),
-                    //   ),
-                    // );
+
                   },
                 );
               },
@@ -150,7 +146,7 @@ class SideBar extends StatelessWidget {
                     // Navigator.pop(context);
                     // Navigator.of(context).push(
                     //   MaterialPageRoute(
-                    //       builder: (context) => const BLEScannerPage (), //AccessPointWidget()
+                    //       builder: (context) => const TestDashCam2(), //AccessPointWidget()
                     //   ),
                     // );
                   },
