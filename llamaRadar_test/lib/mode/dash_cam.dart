@@ -61,163 +61,18 @@ class CircleButton extends StatelessWidget {
     );
   }
 }
-//
-//
-// class DashCam extends StatefulWidget {
-//   const DashCam({Key? key}) : super(key: key);
-//
-//   @override
-//   _DashCamState createState() => _DashCamState();
-// }
-//
-// class _DashCamState extends State<DashCam> {
-//   late List<Widget> _children;
-//   int _currentIndex = 0;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _children = [
-//       Home(),
-//       Files(),
-//       About(),
-//     ];
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       decoration: const BoxDecoration(
-//         gradient: LinearGradient(
-//           begin: Alignment.topLeft,
-//           end: Alignment.bottomRight,
-//           colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-//         ),
-//       ),
-//       child: Scaffold(
-//         backgroundColor: Colors.transparent,
-//         appBar: AppBar(
-//           centerTitle: true,
-//           foregroundColor: Colors.black,
-//           title: const Text('Dash Cam'),
-//           actions: <Widget>[
-//             DropdownButton<String>(
-//               onChanged: (String? newValue) {
-//                 setState(() {
-//                   switch (newValue) {
-//                     case 'Option 1':
-//                     // Call function for Option 1
-//                       functionForOption1();
-//                       break;
-//                     case 'Option 2':
-//                     // Call function for Option 2
-//                       functionForOption2();
-//                       break;
-//                     case 'Option 3':
-//                     // Call function for Option 3
-//                       functionForOption3();
-//                       break;
-//                     case 'Option 4':
-//                     // Call function for Option 3
-//                       functionForOption4();
-//                       break;
-//                   }
-//                 });
-//               },
-//               items: <String>[
-//                 'FrontCam',
-//                 'Back Cam',
-//                 'G sensor',
-//                 'System Reset',
-//               ].map((String value) {
-//                 return DropdownMenuItem<String>(
-//                   value: value,
-//                   child: Text(value),
-//                 );
-//               }).toList(),
-//             ),
-//           ],
-//           leading: IconButton(
-//             icon: Icon(Icons.arrow_back),
-//             onPressed: () {
-//               Navigator.pop(context);
-//               Navigator.of(context).push(
-//                 MaterialPageRoute(builder: (context) => BleScreen(title: '')),
-//               ); // Navigate to previous screen
-//             },
-//           ),
-//           flexibleSpace: Container(
-//             decoration: BoxDecoration(
-//               color: Colors.deepPurple[400],
-//             ),
-//           ),
-//         ),
-//         body: _children[_currentIndex],
-//         bottomNavigationBar: CurvedNavigationBar(
-//           height: 50,
-//           backgroundColor: Colors.indigoAccent,
-//           color: Colors.indigo.shade200,
-//           animationDuration: Duration(milliseconds: 300),
-//           onTap: (index) {
-//             setState(() {
-//               _currentIndex = index;
-//             });
-//           },
-//           items: [
-//             Icon(
-//               Icons.home,
-//               color: _currentIndex == 0 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//             Icon(
-//               Icons.image,
-//               color: _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//             Icon(
-//               Icons.history,
-//               color: _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-// Future<void> functionForOption1() async {
-//     final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
-//     if (response.statusCode == 200) {
-//         print('Cam changed');
-//     } else {
-//       print('Cam error: ${response.statusCode}');
-//     }
-// }
-//
-// Future<void> functionForOption2() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=3'));
-//   if (response.statusCode == 200) {
-//       print('Cam changed');
-//   } else {
-//     print('Cam error: ${response.statusCode}');
-//   }
-// }
-//
-// Future<void> functionForOption3() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=2'));
-//   if (response.statusCode == 200) {
-//       print('sensor activated');
-//   } else {
-//     print('G sensor Error: ${response.statusCode}');
-//   }
-// }
-// Future<void> functionForOption4() async {
-//   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3011'));
-//   if (response.statusCode == 200) {
-//       print('system is reset');
-//   } else {
-//     print('System reset Error: ${response.statusCode}');
-//   }
-// }
 
+class FileItem {
+  final String name;
+  final String filePath;
+  // final String size;
+  final String time;
+
+  FileItem(this.name, this.filePath, this.time);
+}
+
+
+// Main Dash Cam page
 class DashCam extends StatefulWidget {
   const DashCam({Key? key}) : super(key: key);
 
@@ -229,23 +84,46 @@ class _DashCamState extends State<DashCam> {
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
   int _currentIndex = 0;
+  bool isCameraStreaming = false;
+  late VlcPlayerController _videoPlayerController;
 
   @override
   void initState() {
     super.initState();
+    _videoPlayerController = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mov',
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+  }
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      _videoPlayerController.stop();
+      _videoPlayerController.dispose();
+    } else {
+      _videoPlayerController = VlcPlayerController.network(
+        'rtsp://192.168.1.254/xxxx.mov',
+        hwAcc: HwAcc.full,
+        autoPlay: true,
+        options: VlcPlayerOptions(),
+      );
+      _videoPlayerController.initialize().then((_) {
+        _videoPlayerController.play();
+      });
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
   }
 
   @override
   void dispose() {
-    _cameraController.dispose();
+    _videoPlayerController.dispose();
     super.dispose();
   }
-
-  final List<Widget> _children = [
-    Home(),
-    Files(),
-    About(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +170,21 @@ class _DashCamState extends State<DashCam> {
                 ),
           ),
         ),
-        body: _children[_currentIndex],
+        // body: _children[_currentIndex],
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            Home(
+              toggleCameraStreaming: toggleCameraStreaming,
+              isCameraStreaming: isCameraStreaming,
+              videoPlayerController: _videoPlayerController,
+            ),
+            Files(
+              isCameraStreaming: isCameraStreaming,
+            ),
+            About(),
+          ],
+        ),
         bottomNavigationBar: CurvedNavigationBar(
           height: 50,
           backgroundColor: Colors.indigoAccent,
@@ -327,23 +219,38 @@ class _DashCamState extends State<DashCam> {
   }
 }
 
+
+// Home class
+// DashCam functionality
+
 class Home extends StatefulWidget {
+  final Function toggleCameraStreaming;
+  final bool isCameraStreaming;
+  final VlcPlayerController videoPlayerController;
+
+  Home({
+    required this.toggleCameraStreaming,
+    required this.isCameraStreaming,
+    required this.videoPlayerController,
+  });
+
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   //WIFI
-  final String ssid = 'Car'; //CARDV-8c8b Mahmudur @ SF Networking
+  final String ssid = 'CARDV';
   final password = '12345678';
+  bool isConnected = false;
+  bool isCameraStreaming = false;
+
 
   //IP Address
   final String ipAddress = '192.168.1.254';
 
   //files
   final String url = 'http://192.168.1.254';
-  bool isConnected = false;
-  bool isCameraStreaming = false;
   bool isFront = false;
   bool isSensor = false;
   List<dynamic> wifiNetworks = [];
@@ -352,6 +259,37 @@ class _HomeState extends State<Home> {
   bool isRecording = false;
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
+
+  // Rtsp Streaming
+  @override
+  void initState() {
+    super.initState();
+    isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
+    initializePlayer();
+  }
+
+  Future<void> initializePlayer() async {
+    await widget.videoPlayerController.initialize();
+    widget.videoPlayerController.play();
+
+    setState(() {
+      isCameraStreaming = true;
+    });
+  }
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      // Stop Camera
+      widget.videoPlayerController.stop();
+    } else {
+      // Open Camera
+      widget.videoPlayerController.play();
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
+  }
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -468,40 +406,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final VlcPlayerController _videoPlayerController =
-      VlcPlayerController.network(
-    'rtsp://192.168.1.254/xxxx.mov',
-    hwAcc: HwAcc.full,
-    autoPlay: true,
-    options: VlcPlayerOptions(),
-  );
-
-  void playVlc() {
-    VlcPlayer(
-      controller: _videoPlayerController,
-      aspectRatio: 16 / 9,
-      placeholder: Center(child: CircularProgressIndicator()),
-    );
-  }
-
-  // VLC PLAYER
-  VlcPlayerController? _controller;
-
-  Future<void> initializePlayer() async {
-    if (_controller != null) {
-      await _controller!.dispose();
-    }
-
-    _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mov',
-      hwAcc: HwAcc.full,
-      autoPlay: true,
-      options: VlcPlayerOptions(),
-    );
-
-    await _controller!.initialize();
-  }
-
+  // Start recording
   Future<void> startRecordingCmd() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
 
@@ -518,6 +423,7 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // Stop recording
   Future<void> stopRecordingCmd() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
 
@@ -575,8 +481,6 @@ class _HomeState extends State<Home> {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        print('Changed to Video Mode');
-        //print(response.body);
         String xmlString = response.body;
         var document = xml.XmlDocument.parse(xmlString);
         var files = document.findAllElements('NAME');
@@ -592,10 +496,9 @@ class _HomeState extends State<Home> {
       print('Error: $e');
     }
   }
+
   Future<void> getDashThumb() async {
-
     String url = 'http://192.168.1.254/NOVATEK/MOVIE/2014_0321_011922_002.MOV?custom=1&cmd=4001';
-
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -608,6 +511,7 @@ class _HomeState extends State<Home> {
       print('Error: $e');
     }
   }
+
   Future<void> takePicture() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=1001';
 
@@ -731,52 +635,16 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
-  // late Uint8List _imageBytes;
-  //
-  // Future<void> captureImage() async {
-  //   final String outputImagePath = '/path/to/output/image.jpg'; // Çıktı görüntüsünün dosya yolu
-  //
-  //   String command =
-  //       '-i rtsp://example.com/stream -frames:v 1 $outputImagePath';
-  //
-  //   int result = await _flutterFFmpeg.execute(command);
-  //   if (result == 0) {
-  //     setState(() {
-  //       _imageBytes = File(outputImagePath).readAsBytesSync();
-  //     });
-  //   }
-  // }
-
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
         child: CircleButton(
-          onPressed: () async {
-            if (isCameraStreaming) {
-              // Stop Camera
-              if (_controller != null) {
-                await _controller!.stop();
-                await _controller!.dispose();
-              }
-              _controller = null;
-            } else {
-              // Open Camera
-              initializePlayer();
-              _controller!.play();
-              playVlc();
-              VlcPlayer(
-                controller: _controller!,
-                aspectRatio: 16 / 9,
-                placeholder: Center(child: CircularProgressIndicator()),
-              );
-            }
-            setDateOfCam();
-            setTimeOfCam();
-
+          onPressed: () {
+            widget.toggleCameraStreaming();
             setState(() {
+              // Update the local variable instead
               isCameraStreaming = !isCameraStreaming;
             });
           },
@@ -787,7 +655,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-// Recording part
+  // Recording part
   Widget buildRecordingButton() {
     return Align(
       alignment: Alignment.topCenter,
@@ -803,8 +671,6 @@ class _HomeState extends State<Home> {
             } else {
               // Start Recording
               changeToVideoMode();
-              // setDateOfCam();
-              // setTimeOfCam();
               startRecordingCmd();
             }
             setState(() {
@@ -818,7 +684,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -831,16 +696,17 @@ class _HomeState extends State<Home> {
               Container(
                 height: 400,
                 width: 400,
-                child: isCameraStreaming && _controller != null
+                // child: isCameraStreaming && _controller != null
+                child: isCameraStreaming && widget.videoPlayerController != null
                     ? VlcPlayer(
-                        controller: _controller!,
-                        aspectRatio: 16 / 9,
-                        placeholder: Center(child: CircularProgressIndicator()),
-                      )
+                  controller: widget.videoPlayerController,
+                  aspectRatio: 16 / 9,
+                  placeholder: Center(child: CircularProgressIndicator()),
+                )
                     : Image.asset(
-                        'images/test_background3.jpg',
-                        fit: BoxFit.fitWidth,
-                      ),
+                  'images/test_background3.jpg',
+                  fit: BoxFit.fitWidth,
+                ),
               ),
               SizedBox(height: 30),
               SingleChildScrollView(
@@ -868,8 +734,6 @@ class _HomeState extends State<Home> {
                                   changeToPhotoMode();
                                   takePicture();
                                   changeToVideoMode();
-                                  //getDashThumb();
-                                  //dashFileList();
                                 },
                                 color: Color(0xFFa8caba),
                                 text: 'Capture',
@@ -914,14 +778,26 @@ class _HomeState extends State<Home> {
   }
 }
 
+// File class
 class Files extends StatefulWidget {
+  final bool isCameraStreaming;
+
+  Files({
+    required this.isCameraStreaming,
+  });
+
   @override
   _FilesState createState() => _FilesState();
 }
 
 class _FilesState extends State<Files> {
-  int _currentIndex = 0;
-  // VlcPlayerController? _controller
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch files from the camera on page load
+    getFilesFromCamera();
+  }
 
   List<String> items = [
     "All",
@@ -936,16 +812,68 @@ class _FilesState extends State<Files> {
     Icons.photo,
   ];
   int current = 0;
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _controller = (context as _HomeState)._controller;
-  //   // _cameras = (context as _HomeState)._cameras;
-  // }
+  Future<void> getFilesFromCamera() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3015';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      // print('Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final xmlDoc = xml.XmlDocument.parse(response.body);
+        final fileElements = xmlDoc.findAllElements('File');
+
+        for (final fileElement in fileElements) {
+          final nameElement = fileElement.findElements('NAME').single;
+          final filePathElement = fileElement.findElements('FPATH').single;
+          final timeElement = fileElement.findElements('TIME').single;
+
+          final name = nameElement.text;
+          final filePath = filePathElement.text;
+          final time = timeElement.text;
+
+          final fileItem = FileItem(name, filePath, time);
+
+          if (name.endsWith('.JPG')) {
+            setState(() {
+              images.add(fileItem);
+            });
+          } else if (name.endsWith('.MP4')) {
+            setState(() {
+              videos.add(fileItem);
+            });
+          }
+        }
+      } else {
+        print('Error occurred: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    List<FileItem> displayItems;
+
+    if (current == 1) {
+      // Show videos
+      displayItems = videos;
+    } else if (current == 2) {
+      // Show images
+      displayItems = images;
+    } else {
+      // Show all items
+      displayItems = [...videos, ...images];
+    }
+
+    final bool hasVideos = videos.isNotEmpty;
+    final bool hasImages = images.isNotEmpty;
+    final bool showTabs = hasVideos || hasImages;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -955,64 +883,76 @@ class _FilesState extends State<Files> {
         child: Column(
           children: [
             /// CUSTOM TABBAR
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ListView.builder(
+            if (showTabs)
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   itemCount: items.length,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (ctx, index) {
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              current = index;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.all(5),
-                            width: 90,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: current == index
-                                  ? Colors.white70
-                                  : Colors.white54,
-                              borderRadius: current == index
-                                  ? BorderRadius.circular(15)
-                                  : BorderRadius.circular(10),
-                              border: current == index
-                                  ? Border.all(
-                                      color: Colors.deepPurpleAccent, width: 2)
-                                  : null,
-                            ),
-                            child: Center(
-                              child: Text(
-                                items[index],
-                                style: GoogleFonts.laila(
+                    final bool showTab = (index == 0 && hasVideos && hasImages) ||
+                        (index == 1 && hasVideos) ||
+                        (index == 2 && hasImages);
+
+                    return Visibility(
+                      visible: showTab,
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                current = index;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.all(5),
+                              width: 90,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: current == index
+                                    ? Colors.white70
+                                    : Colors.white54,
+                                borderRadius: current == index
+                                    ? BorderRadius.circular(15)
+                                    : BorderRadius.circular(10),
+                                border: current == index
+                                    ? Border.all(
+                                    color: Colors.deepPurpleAccent, width: 2)
+                                    : null,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  items[index],
+                                  style: GoogleFonts.laila(
                                     fontWeight: FontWeight.w500,
                                     color: current == index
                                         ? Colors.black
-                                        : Colors.grey),
+                                        : Colors.grey,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Visibility(
+                          Visibility(
                             visible: current == index,
                             child: Container(
                               width: 5,
                               height: 5,
                               decoration: const BoxDecoration(
-                                  color: Colors.deepPurpleAccent,
-                                  shape: BoxShape.circle),
-                            ))
-                      ],
+                                color: Colors.deepPurpleAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
-                  }),
-            ),
+                  },
+                ),
+              ),
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
@@ -1021,21 +961,41 @@ class _FilesState extends State<Files> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        icons[current],
-                        size: 200,
-                        color: Colors.deepPurple,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        items[current],
-                        style: GoogleFonts.laila(
+                      if(displayItems.isEmpty)
+                        Icon(
+                          icons[current],
+                          size: 200,
+                          color: Colors.deepPurple,
+                        ),
+                      if(displayItems.isEmpty)
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      if(displayItems.isEmpty)
+                        Text(
+                          items[current],
+                          style: GoogleFonts.laila(
                             fontWeight: FontWeight.w500,
                             fontSize: 30,
-                            color: Colors.deepPurple),
-                      ),
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                      SizedBox(height: 20),
+                      if (displayItems.isNotEmpty)
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: displayItems.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(displayItems[index].name),
+                              subtitle: Text(displayItems[index].time),
+                              onTap: () {
+                                // openFile(displayItems[index].filePath);
+                              },
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -1079,24 +1039,8 @@ class About extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Container(
         alignment: Alignment.center,
-        // child: ElevatedButton(
-        //   child: Text('Display Files'),
-        //   onPressed: () {
-        //     Navigator.of(context).push(MaterialPageRoute(
-        //       builder: (context) => WebviewScaffold(
-        //         url: weburl,
-        //         appBar: AppBar(
-        //           title: Text('Files'),
-        //         ),
-        //       ),
-        //     ));
-        //   },
-        // ),
-        child: AspectRatio(aspectRatio: 1,
-          child: WebViewWidget(controller: controller),
-
+          child: Text("About"),
         ),
-      ),
-    );
+      );
   }
 }
