@@ -23,7 +23,14 @@ import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:xml/xml.dart' as xml;
-//import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+
+import 'package:video_player/video_player.dart';
+import 'package:flutter_image/flutter_image.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:open_file/open_file.dart';
+
+
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -792,6 +799,47 @@ class Files extends StatefulWidget {
 
 class _FilesState extends State<Files> {
 
+  String? selectedFilePath;
+  VideoPlayerController? videoController;
+
+  // Open File
+ // else if (fileItem.name.endsWith('.MP4')) {
+ //      videoController = VideoPlayerController.network(fileItem.filePath)
+ //        ..initialize().then((_) {
+ //          setState(() {
+ //            videoController!.play();
+ //          });
+ //        });
+ //    }
+ //  }
+
+  // void openFile(String filePath) async {
+  //   print("Check file path");
+  //   print(filePath);
+  //   final appDir = await getTemporaryDirectory();
+  //   final tempFilePath = '${appDir.path}/temp_file';
+  //
+  //   // Copy the source file to the temporary file path
+  //   final sourceFile = File(filePath);
+  //   final tempFile = File(tempFilePath);
+  //   await sourceFile.copy(tempFile.path);
+  //
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (context) => Image.file(tempFile),
+  //     ),
+  //   );
+  // }
+
+  void openFile(String filePath) async {
+    try {
+      final result = await OpenFile.open(filePath);
+      print(result);
+    } catch (e) {
+      throw 'Error opening file: $e';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -856,6 +904,13 @@ class _FilesState extends State<Files> {
   }
 
   @override
+  void dispose() {
+    videoController?.dispose();
+    super.dispose();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     List<FileItem> displayItems;
 
@@ -870,6 +925,7 @@ class _FilesState extends State<Files> {
       displayItems = [...videos, ...images];
     }
 
+    final bool allFiles = videos.isNotEmpty;
     final bool hasVideos = videos.isNotEmpty;
     final bool hasImages = images.isNotEmpty;
     final bool showTabs = hasVideos || hasImages;
@@ -882,77 +938,65 @@ class _FilesState extends State<Files> {
         margin: const EdgeInsets.all(45),
         child: Column(
           children: [
-            /// CUSTOM TABBAR
-            if (showTabs)
-              SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: items.length,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (ctx, index) {
-                    final bool showTab = (index == 0 && hasVideos && hasImages) ||
-                        (index == 1 && hasVideos) ||
-                        (index == 2 && hasImages);
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                itemCount: items.length,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (ctx, index) {
+                  final bool showTab =
+                      (index == 0 && (allFiles || !showTabs)) || (index == 1 && (hasVideos || !showTabs)) || (index == 2 && (hasImages || !showTabs));
 
-                    return Visibility(
-                      visible: showTab,
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                current = index;
-                              });
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.all(5),
-                              width: 90,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                color: current == index
-                                    ? Colors.white70
-                                    : Colors.white54,
-                                borderRadius: current == index
-                                    ? BorderRadius.circular(15)
-                                    : BorderRadius.circular(10),
-                                border: current == index
-                                    ? Border.all(
-                                    color: Colors.deepPurpleAccent, width: 2)
-                                    : null,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  items[index],
-                                  style: GoogleFonts.laila(
-                                    fontWeight: FontWeight.w500,
-                                    color: current == index
-                                        ? Colors.black
-                                        : Colors.grey,
-                                  ),
+                  return Visibility(
+                    visible: showTab,
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              current = index;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.all(5),
+                            width: 90,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: current == index ? Colors.white70 : Colors.white54,
+                              borderRadius: current == index ? BorderRadius.circular(15) : BorderRadius.circular(10),
+                              border: current == index ? Border.all(color: Colors.deepPurpleAccent, width: 2) : null,
+                            ),
+                            child: Center(
+                              child: Text(
+                                items[index],
+                                style: GoogleFonts.laila(
+                                  fontWeight: FontWeight.w500,
+                                  color: current == index ? Colors.black : Colors.grey,
                                 ),
                               ),
                             ),
                           ),
-                          Visibility(
-                            visible: current == index,
-                            child: Container(
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                color: Colors.deepPurpleAccent,
-                                shape: BoxShape.circle,
-                              ),
+                        ),
+                        Visibility(
+                          visible: current == index,
+                          child: Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: Colors.deepPurpleAccent,
+                              shape: BoxShape.circle,
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
@@ -961,17 +1005,14 @@ class _FilesState extends State<Files> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if(displayItems.isEmpty)
+                      if (displayItems.isEmpty)
                         Icon(
                           icons[current],
                           size: 200,
                           color: Colors.deepPurple,
                         ),
-                      if(displayItems.isEmpty)
-                        const SizedBox(
-                          height: 10,
-                        ),
-                      if(displayItems.isEmpty)
+                      if (displayItems.isEmpty) const SizedBox(height: 10),
+                      if (displayItems.isEmpty)
                         Text(
                           items[current],
                           style: GoogleFonts.laila(
@@ -982,17 +1023,66 @@ class _FilesState extends State<Files> {
                         ),
                       SizedBox(height: 20),
                       if (displayItems.isNotEmpty)
-                        ListView.builder(
+                        // ListView.builder(
+                        //   shrinkWrap: true,
+                        //   physics: NeverScrollableScrollPhysics(),
+                        //   itemCount: displayItems.length,
+                        //   itemBuilder: (context, index) {
+                        //     return ListTile(
+                        //       title: Text(displayItems[index].name),
+                        //       subtitle: Text(displayItems[index].time),
+                        //       onTap: () {
+                        //         openFile(displayItems[index].name);
+                        //       },
+                        //     );
+                        //   },
+                        // ),
+                        // ListView.builder(
+                        //   shrinkWrap: true,
+                        //   physics: NeverScrollableScrollPhysics(),
+                        //   itemCount: displayItems.length,
+                        //   itemBuilder: (context, index) {
+                        //     final bool isSelected =
+                        //         selectedFilePath == displayItems[index].filePath;
+                        //     return ListTile(
+                        //       title: Text(displayItems[index].name),
+                        //       subtitle: Text(displayItems[index].time),
+                        //       tileColor: isSelected ? Colors.blueGrey.withOpacity(0.3) : null,
+                        //       onTap: () {
+                        //         openFile(displayItems[index].filePath);
+                        //       },
+                        //     );
+                        //   },
+                        // )
+                        GridView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Adjust the number of columns as desired
+                            childAspectRatio: 1.0, // Adjust the aspect ratio as desired
+                          ),
                           itemCount: displayItems.length,
                           itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(displayItems[index].name),
-                              subtitle: Text(displayItems[index].time),
+                            final bool isSelected = selectedFilePath == displayItems[index].filePath;
+                            return GestureDetector(
                               onTap: () {
-                                // openFile(displayItems[index].filePath);
+                                openFile(displayItems[index].filePath);
                               },
+                              child: Card(
+                                color: isSelected ? Colors.blueGrey.withOpacity(0.3) : null,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Display the image or video thumbnail here
+                                    // You can use Image.file or VideoPlayer widget from flutter_image package
+
+                                    ListTile(
+                                      title: Text(displayItems[index].name),
+                                      subtitle: Text(displayItems[index].time),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -1011,26 +1101,26 @@ class _FilesState extends State<Files> {
 class About extends StatelessWidget {
   final String weburl = 'http://192.168.1.254/CARDV/PHOTO/';
 
-  WebViewController controller = WebViewController()
-  ..setJavaScriptMode(JavaScriptMode.unrestricted)
-  ..setBackgroundColor(const Color(0x00000000))
-  ..setNavigationDelegate(
-  NavigationDelegate(
-  onProgress: (int progress) {
-  // Update loading bar.
-  },
-  onPageStarted: (String url) {},
-  onPageFinished: (String url) {},
-  onWebResourceError: (WebResourceError error) {},
-  onNavigationRequest: (NavigationRequest request) {
-  if (request.url.startsWith('http://192.168.1.254/CARDV/MOVIE/')) {
-    return NavigationDecision.prevent;
-  }
-    return NavigationDecision.navigate;
-  },
-  ),
-  )
-  ..loadRequest(Uri.parse('http://192.168.1.254/CARDV/MOVIE/'));
+  // WebViewController controller = WebViewController()
+  // ..setJavaScriptMode(JavaScriptMode.unrestricted)
+  // ..setBackgroundColor(const Color(0x00000000))
+  // ..setNavigationDelegate(
+  // NavigationDelegate(
+  // onProgress: (int progress) {
+  // // Update loading bar.
+  // },
+  // onPageStarted: (String url) {},
+  // onPageFinished: (String url) {},
+  // onWebResourceError: (WebResourceError error) {},
+  // onNavigationRequest: (NavigationRequest request) {
+  // if (request.url.startsWith('http://192.168.1.254/CARDV/MOVIE/')) {
+  //   return NavigationDecision.prevent;
+  // }
+  //   return NavigationDecision.navigate;
+  // },
+  // ),
+  // )
+  // ..loadRequest(Uri.parse('http://192.168.1.254/CARDV/MOVIE/'));
 
   @override
   Widget build(BuildContext context) {
