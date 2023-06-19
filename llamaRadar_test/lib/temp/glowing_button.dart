@@ -70,7 +70,7 @@ class _GlowingButton2State extends State<GlowingButton2> {
         // transform: Matrix4.identity()..scale(scale),
         duration: Duration(milliseconds: 200),
         height: 52,
-        width: 160,
+        width: 180,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(40),
             gradient: LinearGradient(

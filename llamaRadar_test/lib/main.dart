@@ -1,6 +1,6 @@
 import 'SideBar.dart';
 import 'package:flutter/material.dart';
-import 'package:lamaradar/temp//CollisionWarningPage.dart';
+import 'package:lamaradar/temp//CollisionWarningPage3.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 
 class WifiPage extends StatefulWidget {
@@ -16,7 +16,6 @@ class _WifiPageState extends State<WifiPage> {
     setState(() {
       _selectedWifi = wifiName;
     });
-    // TODO: Connect to selected Wi-Fi.
   }
 
   @override

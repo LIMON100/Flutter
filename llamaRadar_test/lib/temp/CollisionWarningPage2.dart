@@ -12,7 +12,7 @@ import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
-import 'BlinkingIconButton.dart';
+// import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -98,55 +98,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return false;
   }
 
-  // void _scanWifiNetworks(BuildContext context) async {
-  //   // if (isConnected) {
-  //   //   FlutterIotWifi.disconnect().then((value) {
-  //   //     setState(() {
-  //   //       isConnected = false;
-  //   //     });
-  //   //     print("Disconnect initiated: $value");
-  //   //   });
-  //   // }
-  //   if (await _checkPermissions()) {
-  //     try {
-  //       bool? isSuccess = await FlutterIotWifi.scan();
-  //       if (isSuccess!) {
-  //         // Wait for the scan process to complete
-  //         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
-  //
-  //         List<dynamic> networks = await FlutterIotWifi.list();
-  //         showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return Dialog(
-  //               child: Container(
-  //                 width: 300, // Adjust the width as needed
-  //                 child: ListView.builder(
-  //                   shrinkWrap: true,
-  //                   itemCount: networks.length,
-  //                   itemBuilder: (context, index) {
-  //                     final wifiNetwork = networks[index];
-  //                     return ListTile(
-  //                       title: Text(wifiNetwork.toString()),
-  //                       onTap: () {
-  //                         _connect(context, wifiNetwork.toString());
-  //                         Navigator.of(context).pop(); // Close the dialog after selection
-  //                       },
-  //                     );
-  //                   },
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         );
-  //       } else {
-  //         print('Failed to scan Wi-Fi networks');
-  //       }
-  //     } catch (e) {
-  //       print('Failed to scan Wi-Fi networks: $e');
-  //     }
-  //   }
-  // }
   void _scanWifiNetworks(BuildContext context) async {
     if (isConnected) {
       FlutterIotWifi.disconnect().then((value) {
@@ -429,27 +380,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  Color _getColor() {
-    if (_value.isEmpty || _value.length < 29) {
-      return Colors.black;
-    }
-    switch (int.parse(_value[28])) {
-      case 1:
-      case 3:
-        return _getLocation() == 'Right Notification Warning'
-            ? Colors.yellow
-            : Colors.black;
-      case 2:
-      case 4:
-      case 5:
-        return _getLocation() == 'Rear Notification Danger'
-            ? Colors.red
-            : Colors.black;
-      default:
-        return Colors.black;
-    }
-  }
-
   Widget _getCircle(Color color) {
     double opacity = 1.0;
     if (_getLocation() == 'Left Notification Danger' ||
@@ -513,13 +443,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
-      if (right_danger_counter >= 8) {
-        showStreamPopup();
-        right_danger_counter = 0;
-      }
-      right_danger_counter = right_danger_counter + 1;
-      print("FIND RIGHT NOTIFICAITON COUNTER");
-      print(right_danger_counter);
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -549,6 +472,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
+      if (right_danger_counter >= 2) {
+        showStreamPopup();
+        right_danger_counter = 0;
+      }
+      right_danger_counter = right_danger_counter + 1;
+      print("FIND RIGHT NOTIFICAITON COUNTER");
+      print(right_danger_counter);
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
       // greenPlayer.setAsset('assets/danger_beep.mp3');
@@ -646,16 +576,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     if (_controller == null) {
       return;
     }
-
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Dashcam'),
+                Text('Rear Dashcam'),
                 SizedBox(height: 16),
                 Container(
                   width: MediaQuery.of(context).size.width,
@@ -793,31 +723,31 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
 
                     // ligts
-                    SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                            icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
-                                .lightbulb_outline),
-                            onPressed: () {
-                              setState(() {
-                                _lightOn1 = !_lightOn1;
-                              });
-                            }
-                        ),
-                        SizedBox(width: 140),
-                        IconButton(
-                            icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
-                                .lightbulb_outline),
-                            onPressed: () {
-                              setState(() {
-                                _lightOn2 = !_lightOn2;
-                              });
-                            }
-                        ),
-                      ],
-                    ),
+                    // SizedBox(height: 30),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     IconButton(
+                    //         icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
+                    //             .lightbulb_outline),
+                    //         onPressed: () {
+                    //           setState(() {
+                    //             _lightOn1 = !_lightOn1;
+                    //           });
+                    //         }
+                    //     ),
+                    //     SizedBox(width: 140),
+                    //     IconButton(
+                    //         icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
+                    //             .lightbulb_outline),
+                    //         onPressed: () {
+                    //           setState(() {
+                    //             _lightOn2 = !_lightOn2;
+                    //           });
+                    //         }
+                    //     ),
+                    //   ],
+                    // ),
 
                     // Rear warning
                     SizedBox(height: 30),
@@ -973,10 +903,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(width: 120),
-                          Image.asset(
-                            'images/llama_img_web2.jpg',
-                            height: 100,
-                            width: 130,
+                          Container(
+                            color: Colors.transparent,
+                            child: Image.asset(
+                              'images/llama_img_web3.jpg',
+                              height: 100,
+                              width: 130,
+                            ),
                           ),
                           SizedBox(width: 16),
                           FloatingActionButton(

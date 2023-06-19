@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 import 'package:camera/camera.dart';
-import 'package:lamaradar/temp/temp_warning.dart';
+// import 'package:lamaradar/temp/temp_warning.dart';
 
 class WarningPage extends StatefulWidget {
   @override
@@ -146,12 +146,12 @@ class _WarningPageState extends State<WarningPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pop(context);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TempWarning(),
-            ),
-          );
+          // Navigator.pop(context);
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (context) => (),
+          //   ),
+          // );
         },
         child: Icon(Icons.power_settings_new),
       ),
