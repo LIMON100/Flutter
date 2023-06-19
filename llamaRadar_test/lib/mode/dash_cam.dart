@@ -22,15 +22,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
-
+import 'package:xml/xml.dart' as xml;
 
 import 'package:video_player/video_player.dart';
 import 'package:flutter_image/flutter_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file/open_file.dart';
-
-
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -105,6 +103,27 @@ class _DashCamState extends State<DashCam> {
     );
   }
 
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      _videoPlayerController.stop();
+      _videoPlayerController.dispose();
+    } else {
+      _videoPlayerController = VlcPlayerController.network(
+        'rtsp://192.168.1.254/xxxx.mov',
+        hwAcc: HwAcc.full,
+        autoPlay: true,
+        options: VlcPlayerOptions(),
+      );
+      _videoPlayerController.initialize().then((_) {
+        _videoPlayerController.play();
+      });
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
+  }
+
   @override
   void dispose() {
     _videoPlayerController.dispose();
@@ -130,6 +149,11 @@ class _DashCamState extends State<DashCam> {
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DashSettings()),
+                );
               },
             ),
           ],
@@ -203,7 +227,6 @@ class _DashCamState extends State<DashCam> {
 
 // Home class
 // DashCam functionality
-
 class Home extends StatefulWidget {
   final Function toggleCameraStreaming;
   final bool isCameraStreaming;
@@ -221,13 +244,19 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //WIFI
+  final String ssid = 'CARDV';
+  final password = '12345678';
+  bool isConnected = false;
+  bool isCameraStreaming = false;
+
 
   //IP Address
   final String ipAddress = '192.168.1.254';
 
   //files
   final String url = 'http://192.168.1.254';
-
+  bool isFront = false;
+  bool isSensor = false;
   List<dynamic> wifiNetworks = [];
 
   // Recording variable
@@ -235,6 +264,38 @@ class _HomeState extends State<Home> {
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
 
+  // Rtsp Streaming
+  @override
+  void initState() {
+    super.initState();
+    isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
+    initializePlayer();
+  }
+
+  Future<void> initializePlayer() async {
+    await widget.videoPlayerController.initialize();
+    widget.videoPlayerController.play();
+
+    setState(() {
+      isCameraStreaming = true;
+    });
+  }
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      // Stop Camera
+      widget.videoPlayerController.stop();
+    } else {
+      // Open Camera
+      setDateOfCam();
+      setTimeOfCam();
+      widget.videoPlayerController.play();
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+    });
+  }
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -253,7 +314,7 @@ class _HomeState extends State<Home> {
         print("Disconnect initiated: $value");
 
         // Start the Wi-Fi scan after disconnecting
-        _startWifiScan(context);
+        // _startWifiScan(context);
       });
     } else if (await _checkPermissions()) {
       // Start the Wi-Fi scan directly
@@ -308,7 +369,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-
+  // dialog window
   void _connect(BuildContext context, String ssid) async {
     if (await _checkPermissions()) {
       if (isConnected) {
@@ -327,27 +388,79 @@ class _HomeState extends State<Home> {
         });
       }
       // Delay the pop to ensure the connection process is completed
-      Future.delayed(const Duration(seconds: 3), () {
-        Navigator.of(context).pop(); // Close the dialog window
-      });
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Permission Error'),
-            content: Text('Please turn on Wi-Fi first.'),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      // Future.delayed(const Duration(seconds: 3), () {
+      //   Navigator.of(context).pop(); // Close the dialog window
+      // });
+    }
+    // } else {
+    //   showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return AlertDialog(
+    //         title: Text('Permission Error'),
+    //         content: Text('Please turn on Wi-Fi first.'),
+    //         actions: [
+    //           ElevatedButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //             child: Text('OK'),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
+  }
+
+  // Start recording
+  Future<void> startRecordingCmd() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Recording started...');
+      } else {
+        print('Error occured: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  // Stop recording
+  Future<void> stopRecordingCmd() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Recording stopped...');
+      } else {
+        print('Error occured while stopping record: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> changeToPhotoMode() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=0';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Changed to Photo Mode');
+      } else {
+        print(
+            'Error occured while changing photo mode: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
@@ -431,7 +544,7 @@ class _HomeState extends State<Home> {
 
   String getCurrentTime() {
     var now = DateTime.now();
-    var formatter = DateFormat('HH:mm:ss');
+    var formatter = DateFormat('hh:mm:ss');
     String formattedTime = formatter.format(now);
     return formattedTime;
   }
@@ -536,6 +649,7 @@ class _HomeState extends State<Home> {
         margin: EdgeInsets.only(top: 10),
         child: CircleButton(
           onPressed: () {
+            setDateOfCam();
             widget.toggleCameraStreaming();
             setState(() {
               // Update the local variable instead
@@ -565,6 +679,8 @@ class _HomeState extends State<Home> {
             } else {
               // Start Recording
               changeToVideoMode();
+              setDateOfCam();
+              setTimeOfCam();
               startRecordingCmd();
             }
             setState(() {
@@ -574,206 +690,6 @@ class _HomeState extends State<Home> {
           color: isRecording ? Colors.red : Color(0xFFa8caba),
           text: isRecording ? 'Stop Recording' : 'Start Recording',
         ),
-      ),
-    );
-  }
-
-  Future<void> startRecordingCmd() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Recording started...');
-      } else {
-        print('Error occured: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> stopRecordingCmd() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
-
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Recording stopped...');
-      } else {
-        print('Error occured while stopping record: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> changeToPhotoMode() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=0';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Changed to Photo Mode');
-      } else {
-        print('Error occured while changing photo mode: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-
-  Future<void> changeToVideoMode() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=1';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Changed to Video Mode');
-      } else {
-        print('Error occured while changing to video mode: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> takePicture() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=1001';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Image captured');
-      } else {
-        print('Error occured: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  // String getCurrentDate() {
-  //   var now = DateTime.now();
-  //   var formatter = DateFormat('yyyy-MM-dd');
-  //   String formattedDate = formatter.format(now);
-  //   return formattedDate;
-  // }
-  //
-  // String getCurrentTime() {
-  //   var now = DateTime.now();
-  //   var formatter = DateFormat('HH:mm:ss');
-  //   String formattedTime = formatter.format(now);
-  //   return formattedTime;
-  // }
-  //
-  // Future<void> setDateOfCam() async {
-  //   String currentDate = getCurrentDate();
-  //   print(currentDate);
-  //   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentDate'));
-  //   if (response.statusCode == 200) {
-  //     setState(() {
-  //       fileList = json.decode(response.body);
-  //     });
-  //   } else {
-  //     print('Date error: ${response.statusCode}');
-  //   }
-  // }
-  //
-  // Future<void> setTimeOfCam() async {
-  //   String currentTime = getCurrentTime();
-  //   print(currentTime);
-  //   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
-  //   if (response.statusCode == 200) {
-  //     setState(() {
-  //       fileList = json.decode(response.body);
-  //     });
-  //   } else {
-  //     print('Time error: ${response.statusCode}');
-  //   }
-  // }
-  // retrieving files
-
-  List<String> fileList = [];
-
-
-  Future<void> fetchFiles() async {
-    final response = await http.get(Uri.parse('http://192.168.1.254'));
-    if (response.statusCode == 200) {
-      setState(() {
-        fileList = json.decode(response.body);
-      });
-    } else {
-      print('File error: ${response.statusCode}');
-    }
-  }
-
-//  final String webUrl = 'http://192.168.1.254/';
-
-  // open close camera
-  Widget buildCameraButton() {
-    return Positioned(
-      top: 10,
-      child: CircleButton(
-        onPressed: () async {
-          if (isCameraStreaming) {
-            // Stop Camera
-            if (_controller != null) {
-              await _controller!.stop();
-              await _controller!.dispose();
-            }
-            _controller = null;
-          } else {
-            // Open Camera
-            initializePlayer();
-            _controller!.play();
-            playVlc();
-            VlcPlayer(
-              controller: _controller!,
-              aspectRatio: 16 / 9,
-              placeholder: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          setState(() {
-            isCameraStreaming = !isCameraStreaming;
-          });
-        },
-        color: isCameraStreaming ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-        text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
-      ),
-    );
-  }
-
-  // Recording part
-  Widget buildRecordingButton() {
-    return Positioned(
-      top: 10,
-      child: CircleButton(
-        onPressed: () async {
-          if (isRecording) {
-            // Stop record
-            stopRecordingCmd();
-          } else {
-            // Start Recording
-            changeToVideoMode();
-            // setDateOfCam();
-            // setTimeOfCam();
-            startRecordingCmd();
-          }
-          setState(() {
-            isRecording = !isRecording;
-          });
-        },
-        color: isRecording ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-        text: isRecording ? 'Stop Recording' : 'Start Recording',
       ),
     );
   }
@@ -792,10 +708,20 @@ class _HomeState extends State<Home> {
                 width: 400,
                 // child: isCameraStreaming && _controller != null
                 child: isCameraStreaming && widget.videoPlayerController != null
-                    ? VlcPlayer(
-                  controller: widget.videoPlayerController,
-                  aspectRatio: 16 / 9,
-                  placeholder: Center(child: CircularProgressIndicator()),
+                //     ? VlcPlayer(
+                //   controller: widget.videoPlayerController,
+                //   aspectRatio: 16 / 9,
+                //   placeholder: Center(child: CircularProgressIndicator()),
+                // )
+                    ? Transform.rotate(
+                  angle: 3.14159,
+                  alignment: Alignment.center,
+                  //transform: Matrix4.rotationY(1*2*3.14159),
+                  child: VlcPlayer(
+                    controller: widget.videoPlayerController,
+                    aspectRatio: 16 / 9,
+                    placeholder: Center(child: CircularProgressIndicator()),
+                  ),
                 )
                     : Image.asset(
                   'images/test_background3.jpg',
@@ -813,71 +739,58 @@ class _HomeState extends State<Home> {
                         child: buildCameraButton(),
                       ),
 
-
-                      ),
-
                       SizedBox(height: 5),
-                      Row(
-                        children:[
-                          SizedBox(width: 15),
-                          // Positioned(
-                          //   right: 10,
-                          //   child: CircleButton(
-                          //     onPressed: () {
-                          //       //send stop command
-                          //       stopRecordingCmd();
-                          //       //_videoPlayerController.stopRecording();
-                          //     },
-                          //     color: Colors.deepPurpleAccent,
-                          //     text: 'Stop Recording',
-                          //   ),
-                          // ),
-                          // SizedBox(width: 1),
-                          // Positioned(
-                          //   // right: 70,
-                          //   child: CircleButton(
-                          //     onPressed: () {
-                          //       //send record command
-                          //       changeToVideoMode();
-                          //       // setDateOfCam();
-                          //       // setTimeOfCam();
-                          //       startRecordingCmd();
-                          //       setState(() {
-                          //         var _buttonColor;
-                          //         if (_buttonColor == Colors.red) {
-                          //           _buttonColor = Colors.blue;
-                          //         } else {
-                          //           _buttonColor = Colors.red;
-                          //         }
-                          //       });
-                          //       //_videoPlayerController.startRecording("/sdcard/test/");
-                          //     },
-                          //     color: Colors.deepPurpleAccent,
-                          //     text: 'Start Recording',
-                          //   ),
-                          // ),
-                          SizedBox(width: 80),
-                          buildRecordingButton(),
-                          SizedBox(width: 15),
-                          Positioned(
-                            top: 2,
-                            child: CircleButton(
-                              onPressed: () {
-                                changeToPhotoMode();
-                                takePicture();
-                                changeToVideoMode();
-                              },
-                              color: Colors.deepPurpleAccent,
-                              text: 'Capture',
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .center, // Align buttons in the center
+                          children: [
+                            buildRecordingButton(),
+                            SizedBox(width: 15),
+                            Align(
+                              alignment: Alignment.center,
+                              child: CircleButton(
+                                onPressed: () {
+                                  setDateOfCam();
+                                  setTimeOfCam();
+                                  changeToPhotoMode();
+                                  takePicture();
+                                  changeToVideoMode();
+                                },
+                                color: Color(0xFFa8caba),
+                                text: 'Capture',
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-
+              SizedBox(height: 100),
+              // InkWell(
+              //   onTap: () {
+              //     _scanWifiNetworks(context);
+              //   },
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Icon(
+              //         Icons.wifi,
+              //         color: isConnected ? Colors.green : Colors.black,
+              //         size: 50,
+              //       ),
+              //       Text(
+              //         isConnected ? 'Disconnected' : 'Connect WIFI',
+              //         style: TextStyle(
+              //           color: isConnected ? Colors.green : Colors.black,
+              //           fontSize: 20,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -889,6 +802,12 @@ class _HomeState extends State<Home> {
 // File class
 class Files extends StatefulWidget {
   final bool isCameraStreaming;
+  // final bool isLoadingFiles;
+
+  Files({
+    required this.isCameraStreaming,
+    // required this.isLoadingFiles,
+  });
 
   @override
   _FilesState createState() => _FilesState();
@@ -896,8 +815,102 @@ class Files extends StatefulWidget {
 
 class _FilesState extends State<Files> {
 
-];
+  String? selectedFilePath;
+  VideoPlayerController? videoController;
+
+  // Open File
+  void openImageOrPlayVideo(String file) {
+    if (file.endsWith('.JPG')) {
+      // Display the image
+      String thumbnailUrl = 'http://192.168.1.254/CARDV/Photo/$file';
+      print(thumbnailUrl);
+      // Show the image using a dialog or navigate to a new screen
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          contentPadding: EdgeInsets.all(0.0),
+          content: Image.network(thumbnailUrl),
+        ),
+      );
+    } else if (file.endsWith('.MP4')) {
+      // Play the video
+      String videoUrl = 'http://192.168.1.254/CARDV/Movie/$file';
+
+      // Initialize the video player controller
+      VideoPlayerController controller = VideoPlayerController.network(videoUrl);
+
+      // Show the video player widget
+      showDialog(
+        context: context,
+        builder: (context) {
+          // Add a listener to detect when the dialog is dismissed
+          void handleDialogDismiss() {
+            controller.pause(); // Pause the video playback
+            controller.seekTo(Duration.zero); // Rewind the video to the beginning
+            controller.dispose(); // Dispose of the video player controller
+          }
+
+          // Create the dialog content with video player and cross icon
+          Widget dialogContent = GestureDetector(
+            onTap: () {}, // Prevent accidental tap dismissal
+            child: AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: Stack(
+                children: [
+                  VideoPlayer(controller),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: Icon(Icons.close_rounded),
+                      onPressed: () {
+                        handleDialogDismiss();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+
+          // Initialize and play the video
+          controller.initialize().then((_) {
+            controller.play();
+          });
+
+          return AlertDialog(
+            contentPadding: EdgeInsets.all(0.0),
+            content: dialogContent,
+          );
+        },
+      );
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch files from the camera on page load
+    getFilesFromCamera();
+  }
+
+  List<String> items = [
+    "All",
+    "Video",
+    "Photos",
+  ];
+
+  /// List of body icon
+  List<IconData> icons = [
+    Icons.home,
+    Icons.video_file,
+    Icons.photo,
+  ];
+  int current = 0;
+  List<FileItem> images = [];
   List<FileItem> videos = [];
+  bool isLoadingFiles = false;
 
   Future<void> getFilesFromCamera() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=3015';
@@ -942,6 +955,7 @@ class _FilesState extends State<Files> {
   @override
   void dispose() {
     videoController?.dispose();
+
     super.dispose();
   }
 
@@ -1059,74 +1073,79 @@ class _FilesState extends State<Files> {
                         ),
                       SizedBox(height: 20),
                       if (displayItems.isNotEmpty)
-                        // ListView.builder(
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //   itemCount: displayItems.length,
-                        //   itemBuilder: (context, index) {
-                        //     return ListTile(
-                        //       title: Text(displayItems[index].name),
-                        //       subtitle: Text(displayItems[index].time),
-                        //       onTap: () {
-                        //         openFile(displayItems[index].name);
-                        //       },
-                        //     );
-                        //   },
-                        // ),
-                        // ListView.builder(
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //   itemCount: displayItems.length,
-                        //   itemBuilder: (context, index) {
-                        //     final bool isSelected =
-                        //         selectedFilePath == displayItems[index].filePath;
-                        //     return ListTile(
-                        //       title: Text(displayItems[index].name),
-                        //       subtitle: Text(displayItems[index].time),
-                        //       tileColor: isSelected ? Colors.blueGrey.withOpacity(0.3) : null,
-                        //       onTap: () {
-                        //         openFile(displayItems[index].filePath);
-                        //       },
-                        //     );
-                        //   },
-                        // )
-                        GridView.builder(
+                      // WITH ICON
+                        ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Adjust the number of columns as desired
-                            childAspectRatio: 1.0, // Adjust the aspect ratio as desired
-                          ),
                           itemCount: displayItems.length,
                           itemBuilder: (context, index) {
-                            final bool isSelected = selectedFilePath == displayItems[index].filePath;
-                            return GestureDetector(
-                              onTap: () {
-                                openFile(displayItems[index].filePath);
-                              },
-                              child: Card(
-                                color: isSelected ? Colors.blueGrey.withOpacity(0.3) : null,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Display the image or video thumbnail here
-                                    // You can use Image.file or VideoPlayer widget from flutter_image package
+                            final bool isImage = displayItems[index].name.endsWith('.JPG');
+                            final bool isVideo = displayItems[index].name.endsWith('.MP4');
 
-                                    ListTile(
-                                      title: Text(displayItems[index].name),
-                                      subtitle: Text(displayItems[index].time),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            IconData iconData;
+                            if (isImage) {
+                              iconData = Icons.photo;
+                            } else if (isVideo) {
+                              iconData = Icons.videocam;
+                            } else {
+                              // Handle other file types if needed
+                              iconData = Icons.insert_drive_file;
+                            }
+
+                            return ListTile(
+                              leading: Icon(iconData),
+                              title: Text(displayItems[index].name),
+                              subtitle: Text(displayItems[index].time),
+                              onTap: () {
+                                openImageOrPlayVideo(displayItems[index].name);
+                              },
                             );
                           },
                         ),
+
+                      // GridView.builder(
+                      //   shrinkWrap: true,
+                      //   physics: NeverScrollableScrollPhysics(),
+                      //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      //     crossAxisCount: 2,
+                      //     crossAxisSpacing: 2.0,
+                      //     mainAxisSpacing: 2.0,
+                      //   ),
+                      //   itemCount: displayItems.length,
+                      //   itemBuilder: (context, index) {
+                      //     final bool isSelected = selectedFilePath == displayItems[index].filePath;
+                      //     return Container(
+                      //       width: 80,
+                      //       child: GestureDetector(
+                      //         onTap: () {
+                      //           openImageOrPlayVideo(displayItems[index].name);
+                      //         },
+                      //         child: Card(
+                      //           color: isSelected ? Colors.blueGrey.withOpacity(0.3) : null,
+                      //           child: Column(
+                      //             mainAxisAlignment: MainAxisAlignment.center,
+                      //             children: [
+                      //               SizedBox(
+                      //                 height: 40, // Adjust the size of the icon
+                      //                 child: displayItems[index].name.endsWith('.JPG')
+                      //                     ? Icon(Icons.photo, size: 40) // Specify the desired size of the photo icon
+                      //                     : Icon(Icons.videocam, size: 40), // Specify the desired size of the video icon
+                      //               ),
+                      //               Text(displayItems[index].name),
+                      //               Text(displayItems[index].time),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                     ],
                   ),
                 ),
               ),
             ),
+
           ],
         ),
       ),
@@ -1134,67 +1153,9 @@ class _FilesState extends State<Files> {
   }
 }
 
-// class About extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.deepPurple.shade100,
-//       body: Container(
-//         alignment: Alignment.center,
-//         child: Text("About"),
-//       ),
-//     );
-//   }
-// }
-
-
-
-//
-// class About extends StatelessWidget {
-//   final String url = 'http://192.168.1.254/CARDV/';
-//
-//   Future<void> fetchFiles() async {
-//     try {
-//       final response = await http.get(Uri.parse(url));
-//       if (response.statusCode == 200) {
-//         // Dosyaları çekme işlemlerini burada yapabilirsiniz
-//         print('Dosyalar çekildi: ${response.body}');
-//       } else {
-//         print('Dosyaları çekerken bir hata oluştu. Kod: ${response.statusCode}');
-//       }
-//     } catch (error) {
-//       print('Dosyaları çekerken bir hata oluştu: $error');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.deepPurple.shade100,
-//       body: Container(
-//         alignment: Alignment.center,
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Text(
-//               "About",
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               child: Text('Dosyaları Çek'),
-//               onPressed: () {
-//                 fetchFiles();
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class About extends StatelessWidget {
+  final String weburl = 'http://192.168.1.254/CARDV/PHOTO/';
 
 
   @override
@@ -1204,6 +1165,8 @@ class About extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Container(
         alignment: Alignment.center,
-
+          child: Text("About"),
+        ),
+      );
   }
 }
