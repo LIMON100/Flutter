@@ -22,7 +22,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
-import 'package:xml/xml.dart' as xml;
+
 
 import 'package:video_player/video_player.dart';
 import 'package:flutter_image/flutter_image.dart';
@@ -105,27 +105,6 @@ class _DashCamState extends State<DashCam> {
     );
   }
 
-  void toggleCameraStreaming() {
-    if (isCameraStreaming) {
-      _videoPlayerController.stop();
-      _videoPlayerController.dispose();
-    } else {
-      _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mov',
-        hwAcc: HwAcc.full,
-        autoPlay: true,
-        options: VlcPlayerOptions(),
-      );
-      _videoPlayerController.initialize().then((_) {
-        _videoPlayerController.play();
-      });
-    }
-
-    setState(() {
-      isCameraStreaming = !isCameraStreaming;
-    });
-  }
-
   @override
   void dispose() {
     _videoPlayerController.dispose();
@@ -151,11 +130,6 @@ class _DashCamState extends State<DashCam> {
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DashSettings()),
-                );
               },
             ),
           ],
@@ -247,19 +221,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //WIFI
-  final String ssid = 'CARDV';
-  final password = '12345678';
-  bool isConnected = false;
-  bool isCameraStreaming = false;
-
 
   //IP Address
   final String ipAddress = '192.168.1.254';
 
   //files
   final String url = 'http://192.168.1.254';
-  bool isFront = false;
-  bool isSensor = false;
+
   List<dynamic> wifiNetworks = [];
 
   // Recording variable
@@ -267,36 +235,6 @@ class _HomeState extends State<Home> {
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
 
-  // Rtsp Streaming
-  @override
-  void initState() {
-    super.initState();
-    isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
-    initializePlayer();
-  }
-
-  Future<void> initializePlayer() async {
-    await widget.videoPlayerController.initialize();
-    widget.videoPlayerController.play();
-
-    setState(() {
-      isCameraStreaming = true;
-    });
-  }
-
-  void toggleCameraStreaming() {
-    if (isCameraStreaming) {
-      // Stop Camera
-      widget.videoPlayerController.stop();
-    } else {
-      // Open Camera
-      widget.videoPlayerController.play();
-    }
-
-    setState(() {
-      isCameraStreaming = !isCameraStreaming;
-    });
-  }
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -370,7 +308,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // dialog window
+
   void _connect(BuildContext context, String ssid) async {
     if (await _checkPermissions()) {
       if (isConnected) {
@@ -410,57 +348,6 @@ class _HomeState extends State<Home> {
           );
         },
       );
-    }
-  }
-
-  // Start recording
-  Future<void> startRecordingCmd() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Recording started...');
-      } else {
-        print('Error occured: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  // Stop recording
-  Future<void> stopRecordingCmd() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Recording stopped...');
-      } else {
-        print('Error occured while stopping record: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> changeToPhotoMode() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=0';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        print('Changed to Photo Mode');
-      } else {
-        print(
-            'Error occured while changing photo mode: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
     }
   }
 
@@ -691,6 +578,206 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Future<void> startRecordingCmd() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=1';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Recording started...');
+      } else {
+        print('Error occured: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> stopRecordingCmd() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=2001&par=0';
+
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Recording stopped...');
+      } else {
+        print('Error occured while stopping record: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> changeToPhotoMode() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=0';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Changed to Photo Mode');
+      } else {
+        print('Error occured while changing photo mode: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+
+  Future<void> changeToVideoMode() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3001&par=1';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Changed to Video Mode');
+      } else {
+        print('Error occured while changing to video mode: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> takePicture() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=1001';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Image captured');
+      } else {
+        print('Error occured: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  // String getCurrentDate() {
+  //   var now = DateTime.now();
+  //   var formatter = DateFormat('yyyy-MM-dd');
+  //   String formattedDate = formatter.format(now);
+  //   return formattedDate;
+  // }
+  //
+  // String getCurrentTime() {
+  //   var now = DateTime.now();
+  //   var formatter = DateFormat('HH:mm:ss');
+  //   String formattedTime = formatter.format(now);
+  //   return formattedTime;
+  // }
+  //
+  // Future<void> setDateOfCam() async {
+  //   String currentDate = getCurrentDate();
+  //   print(currentDate);
+  //   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentDate'));
+  //   if (response.statusCode == 200) {
+  //     setState(() {
+  //       fileList = json.decode(response.body);
+  //     });
+  //   } else {
+  //     print('Date error: ${response.statusCode}');
+  //   }
+  // }
+  //
+  // Future<void> setTimeOfCam() async {
+  //   String currentTime = getCurrentTime();
+  //   print(currentTime);
+  //   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
+  //   if (response.statusCode == 200) {
+  //     setState(() {
+  //       fileList = json.decode(response.body);
+  //     });
+  //   } else {
+  //     print('Time error: ${response.statusCode}');
+  //   }
+  // }
+  // retrieving files
+
+  List<String> fileList = [];
+
+
+  Future<void> fetchFiles() async {
+    final response = await http.get(Uri.parse('http://192.168.1.254'));
+    if (response.statusCode == 200) {
+      setState(() {
+        fileList = json.decode(response.body);
+      });
+    } else {
+      print('File error: ${response.statusCode}');
+    }
+  }
+
+//  final String webUrl = 'http://192.168.1.254/';
+
+  // open close camera
+  Widget buildCameraButton() {
+    return Positioned(
+      top: 10,
+      child: CircleButton(
+        onPressed: () async {
+          if (isCameraStreaming) {
+            // Stop Camera
+            if (_controller != null) {
+              await _controller!.stop();
+              await _controller!.dispose();
+            }
+            _controller = null;
+          } else {
+            // Open Camera
+            initializePlayer();
+            _controller!.play();
+            playVlc();
+            VlcPlayer(
+              controller: _controller!,
+              aspectRatio: 16 / 9,
+              placeholder: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          setState(() {
+            isCameraStreaming = !isCameraStreaming;
+          });
+        },
+        color: isCameraStreaming ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
+        text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+      ),
+    );
+  }
+
+  // Recording part
+  Widget buildRecordingButton() {
+    return Positioned(
+      top: 10,
+      child: CircleButton(
+        onPressed: () async {
+          if (isRecording) {
+            // Stop record
+            stopRecordingCmd();
+          } else {
+            // Start Recording
+            changeToVideoMode();
+            // setDateOfCam();
+            // setTimeOfCam();
+            startRecordingCmd();
+          }
+          setState(() {
+            isRecording = !isRecording;
+          });
+        },
+        color: isRecording ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
+        text: isRecording ? 'Stop Recording' : 'Start Recording',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -726,57 +813,71 @@ class _HomeState extends State<Home> {
                         child: buildCameraButton(),
                       ),
 
+
+                      ),
+
                       SizedBox(height: 5),
-                      Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .center, // Align buttons in the center
-                          children: [
-                            buildRecordingButton(),
-                            SizedBox(width: 15),
-                            Align(
-                              alignment: Alignment.center,
-                              child: CircleButton(
-                                onPressed: () {
-                                  changeToPhotoMode();
-                                  takePicture();
-                                  changeToVideoMode();
-                                },
-                                color: Color(0xFFa8caba),
-                                text: 'Capture',
-                              ),
+                      Row(
+                        children:[
+                          SizedBox(width: 15),
+                          // Positioned(
+                          //   right: 10,
+                          //   child: CircleButton(
+                          //     onPressed: () {
+                          //       //send stop command
+                          //       stopRecordingCmd();
+                          //       //_videoPlayerController.stopRecording();
+                          //     },
+                          //     color: Colors.deepPurpleAccent,
+                          //     text: 'Stop Recording',
+                          //   ),
+                          // ),
+                          // SizedBox(width: 1),
+                          // Positioned(
+                          //   // right: 70,
+                          //   child: CircleButton(
+                          //     onPressed: () {
+                          //       //send record command
+                          //       changeToVideoMode();
+                          //       // setDateOfCam();
+                          //       // setTimeOfCam();
+                          //       startRecordingCmd();
+                          //       setState(() {
+                          //         var _buttonColor;
+                          //         if (_buttonColor == Colors.red) {
+                          //           _buttonColor = Colors.blue;
+                          //         } else {
+                          //           _buttonColor = Colors.red;
+                          //         }
+                          //       });
+                          //       //_videoPlayerController.startRecording("/sdcard/test/");
+                          //     },
+                          //     color: Colors.deepPurpleAccent,
+                          //     text: 'Start Recording',
+                          //   ),
+                          // ),
+                          SizedBox(width: 80),
+                          buildRecordingButton(),
+                          SizedBox(width: 15),
+                          Positioned(
+                            top: 2,
+                            child: CircleButton(
+                              onPressed: () {
+                                changeToPhotoMode();
+                                takePicture();
+                                changeToVideoMode();
+                              },
+                              color: Colors.deepPurpleAccent,
+                              text: 'Capture',
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 40),
-              InkWell(
-                onTap: () {
-                  // _connect(context);
-                  _scanWifiNetworks(context);
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.wifi,
-                      color: isConnected ? Colors.green : Colors.black,
-                      size: 50,
-                    ),
-                    Text(
-                      isConnected ? 'Disconnected' : 'Connect WIFI',
-                      style: TextStyle(
-                        color: isConnected ? Colors.green : Colors.black,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
             ],
           ),
         ),
@@ -789,78 +890,13 @@ class _HomeState extends State<Home> {
 class Files extends StatefulWidget {
   final bool isCameraStreaming;
 
-  Files({
-    required this.isCameraStreaming,
-  });
-
   @override
   _FilesState createState() => _FilesState();
 }
 
 class _FilesState extends State<Files> {
 
-  String? selectedFilePath;
-  VideoPlayerController? videoController;
-
-  // Open File
- // else if (fileItem.name.endsWith('.MP4')) {
- //      videoController = VideoPlayerController.network(fileItem.filePath)
- //        ..initialize().then((_) {
- //          setState(() {
- //            videoController!.play();
- //          });
- //        });
- //    }
- //  }
-
-  // void openFile(String filePath) async {
-  //   print("Check file path");
-  //   print(filePath);
-  //   final appDir = await getTemporaryDirectory();
-  //   final tempFilePath = '${appDir.path}/temp_file';
-  //
-  //   // Copy the source file to the temporary file path
-  //   final sourceFile = File(filePath);
-  //   final tempFile = File(tempFilePath);
-  //   await sourceFile.copy(tempFile.path);
-  //
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(
-  //       builder: (context) => Image.file(tempFile),
-  //     ),
-  //   );
-  // }
-
-  void openFile(String filePath) async {
-    try {
-      final result = await OpenFile.open(filePath);
-      print(result);
-    } catch (e) {
-      throw 'Error opening file: $e';
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Fetch files from the camera on page load
-    getFilesFromCamera();
-  }
-
-  List<String> items = [
-    "All",
-    "Video",
-    "Photos",
-  ];
-
-  /// List of body icon
-  List<IconData> icons = [
-    Icons.home,
-    Icons.video_file,
-    Icons.photo,
-  ];
-  int current = 0;
-  List<FileItem> images = [];
+];
   List<FileItem> videos = [];
 
   Future<void> getFilesFromCamera() async {
@@ -1098,29 +1134,68 @@ class _FilesState extends State<Files> {
   }
 }
 
-class About extends StatelessWidget {
-  final String weburl = 'http://192.168.1.254/CARDV/PHOTO/';
+// class About extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.deepPurple.shade100,
+//       body: Container(
+//         alignment: Alignment.center,
+//         child: Text("About"),
+//       ),
+//     );
+//   }
+// }
 
-  // WebViewController controller = WebViewController()
-  // ..setJavaScriptMode(JavaScriptMode.unrestricted)
-  // ..setBackgroundColor(const Color(0x00000000))
-  // ..setNavigationDelegate(
-  // NavigationDelegate(
-  // onProgress: (int progress) {
-  // // Update loading bar.
-  // },
-  // onPageStarted: (String url) {},
-  // onPageFinished: (String url) {},
-  // onWebResourceError: (WebResourceError error) {},
-  // onNavigationRequest: (NavigationRequest request) {
-  // if (request.url.startsWith('http://192.168.1.254/CARDV/MOVIE/')) {
-  //   return NavigationDecision.prevent;
-  // }
-  //   return NavigationDecision.navigate;
-  // },
-  // ),
-  // )
-  // ..loadRequest(Uri.parse('http://192.168.1.254/CARDV/MOVIE/'));
+
+
+//
+// class About extends StatelessWidget {
+//   final String url = 'http://192.168.1.254/CARDV/';
+//
+//   Future<void> fetchFiles() async {
+//     try {
+//       final response = await http.get(Uri.parse(url));
+//       if (response.statusCode == 200) {
+//         // Dosyaları çekme işlemlerini burada yapabilirsiniz
+//         print('Dosyalar çekildi: ${response.body}');
+//       } else {
+//         print('Dosyaları çekerken bir hata oluştu. Kod: ${response.statusCode}');
+//       }
+//     } catch (error) {
+//       print('Dosyaları çekerken bir hata oluştu: $error');
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.deepPurple.shade100,
+//       body: Container(
+//         alignment: Alignment.center,
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             Text(
+//               "About",
+//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               child: Text('Dosyaları Çek'),
+//               onPressed: () {
+//                 fetchFiles();
+//               },
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+class About extends StatelessWidget {
+
 
   @override
   Widget build(BuildContext context) {
@@ -1129,8 +1204,6 @@ class About extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Container(
         alignment: Alignment.center,
-          child: Text("About"),
-        ),
-      );
+
   }
 }

@@ -74,6 +74,14 @@ class _GoToRideState extends State<GoToRide> {
           ],
         ),
         backgroundColor: Colors.transparent,
+<<<<<<< HEAD
+        body: Padding(
+          padding: EdgeInsets.only(top: 500.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Center(
+=======
         body: Column(
           children: [
             Expanded(
@@ -90,6 +98,7 @@ class _GoToRideState extends State<GoToRide> {
               padding: const EdgeInsets.only(bottom: 100.0),
               child: Align(
                 alignment: Alignment.bottomCenter,
+>>>>>>> test
                 child: GlowingButton2(
                   text: "Turn on wifi & Go to ride",
                   onPressed: () {
@@ -102,8 +111,13 @@ class _GoToRideState extends State<GoToRide> {
                   color2: Colors.cyan,
                 ),
               ),
+<<<<<<< HEAD
+            ],
+          ),
+=======
             ),
           ],
+>>>>>>> test
         ),
       ),
     );
