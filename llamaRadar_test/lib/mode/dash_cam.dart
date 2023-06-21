@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:lamaradar/mode/settings.dart';
+import '../temp/ConnectWifiForDashCam.dart';
 import '../temp/glowing_button.dart';
 import 'bleScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,7 +97,7 @@ class _DashCamState extends State<DashCam> {
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mov',
+      'rtsp://192.168.1.254/xxxx.mov?network-caching=100',
       hwAcc: HwAcc.full,
       autoPlay: true,
       options: VlcPlayerOptions(),
@@ -162,7 +163,7 @@ class _DashCamState extends State<DashCam> {
             onPressed: () {
               Navigator.pop(context);
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+                MaterialPageRoute(builder: (context) => const ConnectWifiForDashCam()),
               ); // Navigate to previous screen
             },
           ),
@@ -703,32 +704,37 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
-                height: 400,
-                width: 400,
-                // child: isCameraStreaming && _controller != null
-                child: isCameraStreaming && widget.videoPlayerController != null
-                //     ? VlcPlayer(
-                //   controller: widget.videoPlayerController,
-                //   aspectRatio: 16 / 9,
-                //   placeholder: Center(child: CircularProgressIndicator()),
-                // )
-                    ? Transform.rotate(
-                  angle: 3.14159,
-                  alignment: Alignment.center,
-                  //transform: Matrix4.rotationY(1*2*3.14159),
-                  child: VlcPlayer(
-                    controller: widget.videoPlayerController,
-                    aspectRatio: 16 / 9,
-                    placeholder: Center(child: CircularProgressIndicator()),
+              PreferredSize(
+                preferredSize: AppBar().preferredSize,
+                child: Container(
+                  // height: 400,
+                  // width: 400,
+                  height: MediaQuery.of(context).size.width,
+                  width: double.infinity,
+                  // child: isCameraStreaming && _controller != null
+                  child: isCameraStreaming && widget.videoPlayerController != null
+                  //     ? VlcPlayer(
+                  //   controller: widget.videoPlayerController,
+                  //   aspectRatio: 16 / 9,
+                  //   placeholder: Center(child: CircularProgressIndicator()),
+                  // )
+                      ? Transform.rotate(
+                    angle: 3.14159,
+                    alignment: Alignment.center,
+                    //transform: Matrix4.rotationY(1*2*3.14159),
+                    child: VlcPlayer(
+                      controller: widget.videoPlayerController,
+                      aspectRatio: 16 / 9,
+                      placeholder: Center(child: CircularProgressIndicator()),
+                    ),
+                  )
+                      : Image.asset(
+                    'images/test_background3.jpg',
+                    fit: BoxFit.fitWidth,
                   ),
-                )
-                    : Image.asset(
-                  'images/test_background3.jpg',
-                  fit: BoxFit.fitWidth,
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 54),
               SingleChildScrollView(
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16),
@@ -818,7 +824,25 @@ class _FilesState extends State<Files> {
   String? selectedFilePath;
   VideoPlayerController? videoController;
 
+  List<String> items = [
+    "All",
+    "Video",
+    "Photos",
+  ];
+
+  /// List of body icon
+  List<IconData> icons = [
+    Icons.home,
+    Icons.video_file,
+    Icons.photo,
+  ];
+  int current = 0;
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
+  bool isLoadingFiles = false;
+
   // Open File
+
   void openImageOrPlayVideo(String file) {
     if (file.endsWith('.JPG')) {
       // Display the image
@@ -842,6 +866,7 @@ class _FilesState extends State<Files> {
       // Show the video player widget
       showDialog(
         context: context,
+        barrierDismissible: false, // Prevent dismissing the dialog with a tap outside
         builder: (context) {
           // Add a listener to detect when the dialog is dismissed
           void handleDialogDismiss() {
@@ -862,6 +887,7 @@ class _FilesState extends State<Files> {
                     alignment: Alignment.topRight,
                     child: IconButton(
                       icon: Icon(Icons.close_rounded),
+                      color: Colors.red, // Set the color to red
                       onPressed: () {
                         handleDialogDismiss();
                         Navigator.of(context).pop();
@@ -878,14 +904,23 @@ class _FilesState extends State<Files> {
             controller.play();
           });
 
-          return AlertDialog(
-            contentPadding: EdgeInsets.all(0.0),
-            content: dialogContent,
+          // Add a listener to detect when the dialog is dismissed
+          return WillPopScope(
+            onWillPop: () async {
+              handleDialogDismiss();
+              return true;
+            },
+            child: AlertDialog(
+              contentPadding: EdgeInsets.all(0.0),
+              content: dialogContent,
+            ),
           );
         },
       );
     }
   }
+
+
 
 
   @override
@@ -894,23 +929,6 @@ class _FilesState extends State<Files> {
     // Fetch files from the camera on page load
     getFilesFromCamera();
   }
-
-  List<String> items = [
-    "All",
-    "Video",
-    "Photos",
-  ];
-
-  /// List of body icon
-  List<IconData> icons = [
-    Icons.home,
-    Icons.video_file,
-    Icons.photo,
-  ];
-  int current = 0;
-  List<FileItem> images = [];
-  List<FileItem> videos = [];
-  bool isLoadingFiles = false;
 
   Future<void> getFilesFromCamera() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=3015';
