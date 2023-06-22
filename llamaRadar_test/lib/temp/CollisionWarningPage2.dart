@@ -12,7 +12,6 @@ import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
-// import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +21,6 @@ import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-import 'package:flutter_svg/flutter_svg.dart';
-
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -88,13 +84,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   @override
   void initState() {
     super.initState();
-    // _connect();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
     initializePlayer();
   }
+
+  // check wifi connected or not
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -205,6 +202,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       );
     }
   }
+
+  // Test repetitive wifi scaner list show
 
   // BLE notification
   Future<void> _connectToDevice() async {
@@ -384,30 +383,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       default:
         return '';
     }
-  }
 
-  Widget _getCircle(Color color) {
-    double opacity = 1.0;
-    if (_getLocation() == 'Left Notification Danger' ||
-        _getLocation() == 'Right Notification Danger' ||
-        _getLocation() == 'Rear Notification Danger') {
-      opacity = 0.0;
-    }
-    return AnimatedOpacity(
-      duration: Duration(milliseconds: 500),
-      opacity: opacity,
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-        ),
-        child: Icon(Icons.arrow_forward, color: Colors.white),
-      ),
-    );
   }
-
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -496,7 +473,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
-      if (right_danger_counter >= 4 && !isRearCamOpen) {
+      if (right_danger_counter >= 2 && !isRearCamOpen) {
         showStreamPopup();
         right_danger_counter = 0;
       }
@@ -506,8 +483,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       print(isRearCamOpen);
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
-      // greenPlayer.setAsset('assets/danger_beep.mp3');
-      // greenPlayer.play();
     } else {
       color = Colors.green;
       rear_redPlayer.stop();
@@ -527,8 +502,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       ),
     );
   }
-
-  final _writeController = TextEditingController();
 
   // blink for distance
   void _startBlinking2(int value) {
@@ -584,11 +557,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
-    // if (_controller != null) {
-    //   await _controller!.dispose();
-    //   _controller = null;
-    // }
-
     _controller = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mov',
       hwAcc: HwAcc.full,
@@ -715,6 +683,55 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       ),
     );
   }
+  //Alert messege for connecting wifi first
+  // Widget buildCameraButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: ElevatedButton(
+  //         onPressed: () {
+  //           if (isConnected) {
+  //             toggleCameraStreaming();
+  //           } else {
+  //             showDialog(
+  //               context: context,
+  //               builder: (BuildContext context) {
+  //                 return AlertDialog(
+  //                   title: Text('Wi-Fi Not Connected'),
+  //                   content: Text('Please connect to Wi-Fi before opening the rear camera.'),
+  //                   actions: [
+  //                     ElevatedButton(
+  //                       onPressed: () {
+  //                         Navigator.of(context).pop();
+  //                       },
+  //                       child: Text('OK'),
+  //                     ),
+  //                   ],
+  //                 );
+  //               },
+  //             );
+  //           }
+  //         },
+  //         style: ElevatedButton.styleFrom(
+  //           primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(30.0),
+  //           ),
+  //         ),
+  //         child: Text(
+  //           isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
+  //           style: TextStyle(
+  //             fontSize: 16.0,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
 
 
   @override
@@ -810,33 +827,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         _getRightIcon(),
                       ],
                     ),
-
-                    // ligts
-                    // SizedBox(height: 30),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     IconButton(
-                    //         icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
-                    //             .lightbulb_outline),
-                    //         onPressed: () {
-                    //           setState(() {
-                    //             _lightOn1 = !_lightOn1;
-                    //           });
-                    //         }
-                    //     ),
-                    //     SizedBox(width: 140),
-                    //     IconButton(
-                    //         icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
-                    //             .lightbulb_outline),
-                    //         onPressed: () {
-                    //           setState(() {
-                    //             _lightOn2 = !_lightOn2;
-                    //           });
-                    //         }
-                    //     ),
-                    //   ],
-                    // ),
 
                     // Rear warning
                     SizedBox(height: 30),
@@ -1032,7 +1022,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Container(
                             color: Colors.transparent,
                             child: Image.asset(
-                              'images/llama_img_web3.jpg',
+                              'images/llama_img_web3_rb.png',
                               height: 100,
                               width: 130,
                             ),
