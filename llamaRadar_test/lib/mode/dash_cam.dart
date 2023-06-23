@@ -31,10 +31,12 @@ import 'package:flutter_image/flutter_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file/open_file.dart';
-import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -1119,39 +1121,104 @@ class _FilesState extends State<Files> {
     }
   }
 
-  // Download Files
-  void downloadFile(String url) async {
-    try {
-      Dio dio = Dio();
-      final response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+  // Download Files to gallery
+  // void downloadFile(String url) async {
+  //   if (url.endsWith('.JPG')) {
+  //     url = 'http://192.168.1.254/CARDV/photo/$url';
+  //   } else {
+  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
+  //   }
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+  //     if (response.statusCode == 200) {
+  //       final bytes = response.bodyBytes;
+  //       final fileName = url.split('/').last;
+  //       final directory = await getTemporaryDirectory();
+  //       final filePath = '${directory.path}/$fileName';
+  //       final file = File(filePath);
+  //       await file.writeAsBytes(bytes);
+  //
+  //       // Save the file to the gallery
+  //       await GallerySaver.saveImage(filePath);
+  //       print('File saved to gallery');
+  //
+  //       // Delete the temporary file
+  //       await file.delete();
+  //     } else {
+  //       print('Error downloading file: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error downloading file: $e');
+  //   }
+  // }
 
-      // Extract the file name from the URL
-      String fileName = url.split('/').last;
+  bool _isDownloading = false;
+  double _progress = 0.0;
 
-      // Save the file to the device's downloads directory
-      final savePath = await _getDownloadPath(fileName);
-      await File(savePath).writeAsBytes(response.data, flush: true);
-
-      // Show a toast or a dialog to indicate the successful download
-      // You can use a package like fluttertoast or fluttertoast to display a toast message
-
-      // Example using fluttertoast package:
-      Fluttertoast.showToast(
-        msg: 'File downloaded successfully',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-      );
-    } catch (e) {
-      // Handle any errors that occurred during the download process
-      print('Error downloading file: $e');
+  void _downloadFile(String url) async {
+    if (url.endsWith('.JPG')) {
+      url = 'http://192.168.1.254/CARDV/photo/$url';
+    } else {
+      url = 'http://192.168.1.254/CARDV/Movie/$url';
     }
-  }
 
-  Future<String> _getDownloadPath(String fileName) async {
-    final directory = await getExternalStorageDirectory();
-    final downloadPath = directory!.path + '/Download';
-    await Directory(downloadPath).create(recursive: true);
-    return '$downloadPath/$fileName';
+    setState(() {
+      _isDownloading = true;
+      _progress = 0.0;
+    });
+
+    try {
+      final response = await http.get(Uri.parse(url),
+          headers: {'Accept-Encoding': 'identity'});
+
+      if (response.statusCode == 200) {
+        final totalBytes = response.contentLength?.toDouble() ?? 0.0;
+        final fileName = url.split('/').last;
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+        int receivedBytes = 0;
+
+        final bytes = response.bodyBytes;
+        final fileStream = file.openWrite();
+
+        fileStream.add(bytes);
+        receivedBytes += bytes.length;
+        setState(() {
+          _progress = receivedBytes / totalBytes;
+        });
+
+        await fileStream.close();
+
+        if (url.endsWith('.JPG')) {
+          await GallerySaver.saveImage(filePath);
+        } else {
+          await GallerySaver.saveVideo(filePath);
+        }
+
+        print('File saved to gallery: $fileName');
+
+        setState(() {
+          _isDownloading = false;
+        });
+
+        Fluttertoast.showToast(
+          msg: 'Download complete',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+        );
+      } else {
+        print('Error downloading file: ${response.statusCode}');
+        setState(() {
+          _isDownloading = false;
+        });
+      }
+    } catch (e) {
+      print('Error downloading file: $e');
+      setState(() {
+        _isDownloading = false;
+      });
+    }
   }
 
 
@@ -1367,7 +1434,18 @@ class _FilesState extends State<Files> {
                               // Handle other file types if needed
                               iconData = Icons.insert_drive_file;
                             }
-
+                            if (_isDownloading)
+                              Column(
+                                children: [
+                                  SizedBox(height: 10),
+                                  CircularPercentIndicator(
+                                    radius: 30.0,
+                                    lineWidth: 2.0,
+                                    percent: _progress,
+                                    center: Text('${(_progress * 100).toStringAsFixed(0)}%'),
+                                  ),
+                                ],
+                              );
                             return ListTile(
                               leading: Icon(iconData),
                               title: Text(displayItems[index].name),
@@ -1381,11 +1459,15 @@ class _FilesState extends State<Files> {
                                       deleteFile(displayItems[index].name.toString());
                                     },
                                   ),
+                                  // IconButton(
+                                  //   icon: Icon(Icons.download),
+                                  //   onPressed: () {
+                                  //     downloadFile(displayItems[index].name.toString());
+                                  //   },
+                                  // ),
                                   IconButton(
                                     icon: Icon(Icons.download),
-                                    onPressed: () {
-                                      downloadFile(displayItems[index].name.toString());
-                                    },
+                                    onPressed: _isDownloading ? null : () => _downloadFile(displayItems[index].name.toString()),
                                   ),
                                 ],
                               ),
