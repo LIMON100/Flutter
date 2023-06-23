@@ -31,6 +31,10 @@ import 'package:flutter_image/flutter_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file/open_file.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -520,6 +524,53 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // List<FileItem> images = [];
+  // List<FileItem> videos = [];
+  // Future<void> getFilesFromCamera() async {
+  //   String url = 'http://192.168.1.254/?custom=1&cmd=3015';
+  //
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+  //
+  //     if (response.statusCode == 200) {
+  //       final xmlDoc = xml.XmlDocument.parse(response.body);
+  //       final fileElements = xmlDoc.findAllElements('File');
+  //
+  //       // Clear the existing lists before updating
+  //       setState(() {
+  //         images.clear();
+  //         videos.clear();
+  //       });
+  //
+  //       for (final fileElement in fileElements) {
+  //         final nameElement = fileElement.findElements('NAME').single;
+  //         final filePathElement = fileElement.findElements('FPATH').single;
+  //         final timeElement = fileElement.findElements('TIME').single;
+  //
+  //         final name = nameElement.text;
+  //         final filePath = filePathElement.text;
+  //         final time = timeElement.text;
+  //
+  //         final fileItem = FileItem(name, filePath, time);
+  //
+  //         if (name.endsWith('.JPG')) {
+  //           setState(() {
+  //             images.add(fileItem);
+  //           });
+  //         } else if (name.endsWith('.MP4')) {
+  //           setState(() {
+  //             videos.add(fileItem);
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       print('Error occurred: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  // }
+
   Future<void> takePicture() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=1001';
 
@@ -528,6 +579,8 @@ class _HomeState extends State<Home> {
 
       if (response.statusCode == 200) {
         print('Image captured');
+        // await getFilesFromCamera();
+
       } else {
         print('Error occured: ${response.statusCode}');
       }
@@ -984,7 +1037,6 @@ class _FilesState extends State<Files> {
 
     try {
       final response = await http.get(Uri.parse(url));
-      // print('Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final xmlDoc = xml.XmlDocument.parse(response.body);
@@ -1049,6 +1101,60 @@ class _FilesState extends State<Files> {
     }
   }
 
+  // Delete all files
+  Future<void> deleteAllFiles() async {
+    final url = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        print('All files deleted successfully');
+        await getFilesFromCamera();
+      } else {
+        print('Failed to delete all files. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Failed to delete all files: $e');
+    }
+  }
+
+  // Download Files
+  void downloadFile(String url) async {
+    try {
+      Dio dio = Dio();
+      final response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+
+      // Extract the file name from the URL
+      String fileName = url.split('/').last;
+
+      // Save the file to the device's downloads directory
+      final savePath = await _getDownloadPath(fileName);
+      await File(savePath).writeAsBytes(response.data, flush: true);
+
+      // Show a toast or a dialog to indicate the successful download
+      // You can use a package like fluttertoast or fluttertoast to display a toast message
+
+      // Example using fluttertoast package:
+      Fluttertoast.showToast(
+        msg: 'File downloaded successfully',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
+    } catch (e) {
+      // Handle any errors that occurred during the download process
+      print('Error downloading file: $e');
+    }
+  }
+
+  Future<String> _getDownloadPath(String fileName) async {
+    final directory = await getExternalStorageDirectory();
+    final downloadPath = directory!.path + '/Download';
+    await Directory(downloadPath).create(recursive: true);
+    return '$downloadPath/$fileName';
+  }
+
+
   @override
   void dispose() {
     videoController?.dispose();
@@ -1075,6 +1181,7 @@ class _FilesState extends State<Files> {
     final bool hasVideos = videos.isNotEmpty;
     final bool hasImages = images.isNotEmpty;
     final bool showTabs = hasVideos || hasImages;
+    final bool showEmptyTabs = videos.isEmpty || images.isEmpty;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -1093,7 +1200,7 @@ class _FilesState extends State<Files> {
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (ctx, index) {
                   final bool showTab =
-                      (index == 0 && (allFiles || !showTabs)) || (index == 1 && (hasVideos || !showTabs)) || (index == 2 && (hasImages || !showTabs));
+                      (index == 0 && (allFiles || !showTabs || showEmptyTabs)) || (index == 1 && (hasVideos || !showTabs || showEmptyTabs)) || (index == 2 && (hasImages || !showTabs || showEmptyTabs));
                   return Visibility(
                     visible: showTab,
                     child: Column(
@@ -1142,74 +1249,158 @@ class _FilesState extends State<Files> {
                 },
               ),
             ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                margin: const EdgeInsets.only(top: 30),
-                width: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (displayItems.isEmpty)
-                      Icon(
-                        icons[current],
-                        size: 200,
-                        color: Colors.deepPurple,
-                      ),
-                    if (displayItems.isEmpty) const SizedBox(height: 10),
-                    if (displayItems.isEmpty)
-                      Text(
-                        items[current],
-                        style: GoogleFonts.laila(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 30,
+          // Expanded(
+          //   child: SingleChildScrollView(
+          //     child: Container(
+          //       margin: const EdgeInsets.only(top: 30),
+          //       width: double.infinity,
+          //       child: Column(
+          //         mainAxisAlignment: MainAxisAlignment.center,
+          //         children: [
+          //           if (displayItems.isEmpty)
+          //             Icon(
+          //               icons[current],
+          //               size: 200,
+          //               color: Colors.deepPurple,
+          //             ),
+          //           if (displayItems.isEmpty) const SizedBox(height: 10),
+          //           if (displayItems.isEmpty)
+          //             Text(
+          //               items[current],
+          //               style: GoogleFonts.laila(
+          //                 fontWeight: FontWeight.w500,
+          //                 fontSize: 30,
+          //                 color: Colors.deepPurple,
+          //               ),
+          //             ),
+          //           SizedBox(height: 20),
+          //           if (displayItems.isNotEmpty)
+          //           // WITH ICON
+          //             ListView.builder(
+          //               shrinkWrap: true,
+          //               physics: NeverScrollableScrollPhysics(),
+          //               itemCount: displayItems.length,
+          //               itemBuilder: (context, index) {
+          //                 final bool isImage = displayItems[index].name.endsWith('.JPG');
+          //                 final bool isVideo = displayItems[index].name.endsWith('.MP4');
+          //
+          //                 IconData iconData;
+          //                 if (isImage) {
+          //                   iconData = Icons.photo;
+          //                 } else if (isVideo) {
+          //                   iconData = Icons.videocam;
+          //                 } else {
+          //                   // Handle other file types if needed
+          //                   iconData = Icons.insert_drive_file;
+          //                 }
+          //
+          //                 return ListTile(
+          //                   leading: Icon(iconData),
+          //                   title: Text(displayItems[index].name),
+          //                   subtitle: Text(displayItems[index].time),
+          //                   trailing: IconButton(
+          //                     icon: Icon(Icons.delete),
+          //                     onPressed: () {
+          //                       deleteFile(displayItems[index].name.toString());
+          //                     },
+          //                   ),
+          //                   onTap: () {
+          //                     openImageOrPlayVideo(displayItems[index].name);
+          //                   },
+          //                 );
+          //               },
+          //             ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 30),
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (displayItems.isNotEmpty)
+                        ListTile(
+                          leading: Icon(Icons.delete_forever),
+                          title: Text('Delete All Files'),
+                          onTap: () {
+                            deleteAllFiles();
+                          },
+                        ),
+                      if (displayItems.isEmpty)
+                        Icon(
+                          icons[current],
+                          size: 200,
                           color: Colors.deepPurple,
                         ),
-                      ),
-                    SizedBox(height: 20),
-                    if (displayItems.isNotEmpty)
-                    // WITH ICON
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: displayItems.length,
-                        itemBuilder: (context, index) {
-                          final bool isImage = displayItems[index].name.endsWith('.JPG');
-                          final bool isVideo = displayItems[index].name.endsWith('.MP4');
+                      if (displayItems.isEmpty) const SizedBox(height: 10),
+                      if (displayItems.isEmpty)
+                        Text(
+                          items[current],
+                          style: GoogleFonts.laila(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 30,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                      SizedBox(height: 20),
+                      if (displayItems.isNotEmpty)
+                      // WITH ICON
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: displayItems.length,
+                          itemBuilder: (context, index) {
+                            final bool isImage = displayItems[index].name.endsWith('.JPG');
+                            final bool isVideo = displayItems[index].name.endsWith('.MP4');
 
-                          IconData iconData;
-                          if (isImage) {
-                            iconData = Icons.photo;
-                          } else if (isVideo) {
-                            iconData = Icons.videocam;
-                          } else {
-                            // Handle other file types if needed
-                            iconData = Icons.insert_drive_file;
-                          }
+                            IconData iconData;
+                            if (isImage) {
+                              iconData = Icons.photo;
+                            } else if (isVideo) {
+                              iconData = Icons.videocam;
+                            } else {
+                              // Handle other file types if needed
+                              iconData = Icons.insert_drive_file;
+                            }
 
-                          return ListTile(
-                            leading: Icon(iconData),
-                            title: Text(displayItems[index].name),
-                            subtitle: Text(displayItems[index].time),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                // deleteFileInNT9666x(displayItems[index].name.toString());
-                                deleteFile(displayItems[index].name.toString());
+                            return ListTile(
+                              leading: Icon(iconData),
+                              title: Text(displayItems[index].name),
+                              subtitle: Text(displayItems[index].time),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () {
+                                      deleteFile(displayItems[index].name.toString());
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.download),
+                                    onPressed: () {
+                                      downloadFile(displayItems[index].name.toString());
+                                    },
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                openImageOrPlayVideo(displayItems[index].name);
                               },
-                            ),
-                            onTap: () {
-                              openImageOrPlayVideo(displayItems[index].name);
-                            },
-                          );
-                        },
-                      ),
-                  ],
+                            );
+                          },
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -1218,9 +1409,6 @@ class _FilesState extends State<Files> {
 
 
 class About extends StatelessWidget {
-  final String weburl = 'http://192.168.1.254/CARDV/PHOTO/';
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
