@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -82,6 +83,11 @@ class FileItem {
   final String time;
 
   FileItem(this.name, this.filePath, this.time);
+}
+
+class FileName {
+  final String name;
+  FileName(this.name);
 }
 
 
@@ -904,6 +910,8 @@ class _FilesState extends State<Files> {
   int current = 0;
   List<FileItem> images = [];
   List<FileItem> videos = [];
+  List<FileName> imagesName = [];
+  List<FileName> videoName = [];
   bool isLoadingFiles = false;
 
 
@@ -1060,14 +1068,17 @@ class _FilesState extends State<Files> {
           final time = timeElement.text;
 
           final fileItem = FileItem(name, filePath, time);
+          final fileName = FileName(name);
 
           if (name.endsWith('.JPG')) {
             setState(() {
               images.add(fileItem);
+              imagesName.add(fileName);
             });
           } else if (name.endsWith('.MP4')) {
             setState(() {
               videos.add(fileItem);
+              videoName.add(fileName);
             });
           }
         }
@@ -1104,22 +1115,88 @@ class _FilesState extends State<Files> {
   }
 
   // Delete all files
+  // Future<void> deleteAllFiles() async {
+  //   final url = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
+  //
+  //   try {
+  //     if (current == 0) {
+  //       // Delete all files
+  //       final response = await http.get(url);
+  //       if (response.statusCode == 200) {
+  //         print('All files deleted successfully');
+  //         await getFilesFromCamera();
+  //       } else {
+  //         print('Failed to delete all files. Status code: ${response.statusCode}');
+  //       }
+  //     } else if (current == 1) {
+  //       // Delete only videos
+  //       // Add your logic to delete video files here
+  //     } else if (current == 2) {
+  //       // Delete only images
+  //       // Add your logic to delete image files here
+  //     }
+  //   } catch (e) {
+  //     print('Failed to delete files: $e');
+  //   }
+  // }
   Future<void> deleteAllFiles() async {
-    final url = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
-
     try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        print('All files deleted successfully');
-        await getFilesFromCamera();
-      } else {
-        print('Failed to delete all files. Status code: ${response.statusCode}');
+      if (current == 0) {
+        // Delete all files
+        final allFilesUrl = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
+        final response = await http.get(allFilesUrl);
+        if (response.statusCode == 200) {
+          print('All files deleted successfully');
+          await getFilesFromCamera();
+        } else {
+          print('Failed to delete all files. Status code: ${response.statusCode}');
+        }
+      } else if (current == 1) {
+        // Delete only videos
+        final videosUrl = Uri.parse('http://192.168.1.254/CARDV/movie/');
+        final response = await http.get(videosUrl);
+        if (response.statusCode == 200) {
+          for (final fileName in videoName) {
+            final filePath = fileName.name;
+            final deleteUrl = Uri.parse('http://192.168.1.254/CARDV/movie/$filePath');
+            final deleteResponse = await http.delete(deleteUrl);
+            if (deleteResponse.statusCode == 200) {
+              print('Deleted file: $fileName');
+            } else {
+              print('Failed to delete file: $fileName. Status code: ${deleteResponse.statusCode}');
+            }
+          }
+          await getFilesFromCamera();
+        } else {
+          print('Failed to delete videos. Status code: ${response.statusCode}');
+        }
+      } else if (current == 2) {
+        // Delete only images
+        final imagesUrl = Uri.parse('http://192.168.1.254/CARDV/photo/');
+        final response = await http.get(imagesUrl);
+        if (response.statusCode == 200) {
+          for (final fileName in imagesName) {
+            final filePath = fileName.name;
+            final deleteUrl2 = Uri.parse('http://192.168.1.254/CARDV/photo/$filePath');
+            final deleteResponse = await http.delete(deleteUrl2);
+            if (deleteResponse.statusCode == 200) {
+              print('Deleted file: $fileName');
+            } else {
+              print('Failed to delete file: $fileName. Status code: ${deleteResponse.statusCode}');
+            }
+          }
+          await getFilesFromCamera();
+        }
+        else {
+          print('Failed to delete images. Status code: ${response.statusCode}');
+        }
       }
     } catch (e) {
-      print('Failed to delete all files: $e');
+      print('Failed to delete files: $e');
     }
   }
+
+
 
   // Download Files to gallery
   // void downloadFile(String url) async {
@@ -1152,10 +1229,13 @@ class _FilesState extends State<Files> {
   //   }
   // }
 
+  // Download files
   bool _isDownloading = false;
   double _progress = 0.0;
+  int? _downloadIndex;
+  // int receivedBytes = 0;
 
-  void _downloadFile(String url) async {
+  void _downloadFile(String url, int index) async {
     if (url.endsWith('.JPG')) {
       url = 'http://192.168.1.254/CARDV/photo/$url';
     } else {
@@ -1165,6 +1245,7 @@ class _FilesState extends State<Files> {
     setState(() {
       _isDownloading = true;
       _progress = 0.0;
+      _downloadIndex = index;
     });
 
     try {
@@ -1180,15 +1261,21 @@ class _FilesState extends State<Files> {
         int receivedBytes = 0;
 
         final bytes = response.bodyBytes;
+
+        final completer = Completer<void>();
+
         final fileStream = file.openWrite();
 
         fileStream.add(bytes);
         receivedBytes += bytes.length;
+        print("Progress in receivebytes");
+        print(receivedBytes);
         setState(() {
-          _progress = receivedBytes / totalBytes;
+          _progress = receivedBytes.toDouble() / totalBytes;
         });
 
         await fileStream.close();
+
 
         if (url.endsWith('.JPG')) {
           await GallerySaver.saveImage(filePath);
@@ -1221,6 +1308,83 @@ class _FilesState extends State<Files> {
     }
   }
 
+  // void _downloadFile(String url, int index) async {
+  //   if (url.endsWith('.JPG')) {
+  //     url = 'http://192.168.1.254/CARDV/photo/$url';
+  //   } else {
+  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
+  //   }
+  //
+  //   setState(() {
+  //     _isDownloading = true;
+  //     _progress = 0.0;
+  //     _downloadIndex = index;
+  //   });
+  //
+  //   try {
+  //     final response = await http.get(Uri.parse(url),
+  //         headers: {'Accept-Encoding': 'identity'});
+  //
+  //     if (response.statusCode == 200) {
+  //       final totalBytes = response.contentLength?.toDouble() ?? 0.0;
+  //       final fileName = url.split('/').last;
+  //       final directory = await getTemporaryDirectory();
+  //       final filePath = '${directory.path}/$fileName';
+  //       final file = File(filePath);
+  //       num? receivedBytes = 0;
+  //
+  //       final bytes = response.bodyBytes;
+  //
+  //       final completer = Completer<void>();
+  //
+  //       final fileStream = file.openWrite();
+  //
+  //       fileStream.addStream(
+  //         Stream.fromIterable(bytes).map((chunk) {
+  //           receivedBytes = receivedBytes! + chunk.bitLength;
+  //           setState(() {
+  //             _progress = receivedBytes!.toDouble() / totalBytes;
+  //           });
+  //           print("Check chunk");
+  //           print(chunk);
+  //           return [chunk];
+  //         }),
+  //       ).whenComplete(() {
+  //         fileStream.close();
+  //         completer.complete(); // Notify that download is complete
+  //       });
+  //
+  //       if (url.endsWith('.JPG')) {
+  //         await GallerySaver.saveImage(filePath);
+  //       } else {
+  //         await GallerySaver.saveVideo(filePath);
+  //       }
+  //
+  //       print('File saved to gallery: $fileName');
+  //
+  //       setState(() {
+  //         _isDownloading = false;
+  //       });
+  //
+  //       Fluttertoast.showToast(
+  //         msg: 'Download complete',
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //       );
+  //     } else {
+  //       print('Error downloading file: ${response.statusCode}');
+  //       setState(() {
+  //         _isDownloading = false;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error downloading file: $e');
+  //     setState(() {
+  //       _isDownloading = false;
+  //     });
+  //   }
+  // }
+
 
   @override
   void dispose() {
@@ -1249,6 +1413,7 @@ class _FilesState extends State<Files> {
     final bool hasImages = images.isNotEmpty;
     final bool showTabs = hasVideos || hasImages;
     final bool showEmptyTabs = videos.isEmpty || images.isEmpty;
+
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -1434,47 +1599,60 @@ class _FilesState extends State<Files> {
                               // Handle other file types if needed
                               iconData = Icons.insert_drive_file;
                             }
-                            if (_isDownloading)
-                              Column(
-                                children: [
-                                  SizedBox(height: 10),
-                                  CircularPercentIndicator(
-                                    radius: 30.0,
-                                    lineWidth: 2.0,
-                                    percent: _progress,
-                                    center: Text('${(_progress * 100).toStringAsFixed(0)}%'),
+                            if (_isDownloading && _downloadIndex == index) {
+                              // Show circular progress bar and cancel option
+                              return ListTile(
+                                leading: SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    value: _progress,
+                                    strokeWidth: 2.0,
+                                    backgroundColor: Colors.black,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                                   ),
-                                ],
+                                ),
+                                title: Text(displayItems[index].name),
+                                subtitle: Text(displayItems[index].time),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.close),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isDownloading = false;
+                                      _downloadIndex = -1;
+                                    });
+                                  },
+                                ),
                               );
-                            return ListTile(
-                              leading: Icon(iconData),
-                              title: Text(displayItems[index].name),
-                              subtitle: Text(displayItems[index].time),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.delete),
-                                    onPressed: () {
-                                      deleteFile(displayItems[index].name.toString());
-                                    },
-                                  ),
-                                  // IconButton(
-                                  //   icon: Icon(Icons.download),
-                                  //   onPressed: () {
-                                  //     downloadFile(displayItems[index].name.toString());
-                                  //   },
-                                  // ),
-                                  IconButton(
-                                    icon: Icon(Icons.download),
-                                    onPressed: _isDownloading ? null : () => _downloadFile(displayItems[index].name.toString()),
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                openImageOrPlayVideo(displayItems[index].name);
-                              },
-                            );
+                            } else {
+                              // Show regular list tile with download button
+                              return ListTile(
+                                leading: Icon(iconData),
+                                title: Text(displayItems[index].name),
+                                subtitle: Text(displayItems[index].time),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () {
+                                        deleteFile(displayItems[index].name.toString());
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.download),
+                                      onPressed: _isDownloading
+                                          ? null
+                                          : () => _downloadFile(displayItems[index].name.toString(), index),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () {
+                                  openImageOrPlayVideo(displayItems[index].name);
+                                },
+                              );
+                            }
+
                           },
                         ),
                     ],
