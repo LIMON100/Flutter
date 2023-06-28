@@ -1,32 +1,9 @@
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:connectivity/connectivity.dart';
-import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:lamaradar/mode/settings.dart';
-import '../temp/glowing_button.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:wifi_iot/wifi_iot.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_dialogs/flutter_dialogs.dart';
-import 'package:html/parser.dart' show parse;
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:intl/intl.dart';
-import 'package:xml/xml.dart' as xml;
 
-import 'package:video_player/video_player.dart';
-import 'package:flutter_image/flutter_image.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:lamaradar/mode/dash_cam.dart';
 
 class ConnectWifiForDashCam extends StatefulWidget {
@@ -134,53 +111,12 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             isConnected = true;
           });
           print("Connect initiated: $value");
-          // if (value == true) {
-          //   showDialog(
-          //     context: context,
-          //     builder: (BuildContext context) {
-          //       return AlertDialog(
-          //         title: Text('Connection Successful'),
-          //         content: Text('Connection to Wi-Fi network established.'),
-          //         actions: [
-          //           ElevatedButton(
-          //             onPressed: () {
-          //               Navigator.push(
-          //                 context,
-          //                 MaterialPageRoute(
-          //                   builder: (context) => DashCam(),
-          //                 ),
-          //               );
-          //             },
-          //             child: Text('Open DashCam'),
-          //           ),
-          //         ],
-          //       );
-          //     },
-          //   );
-          // }
-          // else {
-          //   showDialog(
-          //     context: context,
-          //     builder: (BuildContext context) {
-          //       return AlertDialog(
-          //         title: Text('Connection Failed'),
-          //         content: Text('Unable to connect to the Wi-Fi network.'),
-          //         actions: [
-          //           ElevatedButton(
-          //             onPressed: () {
-          //               Navigator.of(context).pop();
-          //             },
-          //             child: Text('OK'),
-          //           ),
-          //         ],
-          //       );
-          //     },
-          //   );
-          // }
+
         });
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +140,7 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
           ),
         ),
         backgroundColor: Colors.transparent,
+
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -242,6 +179,68 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
                   color2: Colors.cyan,
                 ),
             ],
+
+        body: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 200, // Set a fixed height for the PageView
+                  child: PageView.builder(
+                    controller: pageController,
+                    itemCount: imageList.length,
+                    itemBuilder: (context, index) {
+                      return Image.asset(
+                        imageList[index],
+                        fit: BoxFit.cover,
+                      );
+                    },
+                    onPageChanged: (index) {
+                      setState(() {
+                        currentIndex = index;
+                      });
+                    },
+                  ),
+                ),
+                SizedBox(height: 180),
+                InkWell(
+                  onTap: () {
+                    // _connect(context);
+                    _scanWifiNetworks(context);
+                  },
+                  child: Icon(
+                    Icons.wifi,
+                    color: isConnected ? Colors.green : Colors.black,
+                    size: 50,
+                  ),
+                ),
+                Text(
+                  isConnected ? 'Disconnected' : 'Connect WIFI',
+                  style: TextStyle(
+                    color: isConnected ? Colors.green : Colors.black,
+                    fontSize: 20,
+                  ),
+                ),
+                SizedBox(height: 20),
+                if (isConnected)
+                  GlowingButton2(
+                    text: "Open Dashcam",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DashCam(),
+                        ),
+                      );
+                    },
+                    color1: Color(0xFF517fa4),
+                    color2: Colors.cyan,
+                  ),
+              ],
+            ),
+
           ),
         ),
       ),
