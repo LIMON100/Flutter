@@ -12,7 +12,6 @@ import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
-// import 'BlinkingIconButton.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -59,9 +58,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // for popup dashcam windows
   // late Timer _timer;
   VlcPlayerController? _controller;
+  bool isCameraStreaming = false;
+  // late VlcPlayerController _videoPlayerController;
 
   // Wifi connection
-  final String ssid = "Mah"; // Mahmudur @ SF Networking Limonn_mob CARDV-8c8b
+  final String ssid = "CARDV";
   final String password = "12345678";
   List<String> availableNetworks = [];
 
@@ -77,18 +78,20 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _isDisconnected = false;
   bool isConnected = false;
   List<dynamic> wifiNetworks = [];
+  bool isRearCamOpen = false;
 
 
   @override
   void initState() {
     super.initState();
-    // _connect();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
     initializePlayer();
   }
+
+  // check wifi connected or not
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -199,6 +202,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       );
     }
   }
+
+  // Test repetitive wifi scaner list show
 
   // BLE notification
   Future<void> _connectToDevice() async {
@@ -378,30 +383,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       default:
         return '';
     }
-  }
 
-  Widget _getCircle(Color color) {
-    double opacity = 1.0;
-    if (_getLocation() == 'Left Notification Danger' ||
-        _getLocation() == 'Right Notification Danger' ||
-        _getLocation() == 'Rear Notification Danger') {
-      opacity = 0.0;
-    }
-    return AnimatedOpacity(
-      duration: Duration(milliseconds: 500),
-      opacity: opacity,
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-        ),
-        child: Icon(Icons.arrow_forward, color: Colors.white),
-      ),
-    );
   }
-
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -425,11 +408,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       duration: Duration(milliseconds: 500),
       opacity: opacity,
       // child: Icon(Icons.arrow_back, color: color),
-      child: Icon(
-        Warning.image2vector,
-        size: 48,
-        color: color,
-        // color: _getColor(),
+      child: Container(
+        height: 48,
+        color: Colors.transparent,
+        child: Image.asset(
+          'assets/icons/left_warning_llama_rb.png',
+          color: color,
+        ),
       ),
     );
   }
@@ -443,6 +428,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
+      // if (right_danger_counter >= 4 && !isRearCamOpen) {
+      //   showStreamPopup();
+      //   right_danger_counter = 0;
+      // }
+      // right_danger_counter = right_danger_counter + 1;
+      // print("FIND RIGHT NOTIFICAITON COUNTER");
+      // print(right_danger_counter);
+      // print(isRearCamOpen);
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -456,10 +449,18 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return AnimatedOpacity(
       duration: Duration(milliseconds: 500),
       opacity: opacity,
-      child: Icon(
-        Warning.image2vector2,
-        size: 48,
-        color: color,
+      // child: Icon(
+      //   Warning.image2vector2,
+      //   size: 48,
+      //   color: color,
+      // ),
+      child: Container(
+        height: 48,
+        color: Colors.transparent,
+        child: Image.asset(
+          'assets/icons/right_warning_llama_rb.png',
+          color: color,
+        ),
       ),
     );
   }
@@ -472,17 +473,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
-      if (right_danger_counter >= 2) {
+      if (right_danger_counter >= 2 && !isRearCamOpen) {
         showStreamPopup();
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
       print("FIND RIGHT NOTIFICAITON COUNTER");
       print(right_danger_counter);
+      print(isRearCamOpen);
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
-      // greenPlayer.setAsset('assets/danger_beep.mp3');
-      // greenPlayer.play();
     } else {
       color = Colors.green;
       rear_redPlayer.stop();
@@ -492,15 +492,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     return AnimatedOpacity(
       duration: Duration(milliseconds: 500),
       opacity: opacity,
-      child: Icon(
-        Warning.image2vector3,
-        size: 48,
-        color: color,
+      child: Container(
+        height: 48,
+        color: Colors.transparent,
+        child: Image.asset(
+          'assets/icons/rear_warning_llama_rb.png',
+          color: color,
+        ),
       ),
     );
   }
-
-  final _writeController = TextEditingController();
 
   // blink for distance
   void _startBlinking2(int value) {
@@ -556,11 +557,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
-    // if (_controller != null) {
-    //   await _controller!.dispose();
-    //   _controller = null;
-    // }
-
     _controller = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mov',
       hwAcc: HwAcc.full,
@@ -620,7 +616,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
-
   // Dispose function
   @override
   void dispose() {
@@ -637,8 +632,111 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _controller?.dispose();
   }
 
+  // camera open
+  late VlcPlayerController _videoPlayerController;
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      _videoPlayerController.stop();
+      _videoPlayerController.dispose();
+    } else {
+      _videoPlayerController = VlcPlayerController.network(
+        'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
+        hwAcc: HwAcc.full,
+        autoPlay: true,
+        options: VlcPlayerOptions(),
+      );
+      _videoPlayerController.initialize().then((_) {
+        _videoPlayerController.play();
+      });
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+      isRearCamOpen = !isRearCamOpen;
+    });
+  }
+
+
+  Widget buildCameraButton() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: ElevatedButton(
+          onPressed: toggleCameraStreaming,
+          style: ElevatedButton.styleFrom(
+            primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+          ),
+          child: Text(
+            isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
+            style: TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  //Alert messege for connecting wifi first
+  // Widget buildCameraButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: ElevatedButton(
+  //         onPressed: () {
+  //           if (isConnected) {
+  //             toggleCameraStreaming();
+  //           } else {
+  //             showDialog(
+  //               context: context,
+  //               builder: (BuildContext context) {
+  //                 return AlertDialog(
+  //                   title: Text('Wi-Fi Not Connected'),
+  //                   content: Text('Please connect to Wi-Fi before opening the rear camera.'),
+  //                   actions: [
+  //                     ElevatedButton(
+  //                       onPressed: () {
+  //                         Navigator.of(context).pop();
+  //                       },
+  //                       child: Text('OK'),
+  //                     ),
+  //                   ],
+  //                 );
+  //               },
+  //             );
+  //           }
+  //         },
+  //         style: ElevatedButton.styleFrom(
+  //           primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(30.0),
+  //           ),
+  //         ),
+  //         child: Text(
+  //           isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
+  //           style: TextStyle(
+  //             fontSize: 16.0,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
+
   @override
   Widget build(BuildContext context) {
+    Color screenColor = Theme.of(context).backgroundColor;
     return OrientationBuilder(
       builder: (context, orientation) {
         return Container(
@@ -685,13 +783,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
 
                         SizedBox(width: 60),
-                        Icon(
-                          Warning.image2vector3,
-                          size: 48,
-                          color: _isTopBlinking ? Colors.red : Colors.green,
+                        // Icon(
+                        //   Warning.image2vector3,
+                        //   size: 48,
+                        //   color: _isTopBlinking ? Colors.red : Colors.green,
+                        // ),
+                        Container(
+                          height: 48,
+                          color: Colors.transparent,
+                          child: Image.asset(
+                            'assets/icons/front_warning_llama_rb.png',
+                            color: _isTopBlinking ? Colors.red : Colors.green,
+                          ),
                         ),
-                        SizedBox(width: 60),
 
+                        SizedBox(width: 60),
                         IconButton(
                           onPressed: () {
                             _startRightBlinking();
@@ -722,33 +828,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       ],
                     ),
 
-                    // ligts
-                    // SizedBox(height: 30),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     IconButton(
-                    //         icon: Icon(_lightOn1 ? Icons.lightbulb : Icons
-                    //             .lightbulb_outline),
-                    //         onPressed: () {
-                    //           setState(() {
-                    //             _lightOn1 = !_lightOn1;
-                    //           });
-                    //         }
-                    //     ),
-                    //     SizedBox(width: 140),
-                    //     IconButton(
-                    //         icon: Icon(_lightOn2 ? Icons.lightbulb : Icons
-                    //             .lightbulb_outline),
-                    //         onPressed: () {
-                    //           setState(() {
-                    //             _lightOn2 = !_lightOn2;
-                    //           });
-                    //         }
-                    //     ),
-                    //   ],
-                    // ),
-
                     // Rear warning
                     SizedBox(height: 30),
                     Container(
@@ -771,8 +850,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              SizedBox(width: 10),
                               Column(
                                 children: [
+                                  // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
                                   Icon(Icons.square),
                                   Text('Camera'),
                                 ],
@@ -873,6 +954,40 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       ),
                     ),
 
+                    // Open rear up cam
+                    SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        buildCameraButton(),
+                        // SizedBox(width: 10),
+                        // Dashcam
+                      ],
+                    ),
+                    Container(
+                      height: 200,
+                      width: 300,
+                      child: isCameraStreaming && _videoPlayerController != null
+                      //     ? VlcPlayer(
+                      //   controller: _videoPlayerController,
+                      //   aspectRatio: 16 / 9,
+                      //   placeholder: Center(child: CircularProgressIndicator()),
+                      // )
+                          ? Transform.rotate(
+                        angle: 3.14159,
+                        alignment: Alignment.center,
+                        //transform: Matrix4.rotationY(1*2*3.14159),
+                        child: VlcPlayer(
+                          controller: _videoPlayerController,
+                          aspectRatio: 16 / 9,
+                          placeholder: Center(child: CircularProgressIndicator()),
+                        ),
+                      )
+                          : Image.asset(
+                        'images/test_background3.jpg',
+                        fit: BoxFit.fitWidth,
+                      ),
+                    ),
                     // Stop ride
                     SizedBox(height: 30),
                     Row(
@@ -892,6 +1007,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           color1: Color(0xFF517fa4),
                           color2: Colors.cyan,
                         ),
+
                       ],
                     ),
 
@@ -906,7 +1022,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Container(
                             color: Colors.transparent,
                             child: Image.asset(
-                              'images/llama_img_web3.jpg',
+                              'images/llama_img_web3_rb.png',
                               height: 100,
                               width: 130,
                             ),
@@ -923,7 +1039,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

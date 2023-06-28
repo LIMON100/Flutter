@@ -1,15 +1,9 @@
-import 'dart:async';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
-import '../temp/glowing_button.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:html/parser.dart' show parse;
-import 'package:xml/xml.dart' as xml;
+
 import 'package:lamaradar/mode/dash_cam.dart';
 
 class ConnectWifiForDashCam extends StatefulWidget {
@@ -123,41 +117,6 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
     }
   }
 
-  // Page Builder for images
-  final List<String> imageList = [
-    'assets/images/dashcammotor.jpg',
-    'assets/images/dashcammotor2.jpg',
-    'assets/images/dashcammotor3.jpg',
-  ];
-  int currentIndex = 0;
-  PageController pageController = PageController();
-
-  @override
-  void initState() {
-    super.initState();
-    startTimer();
-  }
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
-
-  void startTimer() {
-    Timer.periodic(Duration(seconds: 1), (Timer timer) {
-      if (currentIndex < imageList.length - 1) {
-        currentIndex++;
-      } else {
-        currentIndex = 0;
-      }
-      pageController.animateToPage(
-        currentIndex,
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +140,46 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
           ),
         ),
         backgroundColor: Colors.transparent,
+
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InkWell(
+                onTap: () {
+                  // _connect(context);
+                  _scanWifiNetworks(context);
+                },
+                child: Icon(
+                  Icons.wifi,
+                  color: isConnected ? Colors.green : Colors.black,
+                  size: 50,
+                ),
+              ),
+              Text(
+                isConnected ? 'Disconnected' : 'Connect WIFI',
+                style: TextStyle(
+                  color: isConnected ? Colors.green : Colors.black,
+                  fontSize: 20,
+                ),
+              ),
+              SizedBox(height: 20),
+              if (isConnected)
+                GlowingButton2(
+                  text: "Open Dashcam",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DashCam(),
+                      ),
+                    );
+                  },
+                  color1: Color(0xFF517fa4),
+                  color2: Colors.cyan,
+                ),
+            ],
+
         body: SingleChildScrollView(
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
@@ -241,6 +240,7 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
                   ),
               ],
             ),
+
           ),
         ),
       ),
