@@ -11,7 +11,6 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:lamaradar/mode/settings.dart';
 import '../temp/ConnectWifiForDashCam.dart';
 import '../temp/glowing_button.dart';
-import 'bleScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
@@ -19,24 +18,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:html/parser.dart' show parse;
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:xml/xml.dart' as xml;
-
 import 'package:video_player/video_player.dart';
-import 'package:flutter_image/flutter_image.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class CircleButton extends StatelessWidget {
@@ -110,7 +97,7 @@ class _DashCamState extends State<DashCam> {
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mov?network-caching=2?clock-jitter=0?clock-synchro=0',
+      'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
       hwAcc: HwAcc.full,
       autoPlay: true,
       options: VlcPlayerOptions(),
@@ -123,7 +110,7 @@ class _DashCamState extends State<DashCam> {
       _videoPlayerController.dispose();
     } else {
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mov?network-caching=2?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
         hwAcc: HwAcc.full,
         autoPlay: true,
         options: VlcPlayerOptions(),
@@ -280,9 +267,10 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    // flipMovieMirror();
+    flipMovieMirror();
     isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
     initializePlayer();
+    movieQualitySet();
   }
 
   Future<void> initializePlayer() async {
@@ -857,7 +845,7 @@ class _HomeState extends State<Home> {
 
 Future<void> flipMovieMirror() async {
   final response = await http
-      .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=3'));
+      .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=4'));
   if (response.statusCode == 200) {
     print(response.body);
     print('Movie Flipped');
@@ -919,7 +907,7 @@ class _FilesState extends State<Files> {
   void initState() {
     super.initState();
     movieQualitySet();
-    // flipMovieMirror();
+    flipMovieMirror();
     // Fetch files from the camera on page load
     getFilesFromCamera();
   }
@@ -1481,72 +1469,72 @@ class _FilesState extends State<Files> {
                 },
               ),
             ),
-          // Expanded(
-          //   child: SingleChildScrollView(
-          //     child: Container(
-          //       margin: const EdgeInsets.only(top: 30),
-          //       width: double.infinity,
-          //       child: Column(
-          //         mainAxisAlignment: MainAxisAlignment.center,
-          //         children: [
-          //           if (displayItems.isEmpty)
-          //             Icon(
-          //               icons[current],
-          //               size: 200,
-          //               color: Colors.deepPurple,
-          //             ),
-          //           if (displayItems.isEmpty) const SizedBox(height: 10),
-          //           if (displayItems.isEmpty)
-          //             Text(
-          //               items[current],
-          //               style: GoogleFonts.laila(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 30,
-          //                 color: Colors.deepPurple,
-          //               ),
-          //             ),
-          //           SizedBox(height: 20),
-          //           if (displayItems.isNotEmpty)
-          //           // WITH ICON
-          //             ListView.builder(
-          //               shrinkWrap: true,
-          //               physics: NeverScrollableScrollPhysics(),
-          //               itemCount: displayItems.length,
-          //               itemBuilder: (context, index) {
-          //                 final bool isImage = displayItems[index].name.endsWith('.JPG');
-          //                 final bool isVideo = displayItems[index].name.endsWith('.MP4');
-          //
-          //                 IconData iconData;
-          //                 if (isImage) {
-          //                   iconData = Icons.photo;
-          //                 } else if (isVideo) {
-          //                   iconData = Icons.videocam;
-          //                 } else {
-          //                   // Handle other file types if needed
-          //                   iconData = Icons.insert_drive_file;
-          //                 }
-          //
-          //                 return ListTile(
-          //                   leading: Icon(iconData),
-          //                   title: Text(displayItems[index].name),
-          //                   subtitle: Text(displayItems[index].time),
-          //                   trailing: IconButton(
-          //                     icon: Icon(Icons.delete),
-          //                     onPressed: () {
-          //                       deleteFile(displayItems[index].name.toString());
-          //                     },
-          //                   ),
-          //                   onTap: () {
-          //                     openImageOrPlayVideo(displayItems[index].name);
-          //                   },
-          //                 );
-          //               },
-          //             ),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          // ),
+            // Expanded(
+            //   child: SingleChildScrollView(
+            //     child: Container(
+            //       margin: const EdgeInsets.only(top: 30),
+            //       width: double.infinity,
+            //       child: Column(
+            //         mainAxisAlignment: MainAxisAlignment.center,
+            //         children: [
+            //           if (displayItems.isEmpty)
+            //             Icon(
+            //               icons[current],
+            //               size: 200,
+            //               color: Colors.deepPurple,
+            //             ),
+            //           if (displayItems.isEmpty) const SizedBox(height: 10),
+            //           if (displayItems.isEmpty)
+            //             Text(
+            //               items[current],
+            //               style: GoogleFonts.laila(
+            //                 fontWeight: FontWeight.w500,
+            //                 fontSize: 30,
+            //                 color: Colors.deepPurple,
+            //               ),
+            //             ),
+            //           SizedBox(height: 20),
+            //           if (displayItems.isNotEmpty)
+            //           // WITH ICON
+            //             ListView.builder(
+            //               shrinkWrap: true,
+            //               physics: NeverScrollableScrollPhysics(),
+            //               itemCount: displayItems.length,
+            //               itemBuilder: (context, index) {
+            //                 final bool isImage = displayItems[index].name.endsWith('.JPG');
+            //                 final bool isVideo = displayItems[index].name.endsWith('.MP4');
+            //
+            //                 IconData iconData;
+            //                 if (isImage) {
+            //                   iconData = Icons.photo;
+            //                 } else if (isVideo) {
+            //                   iconData = Icons.videocam;
+            //                 } else {
+            //                   // Handle other file types if needed
+            //                   iconData = Icons.insert_drive_file;
+            //                 }
+            //
+            //                 return ListTile(
+            //                   leading: Icon(iconData),
+            //                   title: Text(displayItems[index].name),
+            //                   subtitle: Text(displayItems[index].time),
+            //                   trailing: IconButton(
+            //                     icon: Icon(Icons.delete),
+            //                     onPressed: () {
+            //                       deleteFile(displayItems[index].name.toString());
+            //                     },
+            //                   ),
+            //                   onTap: () {
+            //                     openImageOrPlayVideo(displayItems[index].name);
+            //                   },
+            //                 );
+            //               },
+            //             ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
