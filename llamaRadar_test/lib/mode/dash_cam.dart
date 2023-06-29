@@ -98,7 +98,7 @@ class _DashCamState extends State<DashCam> {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
-      hwAcc: HwAcc.full,
+      hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(),
     );
@@ -111,7 +111,7 @@ class _DashCamState extends State<DashCam> {
     } else {
       _videoPlayerController = VlcPlayerController.network(
         'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
-        hwAcc: HwAcc.full,
+        hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(),
       );
