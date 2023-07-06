@@ -92,16 +92,66 @@ class _DashCamState extends State<DashCam> {
   int _currentIndex = 0;
   bool isCameraStreaming = false;
   late VlcPlayerController _videoPlayerController;
+  late final VoidCallback updateFileListCallback;
 
   @override
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
-      hwAcc: HwAcc.full,
+      hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(),
     );
+    getFilesFromCamera();
+  }
+
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
+
+  Future<void> getFilesFromCamera() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3015';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final xmlDoc = xml.XmlDocument.parse(response.body);
+        final fileElements = xmlDoc.findAllElements('File');
+
+        // Clear the existing lists before updating
+        setState(() {
+          images.clear();
+          videos.clear();
+        });
+
+        for (final fileElement in fileElements) {
+          final nameElement = fileElement.findElements('NAME').single;
+          final filePathElement = fileElement.findElements('FPATH').single;
+          final timeElement = fileElement.findElements('TIME').single;
+
+          final name = nameElement.text;
+          final filePath = filePathElement.text;
+          final time = timeElement.text;
+
+          final fileItem = FileItem(name, filePath, time);
+
+          if (name.endsWith('.JPG')) {
+            setState(() {
+              images.add(fileItem);
+            });
+          } else if (name.endsWith('.MP4')) {
+            setState(() {
+              videos.add(fileItem);
+            });
+          }
+        }
+      } else {
+        print('Error occurred: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 
   void toggleCameraStreaming() {
@@ -111,7 +161,7 @@ class _DashCamState extends State<DashCam> {
     } else {
       _videoPlayerController = VlcPlayerController.network(
         'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
-        hwAcc: HwAcc.full,
+        hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(),
       );
@@ -181,9 +231,15 @@ class _DashCamState extends State<DashCam> {
               toggleCameraStreaming: toggleCameraStreaming,
               isCameraStreaming: isCameraStreaming,
               videoPlayerController: _videoPlayerController,
+              updateFileListCallback: updateFileListCallback,
+              images: images,
+              videos: videos,
             ),
             Files(
               isCameraStreaming: isCameraStreaming,
+              updateFileListCallback: updateFileListCallback,
+              images: images,
+              videos: videos,
             ),
             About(),
           ],
@@ -229,11 +285,18 @@ class Home extends StatefulWidget {
   final Function toggleCameraStreaming;
   final bool isCameraStreaming;
   final VlcPlayerController videoPlayerController;
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
+  final VoidCallback updateFileListCallback;
+
 
   Home({
     required this.toggleCameraStreaming,
     required this.isCameraStreaming,
     required this.videoPlayerController,
+    required this.images,
+    required this.videos,
+    required this.updateFileListCallback,
   });
 
   @override
@@ -246,6 +309,8 @@ class _HomeState extends State<Home> {
   final password = '12345678';
   bool isConnected = false;
   bool isCameraStreaming = false;
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
 
 
   //IP Address
@@ -520,52 +585,50 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // List<FileItem> images = [];
-  // List<FileItem> videos = [];
-  // Future<void> getFilesFromCamera() async {
-  //   String url = 'http://192.168.1.254/?custom=1&cmd=3015';
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //
-  //     if (response.statusCode == 200) {
-  //       final xmlDoc = xml.XmlDocument.parse(response.body);
-  //       final fileElements = xmlDoc.findAllElements('File');
-  //
-  //       // Clear the existing lists before updating
-  //       setState(() {
-  //         images.clear();
-  //         videos.clear();
-  //       });
-  //
-  //       for (final fileElement in fileElements) {
-  //         final nameElement = fileElement.findElements('NAME').single;
-  //         final filePathElement = fileElement.findElements('FPATH').single;
-  //         final timeElement = fileElement.findElements('TIME').single;
-  //
-  //         final name = nameElement.text;
-  //         final filePath = filePathElement.text;
-  //         final time = timeElement.text;
-  //
-  //         final fileItem = FileItem(name, filePath, time);
-  //
-  //         if (name.endsWith('.JPG')) {
-  //           setState(() {
-  //             images.add(fileItem);
-  //           });
-  //         } else if (name.endsWith('.MP4')) {
-  //           setState(() {
-  //             videos.add(fileItem);
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       print('Error occurred: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
+  Future<void> getFilesFromCamera() async {
+    String url = 'http://192.168.1.254/?custom=1&cmd=3015';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final xmlDoc = xml.XmlDocument.parse(response.body);
+        final fileElements = xmlDoc.findAllElements('File');
+
+        // Clear the existing lists before updating
+        setState(() {
+          images.clear();
+          videos.clear();
+        });
+
+        for (final fileElement in fileElements) {
+          final nameElement = fileElement.findElements('NAME').single;
+          final filePathElement = fileElement.findElements('FPATH').single;
+          final timeElement = fileElement.findElements('TIME').single;
+
+          final name = nameElement.text;
+          final filePath = filePathElement.text;
+          final time = timeElement.text;
+
+          final fileItem = FileItem(name, filePath, time);
+
+          if (name.endsWith('.JPG')) {
+            setState(() {
+              images.add(fileItem);
+            });
+          } else if (name.endsWith('.MP4')) {
+            setState(() {
+              videos.add(fileItem);
+            });
+          }
+        }
+      } else {
+        print('Error occurred: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   Future<void> takePicture() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=1001';
@@ -576,7 +639,7 @@ class _HomeState extends State<Home> {
       if (response.statusCode == 200) {
         print('Image captured');
         // await getFilesFromCamera();
-
+        widget.updateFileListCallback();
       } else {
         print('Error occured: ${response.statusCode}');
       }
@@ -748,8 +811,17 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Center(
-        child: SingleChildScrollView(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Files(
+              isCameraStreaming: widget.isCameraStreaming,
+              images: widget.images,
+              videos: widget.videos,
+              updateFileListCallback: getFilesFromCamera, // Pass the callback
+            ),
+          ),
+          SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -838,6 +910,7 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
+        ],
       ),
     );
   }
@@ -867,11 +940,15 @@ Future<void> movieQualitySet() async {
 // File class
 class Files extends StatefulWidget {
   final bool isCameraStreaming;
-  // final bool isLoadingFiles;
+  List<FileItem> images = [];
+  List<FileItem> videos = [];
+  final VoidCallback updateFileListCallback;
 
   Files({
     required this.isCameraStreaming,
-    // required this.isLoadingFiles,
+    required this.images,
+    required this.videos,
+    required this.updateFileListCallback,
   });
 
   @override
@@ -990,46 +1067,6 @@ class _FilesState extends State<Files> {
     }
   }
 
-  // Future<void> getFilesFromCamera() async {
-  //   String url = 'http://192.168.1.254/?custom=1&cmd=3015';
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     // print('Response: ${response.body}');
-  //
-  //     if (response.statusCode == 200) {
-  //       final xmlDoc = xml.XmlDocument.parse(response.body);
-  //       final fileElements = xmlDoc.findAllElements('File');
-  //
-  //       for (final fileElement in fileElements) {
-  //         final nameElement = fileElement.findElements('NAME').single;
-  //         final filePathElement = fileElement.findElements('FPATH').single;
-  //         final timeElement = fileElement.findElements('TIME').single;
-  //
-  //         final name = nameElement.text;
-  //         final filePath = filePathElement.text;
-  //         final time = timeElement.text;
-  //
-  //         final fileItem = FileItem(name, filePath, time);
-  //
-  //         if (name.endsWith('.JPG')) {
-  //           setState(() {
-  //             images.add(fileItem);
-  //           });
-  //         } else if (name.endsWith('.MP4')) {
-  //           setState(() {
-  //             videos.add(fileItem);
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       print('Error occurred: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
-
   Future<void> getFilesFromCamera() async {
     String url = 'http://192.168.1.254/?custom=1&cmd=3015';
 
@@ -1076,6 +1113,7 @@ class _FilesState extends State<Files> {
     } catch (e) {
       print('Error: $e');
     }
+    widget.updateFileListCallback();
   }
 
   // Delete file
