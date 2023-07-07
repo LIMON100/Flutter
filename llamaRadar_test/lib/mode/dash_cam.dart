@@ -92,7 +92,6 @@ class _DashCamState extends State<DashCam> {
   int _currentIndex = 0;
   bool isCameraStreaming = false;
   late VlcPlayerController _videoPlayerController;
-  late final VoidCallback updateFileListCallback;
 
   @override
   void initState() {
@@ -231,13 +230,11 @@ class _DashCamState extends State<DashCam> {
               toggleCameraStreaming: toggleCameraStreaming,
               isCameraStreaming: isCameraStreaming,
               videoPlayerController: _videoPlayerController,
-              updateFileListCallback: updateFileListCallback,
               images: images,
               videos: videos,
             ),
             Files(
               isCameraStreaming: isCameraStreaming,
-              updateFileListCallback: updateFileListCallback,
               images: images,
               videos: videos,
             ),
@@ -287,7 +284,6 @@ class Home extends StatefulWidget {
   final VlcPlayerController videoPlayerController;
   List<FileItem> images = [];
   List<FileItem> videos = [];
-  final VoidCallback updateFileListCallback;
 
 
   Home({
@@ -296,7 +292,6 @@ class Home extends StatefulWidget {
     required this.videoPlayerController,
     required this.images,
     required this.videos,
-    required this.updateFileListCallback,
   });
 
   @override
@@ -334,6 +329,8 @@ class _HomeState extends State<Home> {
     super.initState();
     flipMovieMirror();
     isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
+    images = widget.images;
+    videos = widget.videos;
     initializePlayer();
     movieQualitySet();
   }
@@ -458,25 +455,6 @@ class _HomeState extends State<Home> {
       //   Navigator.of(context).pop(); // Close the dialog window
       // });
     }
-    // } else {
-    //   showDialog(
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return AlertDialog(
-    //         title: Text('Permission Error'),
-    //         content: Text('Please turn on Wi-Fi first.'),
-    //         actions: [
-    //           ElevatedButton(
-    //             onPressed: () {
-    //               Navigator.of(context).pop();
-    //             },
-    //             child: Text('OK'),
-    //           ),
-    //         ],
-    //       );
-    //     },
-    //   );
-    // }
   }
 
   // Start recording
@@ -638,8 +616,8 @@ class _HomeState extends State<Home> {
 
       if (response.statusCode == 200) {
         print('Image captured');
-        // await getFilesFromCamera();
-        widget.updateFileListCallback();
+        await getFilesFromCamera();
+
       } else {
         print('Error occured: ${response.statusCode}');
       }
@@ -813,103 +791,95 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Files(
-              isCameraStreaming: widget.isCameraStreaming,
-              images: widget.images,
-              videos: widget.videos,
-              updateFileListCallback: getFilesFromCamera, // Pass the callback
-            ),
-          ),
           SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                height: 400,
-                width: 400,
-                // child: isCameraStreaming && _controller != null
-                child: isCameraStreaming && widget.videoPlayerController != null
-                //     ? VlcPlayer(
-                //   controller: widget.videoPlayerController,
-                //   aspectRatio: 16 / 9,
-                //   placeholder: Center(child: CircularProgressIndicator()),
-                // )
-                //     ? Transform.rotate(
-                //   angle: 3.14159,
-                //   alignment: Alignment.center,
-                //   //transform: Matrix4.rotationY(1*2*3.14159),
-                //   child: VlcPlayer(
-                //     controller: widget.videoPlayerController,
-                //     aspectRatio: 16 / 9,
-                //     placeholder: Center(child: CircularProgressIndicator()),
-                //   ),
-                // )
-                    ? VlcPlayer(
-                  controller: widget.videoPlayerController,
-                  aspectRatio: 16 / 9,
-                  placeholder: Center(child: CircularProgressIndicator()),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: 400,
+                  width: 400,
+                  // child: isCameraStreaming && _controller != null
+                  child: isCameraStreaming && widget.videoPlayerController != null
+                  //     ? VlcPlayer(
+                  //   controller: widget.videoPlayerController,
+                  //   aspectRatio: 16 / 9,
+                  //   placeholder: Center(child: CircularProgressIndicator()),
+                  // )
+                  //     ? Transform.rotate(
+                  //   angle: 3.14159,
+                  //   alignment: Alignment.center,
+                  //   //transform: Matrix4.rotationY(1*2*3.14159),
+                  //   child: VlcPlayer(
+                  //     controller: widget.videoPlayerController,
+                  //     aspectRatio: 16 / 9,
+                  //     placeholder: Center(child: CircularProgressIndicator()),
+                  //   ),
+                  // )
+                      ? VlcPlayer(
+                    controller: widget.videoPlayerController,
+                    aspectRatio: 16 / 9,
+                    placeholder: Center(child: CircularProgressIndicator()),
 
-                )
-                    : Image.asset(
-                  'images/test_background3.jpg',
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
-              SizedBox(height: 54),
-              SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      // Start and stop camera
-                      Center(
-                        child: buildCameraButton(),
-                      ),
-
-                      SizedBox(height: 5),
-                      Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .center, // Align buttons in the center
-                          children: [
-                            buildRecordingButton(),
-                            SizedBox(width: 15),
-                            Align(
-                              alignment: Alignment.center,
-                              child: CircleButton(
-                                onPressed: () {
-                                  setDateOfCam();
-                                  setTimeOfCam();
-                                  changeToPhotoMode();
-                                  takePicture();
-                                  changeToVideoMode();
-                                },
-                                color: Color(0xFFa8caba),
-                                text: 'Capture',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 5),
-                      CircleButton(
-                        onPressed: () {
-                          flipMovieMirror();
-                        },
-                        color: Color(0xFFa8caba),
-                        text: 'FlipTest',
-                      ),
-
-                    ],
+                  )
+                      : Image.asset(
+                    'images/test_background3.jpg',
+                    fit: BoxFit.fitWidth,
                   ),
                 ),
-              ),
-              SizedBox(height: 100),
-            ],
+                SizedBox(height: 54),
+                SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        // Start and stop camera
+                        Center(
+                          child: buildCameraButton(),
+                        ),
+
+                        SizedBox(height: 5),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment
+                                .center, // Align buttons in the center
+                            children: [
+                              buildRecordingButton(),
+                              SizedBox(width: 15),
+                              Align(
+                                alignment: Alignment.center,
+                                child: CircleButton(
+                                  onPressed: () {
+                                    setDateOfCam();
+                                    setTimeOfCam();
+                                    changeToPhotoMode();
+                                    takePicture();
+                                    changeToVideoMode();
+                                  },
+                                  color: Color(0xFFa8caba),
+                                  text: 'Capture',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(height: 5),
+                        CircleButton(
+                          onPressed: () {
+                            flipMovieMirror();
+                          },
+                          color: Color(0xFFa8caba),
+                          text: 'FlipTest',
+                        ),
+
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 100),
+              ],
+            ),
           ),
-        ),
         ],
       ),
     );
@@ -942,13 +912,11 @@ class Files extends StatefulWidget {
   final bool isCameraStreaming;
   List<FileItem> images = [];
   List<FileItem> videos = [];
-  final VoidCallback updateFileListCallback;
 
   Files({
     required this.isCameraStreaming,
     required this.images,
     required this.videos,
-    required this.updateFileListCallback,
   });
 
   @override
@@ -986,6 +954,8 @@ class _FilesState extends State<Files> {
     movieQualitySet();
     flipMovieMirror();
     // Fetch files from the camera on page load
+    images = widget.images;
+    videos = widget.videos;
     getFilesFromCamera();
   }
 
@@ -1113,7 +1083,6 @@ class _FilesState extends State<Files> {
     } catch (e) {
       print('Error: $e');
     }
-    widget.updateFileListCallback();
   }
 
   // Delete file
