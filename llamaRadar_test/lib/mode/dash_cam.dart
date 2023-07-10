@@ -956,8 +956,16 @@ class _FilesState extends State<Files> {
     // Fetch files from the camera on page load
     images = widget.images;
     videos = widget.videos;
+    Connectivity().onConnectivityChanged.listen((connectivity) {
+      if (connectivity == ConnectivityResult.wifi) {
+        getFilesFromCamera();
+      }
+    });
     getFilesFromCamera();
   }
+
+  // Connectivity class to check connection
+
 
   // Open File
 
