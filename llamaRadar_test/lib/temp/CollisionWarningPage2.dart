@@ -1,26 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
-import 'package:wifi_iot/wifi_iot.dart';
-import 'BlinkingIconsButton.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:video_player/video_player.dart';
-import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:connectivity/connectivity.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -36,13 +30,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _isLeftBlinking = false;
   bool _isRightBlinking = false;
   bool _isTopBlinking = false;
-  bool _isBottomBlinking = false;
 
   bool _cameraOn = false;
-  bool _lightOn1 = false;
-  bool _lightOn2 = false;
   bool _tailight = false;
-  bool _emergencyOn = false;
   bool _powerOn = false;
 
   final right_redPlayer = AudioPlayer();
@@ -52,21 +42,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   final rear_greenPlayer = AudioPlayer();
   final left_greenPlayer = AudioPlayer();
 
-  bool _redLightOn = false;
-  bool _greenLightOn = false;
 
   // for popup dashcam windows
-  // late Timer _timer;
   VlcPlayerController? _controller;
   bool isCameraStreaming = false;
-  // late VlcPlayerController _videoPlayerController;
 
   // Wifi connection
   final String ssid = "CARDV";
   final String password = "12345678";
   List<String> availableNetworks = [];
-
-
 
   //notificaiton variable
   late BluetoothDevice _device;
@@ -202,8 +186,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       );
     }
   }
-
-  // Test repetitive wifi scaner list show
 
   // BLE notification
   Future<void> _connectToDevice() async {
@@ -375,7 +357,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       case 2:
         return 'Right Notification Danger';
       case 3:
-        return 'Right Notification Warning';
+        return 'Left Notification Warning';
       case 4:
         return 'Left Notification Danger';
       case 5:
@@ -385,10 +367,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
 
   }
+
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
-    // showStreamPopup();
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
@@ -405,7 +387,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
 
     return AnimatedOpacity(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 300),
       opacity: opacity,
       // child: Icon(Icons.arrow_back, color: color),
       child: Container(
@@ -420,22 +402,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   int right_danger_counter = 0;
+
   Widget _getRightIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+
     if (_getLocation() == 'Right Notification Danger') {
       color = Colors.red;
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
     } else if (_getLocation() == 'Right Notification Warning') {
-      // if (right_danger_counter >= 4 && !isRearCamOpen) {
-      //   showStreamPopup();
-      //   right_danger_counter = 0;
-      // }
-      // right_danger_counter = right_danger_counter + 1;
-      // print("FIND RIGHT NOTIFICAITON COUNTER");
-      // print(right_danger_counter);
-      // print(isRearCamOpen);
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -447,13 +423,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
 
     return AnimatedOpacity(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 300),
       opacity: opacity,
-      // child: Icon(
-      //   Warning.image2vector2,
-      //   size: 48,
-      //   color: color,
-      // ),
+
       child: Container(
         height: 48,
         color: Colors.transparent,
@@ -478,9 +450,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-      print("FIND RIGHT NOTIFICAITON COUNTER");
-      print(right_danger_counter);
-      print(isRearCamOpen);
+      // print("FIND RIGHT NOTIFICAITON COUNTER");
+      // print(right_danger_counter);
+      // print(isRearCamOpen);
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
     } else {
@@ -490,7 +462,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
 
     return AnimatedOpacity(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 300),
       opacity: opacity,
       child: Container(
         height: 48,
@@ -501,26 +473,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         ),
       ),
     );
-  }
-
-  // blink for distance
-  void _startBlinking2(int value) {
-    Timer _blinkTimer;
-    bool _isBlinking = false;
-
-    _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-      setState(() {
-        _isBlinking = !_isBlinking;
-      });
-    });
-
-    // Stop the blinking after 3 seconds
-    Future.delayed(Duration(seconds: 3)).then((_) {
-      _blinkTimer?.cancel();
-      setState(() {
-        _isBlinking = false;
-      });
-    });
   }
 
   bool _isBlinkingIcon1 = false;
@@ -635,11 +587,47 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // camera open
   late VlcPlayerController _videoPlayerController;
 
+  // void toggleCameraStreaming() {
+  //   if (isCameraStreaming) {
+  //     _videoPlayerController.stop();
+  //     _videoPlayerController.dispose();
+  //   }
+  //   else {
+  //     _videoPlayerController = VlcPlayerController.network(
+  //       'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
+  //       hwAcc: HwAcc.full,
+  //       autoPlay: true,
+  //       options: VlcPlayerOptions(),
+  //     );
+  //     _videoPlayerController.initialize().then((_) {
+  //       _videoPlayerController.play();
+  //     });
+  //   }
+  //
+  //   setState(() {
+  //     isCameraStreaming = !isCameraStreaming;
+  //     isRearCamOpen = !isRearCamOpen;
+  //   });
+  // }
   void toggleCameraStreaming() {
     if (isCameraStreaming) {
       _videoPlayerController.stop();
       _videoPlayerController.dispose();
     } else {
+      Connectivity().onConnectivityChanged.listen((connectivity) {
+        if (connectivity == ConnectivityResult.wifi) {
+          _videoPlayerController = VlcPlayerController.network(
+            'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
+            hwAcc: HwAcc.full,
+            autoPlay: true,
+            options: VlcPlayerOptions(),
+          );
+          _videoPlayerController.initialize().then((_) {
+            _videoPlayerController.play();
+          });
+        }
+      });
+
       _videoPlayerController = VlcPlayerController.network(
         'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
         hwAcc: HwAcc.full,
@@ -656,6 +644,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       isRearCamOpen = !isRearCamOpen;
     });
   }
+
 
 
   Widget buildCameraButton() {
@@ -683,55 +672,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       ),
     );
   }
-  //Alert messege for connecting wifi first
-  // Widget buildCameraButton() {
-  //   return Align(
-  //     alignment: Alignment.topCenter,
-  //     child: Container(
-  //       margin: EdgeInsets.only(top: 10),
-  //       child: ElevatedButton(
-  //         onPressed: () {
-  //           if (isConnected) {
-  //             toggleCameraStreaming();
-  //           } else {
-  //             showDialog(
-  //               context: context,
-  //               builder: (BuildContext context) {
-  //                 return AlertDialog(
-  //                   title: Text('Wi-Fi Not Connected'),
-  //                   content: Text('Please connect to Wi-Fi before opening the rear camera.'),
-  //                   actions: [
-  //                     ElevatedButton(
-  //                       onPressed: () {
-  //                         Navigator.of(context).pop();
-  //                       },
-  //                       child: Text('OK'),
-  //                     ),
-  //                   ],
-  //                 );
-  //               },
-  //             );
-  //           }
-  //         },
-  //         style: ElevatedButton.styleFrom(
-  //           primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(30.0),
-  //           ),
-  //         ),
-  //         child: Text(
-  //           isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
-  //           style: TextStyle(
-  //             fontSize: 16.0,
-  //             fontWeight: FontWeight.bold,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
 
 
   @override
@@ -783,11 +723,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
 
                         SizedBox(width: 60),
-                        // Icon(
-                        //   Warning.image2vector3,
-                        //   size: 48,
-                        //   color: _isTopBlinking ? Colors.red : Colors.green,
-                        // ),
                         Container(
                           height: 48,
                           color: Colors.transparent,
@@ -839,7 +774,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-
+                    // Container(
+                    //   margin: EdgeInsets.only(top: 1),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Text(_value[28]),
+                    //     ],
+                    //   ),
+                    // ),
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
                     SizedBox(height: 30),
@@ -976,7 +919,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           ? Transform.rotate(
                         angle: 3.14159,
                         alignment: Alignment.center,
-                        //transform: Matrix4.rotationY(1*2*3.14159),
                         child: VlcPlayer(
                           controller: _videoPlayerController,
                           aspectRatio: 16 / 9,
