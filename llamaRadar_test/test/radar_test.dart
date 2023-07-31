@@ -1,141 +1,104 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_test/flutter_test.dart';
-// import 'package:utllama/ut/RadarNotifcationController.dart';
-// import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-// import 'package:mockito/mockito.dart';
-//
-// // class MockFlutterBlue extends Mock implements FlutterBluePlus {
-// //   // Define mock implementation of startScan method
-// //
-// //   Future<void> startScan({Duration? timeout}) async {
-// //     // setState(() {
-// //     //   _isScanning = true;
-// //     //   _scanError = null;
-// //     // });
-// //
-// //     try {
-// //       await FlutterBluePlus.instance.startScan(timeout: Duration(seconds: 4));
-// //     } catch (e) {
-// //       print("Error starting scan: $e");
-// //       // setState(() {
-// //       //   _scanError = e.toString();
-// //       // });
-// //     }
-// //
-// //     // setState(() {
-// //     //   _isScanning = false;
-// //     // });
-// //   }
-// // }
-//
-// class MockFlutterBluePlus extends Mock implements FlutterBluePlus {
-//   @override
-//   Future<void> startScan({
-//     bool allowDuplicates = false,
-//     bool androidUsesFineLocation = true,
-//     List<String>? macAddresses,
-//     ScanMode scanMode = ScanMode.lowLatency,
-//     Duration? timeout,
-//     List<Guid>? withDevices,
-//     List<Guid>? withServices,
-//   }) async {
-//     // Implement the behavior you want to test here
-//     // For example, you can return a list of mock devices
-//     // or simply return void to simulate a successful scan.
-//   }
-// }
-//
-// void main() {
-//   testWidgets('Test _startScan', (WidgetTester tester) async {
-//     // Create a mock FlutterBlue instance
-//     final mockFlutterBlue = MockFlutterBluePlus();
-//
-//     // Wrap the widget that calls _startScan with a MaterialApp
-//     await tester.pumpWidget(MaterialApp(
-//       home: YourWidget(flutterBlue: mockFlutterBlue), // Pass the mock FlutterBlue instance
-//     ));
-//
-//     // Call the _startScan function
-//     await tester.runAsync(() async {
-//       await tester.tap(find.byType()); // Replace YourStartScanButton with the actual widget that calls _startScan
-//       await tester.pump();
-//
-//       // Add assertions here to verify the behavior of _startScan
-//       // For example, you can check if the scanning state is set correctly
-//       expect(find.text('Scanning...'), findsOneWidget);
-//
-//       // You can also simulate a scan error and verify if the error state is set correctly
-//       // when(mockFlutterBlue.startScan(timeout: anyNamed('timeout'))).thenThrow(Exception('Scan Error'));
-//       // await tester.tap(find.byType(YourStartScanButton));
-//       // await tester.pump();
-//       // expect(find.text('Error: Scan Error'), findsOneWidget);
-//     });
-//   });
-// }
+import 'dart:async';
+import 'dart:typed_data';
 
-
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:utllama/ut/RadarNotifcationController.dart';
 
 
+// class MockBluetoothDevice extends Mock implements BluetoothDevice {}
+//
+// class MockBluetoothCharacteristic extends Mock
+//     implements BluetoothCharacteristic {}
+//
+// class MockFlutterBlue extends Mock implements FlutterBluePlus {}
+// class MockBluetoothService extends Mock implements BluetoothService {}
 
-class MockScanController {
-  bool _isScanning = false;
-  late String _scanError;
 
-  Future<bool> startScan() {
-    _isScanning = true;
-    return Future.value(true);
-  }
+class MockBluetoothService extends Mock implements BluetoothService {}
+class MockBluetoothCharacteristic extends Mock implements BluetoothCharacteristic {}
 
-  void stopScan() {
-    _isScanning = false;
-  }
-
-  void setScanError(String error) {
-    _scanError = error;
-  }
-
-  bool get isScanning => _isScanning;
-  String get scanError => _scanError;
+class MockBluetoothDevice extends Mock implements BluetoothDevice {
+  @override
+  String get name => 'LLama Radar'; // Provide a default value for the name
 }
 
-class StartScanTest {
-  late MockScanController scanController;
+void main() {
 
-  void setUp() {
-    scanController = MockScanController();
-  }
+  // DISCONNECT BLE
+  // test('Test disconnectFromDevice', () async {
+  //   // Create mock objects
+  //   final mockDevice = MockBluetoothDevice();
+  //
+  //   // Create an instance of RadarNotificationController with the mockDevice
+  //   final testInstance = RadarNotificationController(mockDevice);
+  //
+  //   // Set initial state to simulate connected state
+  //   expect(testInstance.isDisconnected, false);
+  //
+  //   // Call the disconnectFromDevice() method
+  //   await testInstance.performDisconnection();
+  //
+  //   // Perform your assertions
+  //   expect(testInstance.isDisconnected, true);
+  //   // verify(mockDevice.disconnect()).called(1);
+  // });
 
-  void tearDown() {
-    // scanController = null;
-  }
+  // SEND DATA
+  group('BLE Connection and Command Test', () {
+    test('Connect to BLE device with name "Llama" and send command', () async {
+      // Create mock objects
+      final mockDevice = MockBluetoothDevice();
+      final mockService = MockBluetoothService();
+      final mockCharacteristicWrite = MockBluetoothCharacteristic();
 
-  Future<bool> _startScan() async {
-    return await scanController.startScan();
-  }
+      // Set up the responses of the mock objects
+      when(mockDevice.discoverServices())
+          .thenAnswer((_) async => [mockService]);
+      when(mockService.characteristics)
+          .thenReturn([mockCharacteristicWrite]);
 
-  void test_startScan_success() async {
-    // Arrange
-    when(scanController.startScan()).thenAnswer((_) async => Future.value(true));
+      when(mockCharacteristicWrite.uuid.toString())
+          .thenReturn('beb5483e-36e1-4688-b7f5-ea07361b26a7');
 
-    // Act
-    bool success = await _startScan();
+      // Create an instance of your BLE connection manager
+      final bleConnectionManager = RadarNotificationController(mockDevice);
 
-    // Assert
-    verify(scanController.startScan());
-    assert(success);
-  }
+      // Call the function to connect to the BLE device and send the command
+      await bleConnectionManager.connectAndSendCommand();
 
-  void test_startScan_error() async {
-    // Arrange
-    when(scanController.startScan()).thenThrow(Exception("An error occurred"));
+      // Add your assertions to check if the connection and command sending was successful
+      verify(mockDevice.discoverServices()).called(1);
+      verify(mockCharacteristicWrite.write(Uint8List.fromList([0x02, 0x01, 0x0A, 0x01, 0x0E]))).called(1);
+    });
+  });
 
-    // Act
-    bool success = await _startScan();
 
-    // Assert
-    verify(scanController.startScan());
-    assert(!success);
-  }
+  // Radar notification test - PROBLEM
+  // test('Test connectToDevice', () async {
+  //   // Create mock objects
+  //   final mockDevice = MockBluetoothDevice();
+  //   final mockService1 = MockBluetoothService();
+  //   final mockCharacteristicWrite = MockBluetoothCharacteristic();
+  //   final mockCharacteristicNotify = MockBluetoothCharacteristic();
+  //
+  //   // Set up the responses of the mock objects
+  //   when(mockDevice.discoverServices()).thenAnswer((_) async => [mockService1]);
+  //   when(mockService1.characteristics).thenReturn([mockCharacteristicWrite, mockCharacteristicNotify]);
+  //   when(mockCharacteristicWrite.uuid.toString()).thenReturn('beb5483e-36e1-4688-b7f5-ea07361b26a7');
+  //   when(mockCharacteristicNotify.uuid.toString()).thenReturn('beb5483e-36e1-4688-b7f5-ea07361b26a8');
+  //   when(mockCharacteristicNotify.properties.notify).thenReturn(true);
+  //
+  //   // Create an instance of RadarNotificationController with the mockDevice
+  //   final testInstance = RadarNotificationController(mockDevice);
+  //
+  //   // Call the function
+  //   await testInstance.connectToDevice();
+  //
+  //   // Perform your assertions
+  //   expect(testInstance.device_test, equals(mockDevice));
+  //   expect(testInstance.characteristic, equals(mockCharacteristicNotify));
+  //   // Add more assertions if necessary
+  // });
 }
