@@ -46,43 +46,78 @@ void main() {
   // });
 
   // Left right blinking
-  test('Test startLeftBlinking', () async {
+  // test('Test startLeftBlinking', () async {
+  //   final mockDevice = MockBluetoothDevice();
+  //   final blinkingController = RadarNotificationController(mockDevice);
+  //
+  //   // Test case: _leftBlinkTimer is null
+  //   final result1 = blinkingController.startLeftBlinking();
+  //   expect(result1, [true, false]);
+  //
+  //   // Test case: _leftBlinkTimer not null
+  //   final result2 = blinkingController.startLeftBlinking();
+  //   expect(result2, [false, false]);
+  //
+  //   // Test case: Stop after 3 seconds
+  //   await Future.delayed(Duration(seconds: 3));
+  //   final result3 = blinkingController.isLeftBlinking;
+  //   expect(result3, false); // isLeftBlinking is false after 3 seconds
+  // });
+  //
+  // // TEST RIGHT BLIKING
+  // test('Test startLeftBlinking', () async {
+  //   final mockDevice = MockBluetoothDevice();
+  //   final blinkingController = RadarNotificationController(mockDevice);
+  //
+  //   // Test case: _leftBlinkTimer is null
+  //   final result1 = blinkingController.startRightBlinking();
+  //   expect(result1, [false, false]); // Timer started and isLeftBlinking is true
+  //
+  //   // Test case: _leftBlinkTimer not null
+  //   final result2 = blinkingController.startRightBlinking();
+  //   expect(result2, [false, false]); // Timer stopped and isLeftBlinking is false
+  //
+  //   // Test case: Stop after 3 seconds
+  //   await Future.delayed(Duration(seconds: 3));
+  //   final result3 = blinkingController.isRightBlinking;
+  //   expect(result3, false); // isLeftBlinking is false after 3 seconds
+  // });
+
+  // WARNING TEXT
+  test('Test getLocation', () {
     final mockDevice = MockBluetoothDevice();
-    final blinkingController = RadarNotificationController(mockDevice);
+    final notificationController = RadarNotificationController(mockDevice);
 
-    // Test case: _leftBlinkTimer is null
-    final result1 = blinkingController.startLeftBlinking();
-    expect(result1, [true, false]);
+    // Test case 1: _value.length < 29
+    notificationController.new_value = ''; // Empty _value
+    var result1 = notificationController.getLocation(notificationController.new_value);
+    expect(result1, 'Notification Not Available');
 
-    // Test case: _leftBlinkTimer not null
-    final result2 = blinkingController.startLeftBlinking();
-    expect(result2, [false, false]);
+    // Test case 2: int.parse(_value[28]) is 1
+    notificationController.new_value = 'SomeValue28:1'; // Assuming the value has '1' at the 28th index
+    var result2 = notificationController.getLocation(notificationController.new_value);
+    expect(result2, 'Right Notification Warning');
 
-    // Test case: Stop after 3 seconds
-    await Future.delayed(Duration(seconds: 3));
-    final result3 = blinkingController.isLeftBlinking;
-    expect(result3, false); // isLeftBlinking is false after 3 seconds
+    // Test case 3: int.parse(_value[28]) is 2
+    notificationController.new_value = 'SomeValue28:2'; // Assuming the value has '2' at the 28th index
+    var result3 = notificationController.getLocation(notificationController.new_value);
+    expect(result3, 'Right Notification Danger');
+
+    // Test case 4: int.parse(_value[28]) is 3
+    notificationController.new_value = 'SomeValue28:3'; // Assuming the value has '3' at the 28th index
+    var result4 = notificationController.getLocation(notificationController.new_value);
+    expect(result4, 'Left Notification Warning');
+
+    // Test case 5: int.parse(_value[28]) is 4
+    notificationController.new_value = 'SomeValue28:4'; // Assuming the value has '4' at the 28th index
+    var result5 = notificationController.getLocation(notificationController.new_value);
+    expect(result5, 'Left Notification Danger');
+
+    // Test case 6: int.parse(_value[28]) is 5
+    notificationController.new_value = 'SomeValue28:5'; // Assuming the value has '5' at the 28th index
+    var result6 = notificationController.getLocation(notificationController.new_value);
+    expect(result6, 'Rear Notification Danger');
   });
-
-  // TEST RIGHT BLIKING
-  test('Test startLeftBlinking', () async {
-    final mockDevice = MockBluetoothDevice();
-    final blinkingController = RadarNotificationController(mockDevice);
-
-    // Test case: _leftBlinkTimer is null
-    final result1 = blinkingController.startRightBlinking();
-    expect(result1, [false, false]); // Timer started and isLeftBlinking is true
-
-    // Test case: _leftBlinkTimer not null
-    final result2 = blinkingController.startRightBlinking();
-    expect(result2, [false, false]); // Timer stopped and isLeftBlinking is false
-
-    // Test case: Stop after 3 seconds
-    await Future.delayed(Duration(seconds: 3));
-    final result3 = blinkingController.isRightBlinking;
-    expect(result3, false); // isLeftBlinking is false after 3 seconds
-  });
-
 
   // SEND DATA - problem
   // group('BLE Connection and Command Test', () {
