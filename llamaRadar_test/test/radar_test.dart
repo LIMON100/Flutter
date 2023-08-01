@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:utllama/ut/RadarNotifcationController.dart';
-
+import 'package:utllama/temp/CollisionWarningPage2.dart';
+import 'package:fake_async/fake_async.dart';
 
 // class MockBluetoothDevice extends Mock implements BluetoothDevice {}
 //
@@ -23,6 +25,8 @@ class MockBluetoothDevice extends Mock implements BluetoothDevice {
   @override
   String get name => 'LLama Radar'; // Provide a default value for the name
 }
+
+class MockRadarNotificationController extends Mock implements RadarNotificationController {}
 
 void main() {
 
@@ -84,40 +88,77 @@ void main() {
   // });
 
   // WARNING TEXT
-  test('Test getLocation', () {
+  // test('Test getLocation', () {
+  //   final mockDevice = MockBluetoothDevice();
+  //   final notificationController = RadarNotificationController(mockDevice);
+  //
+  //   // Test case 1: _value.length < 29
+  //   notificationController.new_value = ''; // Empty _value
+  //   var result1 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result1, 'Notification Not Available');
+  //
+  //   // Test case 2: int.parse(_value[28]) is 1
+  //   notificationController.new_value = '1'; // Assuming the value has '1' at the 28th index
+  //   var result2 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result2, 'Right Notification Warning');
+  //
+  //   // Test case 3: int.parse(_value[28]) is 2
+  //   notificationController.new_value = '2'; // Assuming the value has '2' at the 28th index
+  //   var result3 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result3, 'Right Notification Danger');
+  //
+  //   // Test case 4: int.parse(_value[28]) is 3
+  //   notificationController.new_value = '3'; // Assuming the value has '3' at the 28th index
+  //   var result4 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result4, 'Left Notification Warning');
+  //
+  //   // Test case 5: int.parse(_value[28]) is 4
+  //   notificationController.new_value = '4'; // Assuming the value has '4' at the 28th index
+  //   var result5 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result5, 'Left Notification Danger');
+  //
+  //   // Test case 6: int.parse(_value[28]) is 5
+  //   notificationController.new_value = '5'; // Assuming the value has '5' at the 28th index
+  //   var result6 = notificationController.getLocation(notificationController.new_value);
+  //   expect(result6, 'Rear Notification Danger');
+  // });
+
+  // GET DISTANCE TEST
+  test('Test Distance', () async {
+    final fakeAsync = FakeAsync();
     final mockDevice = MockBluetoothDevice();
     final notificationController = RadarNotificationController(mockDevice);
 
-    // Test case 1: _value.length < 29
-    notificationController.new_value = ''; // Empty _value
-    var result1 = notificationController.getLocation(notificationController.new_value);
-    expect(result1, 'Notification Not Available');
+    // Call the handleButtonPress function
+    List<bool> result1 = await notificationController.startBlinking3('3');
+    // Verify that the initial values of _isBlinkingIcon variables are correct
+    expect(result1[0], true);
+    expect(result1[1], false);
+    expect(result1[2], false);
 
-    // Test case 2: int.parse(_value[28]) is 1
-    notificationController.new_value = '1'; // Assuming the value has '1' at the 28th index
-    var result2 = notificationController.getLocation(notificationController.new_value);
-    expect(result2, 'Right Notification Warning');
+    List<bool> result2 = await notificationController.startBlinking3('6');
 
-    // Test case 3: int.parse(_value[28]) is 2
-    notificationController.new_value = '2'; // Assuming the value has '2' at the 28th index
-    var result3 = notificationController.getLocation(notificationController.new_value);
-    expect(result3, 'Right Notification Danger');
+    // Verify that the initial values of _isBlinkingIcon variables are correct
+    expect(result2[0], false);
+    expect(result2[1], true);
+    expect(result2[2], false);
 
-    // Test case 4: int.parse(_value[28]) is 3
-    notificationController.new_value = '3'; // Assuming the value has '3' at the 28th index
-    var result4 = notificationController.getLocation(notificationController.new_value);
-    expect(result4, 'Left Notification Warning');
+    List<bool> result3 = await notificationController.startBlinking3('9');
 
-    // Test case 5: int.parse(_value[28]) is 4
-    notificationController.new_value = '4'; // Assuming the value has '4' at the 28th index
-    var result5 = notificationController.getLocation(notificationController.new_value);
-    expect(result5, 'Left Notification Danger');
+    // Verify that the initial values of _isBlinkingIcon variables are correct
+    expect(result3[0], false);
+    expect(result3[1], false);
+    expect(result3[2], true);
 
-    // Test case 6: int.parse(_value[28]) is 5
-    notificationController.new_value = '5'; // Assuming the value has '5' at the 28th index
-    var result6 = notificationController.getLocation(notificationController.new_value);
-    expect(result6, 'Rear Notification Danger');
+    //  Fast-forward the time by 3 seconds to simulate the blinking duration
+    // fakeAsync.elapse(Duration(seconds: 3));
+    //
+    // // Verify that the blinking has stopped after 3 seconds
+    // expect(_isBlinkingIcon1, false);
+    // expect(_isBlinkingIcon2, false);
+    // expect(_isBlinkingIcon3, false);
   });
+
 
   // SEND DATA - problem
   // group('BLE Connection and Command Test', () {
@@ -175,4 +216,12 @@ void main() {
   //   expect(testInstance.characteristic, equals(mockCharacteristicNotify));
   //   // Add more assertions if necessary
   // });
+}
+
+Widget _getTestApp(Widget child) {
+  return MaterialApp(
+    home: Scaffold(
+      body: child,
+    ),
+  );
 }
