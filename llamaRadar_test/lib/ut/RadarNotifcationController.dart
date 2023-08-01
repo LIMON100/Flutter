@@ -22,6 +22,12 @@ class RadarNotificationController {
   bool isDisconnected = false;
   final BluetoothDevice device;
 
+  // blinking variable
+  Timer? _leftBlinkTimer;
+  Timer? _rightBlinkTimer;
+  bool isLeftBlinking = false;
+  bool isRightBlinking = false;
+
   RadarNotificationController(this.device);
 
   // Disconnect
@@ -38,18 +44,6 @@ class RadarNotificationController {
   }
 
   // Send data
-  Future<bool> sendData(List<int> dataToSend) async {
-
-    if (characteristic_write != null) {
-      // List<int> byteData = utf8.encode(dataToSend);
-      await characteristic_write!.write(dataToSend);
-      // Wait for the response from the BLE device
-      final response = await characteristic_write!.value.first;
-      return true;
-    }
-    return false;
-  }
-
   Future<void> connectAndSendCommand() async {
     // Connect to the BLE device (Assuming already connected)
     // await device.connect();
@@ -76,50 +70,42 @@ class RadarNotificationController {
   }
 
   // Right and left blinking
-  void _startLeftBlinking() {
+  List<dynamic> startLeftBlinking() {
     if (_leftBlinkTimer != null) {
       _leftBlinkTimer!.cancel();
       _leftBlinkTimer = null;
-      setState(() {
-        _isLeftBlinking = false;
-      });
+      isLeftBlinking = false;
+      return [false, isLeftBlinking];
     } else {
       _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-        setState(() {
-          _isLeftBlinking = !_isLeftBlinking;
-        });
+        isLeftBlinking = !isLeftBlinking;
       });
       // Stop the blinking after 3 seconds
-      Future.delayed(Duration(seconds: 30)).then((_) {
+      Future.delayed(Duration(seconds: 3)).then((_) {
         _leftBlinkTimer?.cancel();
-        setState(() {
-          _isLeftBlinking = false;
-        });
+        isLeftBlinking = false;
       });
+      return [true, isLeftBlinking];
     }
   }
 
-  void _startRightBlinking() {
+  List<dynamic> startRightBlinking() {
     if (_rightBlinkTimer != null) {
       _rightBlinkTimer!.cancel();
       _rightBlinkTimer = null;
-      setState(() {
-        _isRightBlinking = false;
-      });
-    } else {
+      isRightBlinking = false;
+      return [false, isRightBlinking];
+    }
+    else {
       _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-        setState(() {
-          _isRightBlinking = !_isRightBlinking;
-        });
+        isRightBlinking = !isRightBlinking;
       });
       // Stop the blinking after 3 seconds
       Future.delayed(Duration(seconds: 30)).then((_) {
         _rightBlinkTimer?.cancel();
-        setState(() {
-          _isRightBlinking = false;
-        });
+        isRightBlinking = false;
       });
+      return [false, isRightBlinking];
     }
   }
-
 }
