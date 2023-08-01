@@ -94,27 +94,27 @@ void main() {
     expect(result1, 'Notification Not Available');
 
     // Test case 2: int.parse(_value[28]) is 1
-    notificationController.new_value = 'SomeValue28:1'; // Assuming the value has '1' at the 28th index
+    notificationController.new_value = '1'; // Assuming the value has '1' at the 28th index
     var result2 = notificationController.getLocation(notificationController.new_value);
     expect(result2, 'Right Notification Warning');
 
     // Test case 3: int.parse(_value[28]) is 2
-    notificationController.new_value = 'SomeValue28:2'; // Assuming the value has '2' at the 28th index
+    notificationController.new_value = '2'; // Assuming the value has '2' at the 28th index
     var result3 = notificationController.getLocation(notificationController.new_value);
     expect(result3, 'Right Notification Danger');
 
     // Test case 4: int.parse(_value[28]) is 3
-    notificationController.new_value = 'SomeValue28:3'; // Assuming the value has '3' at the 28th index
+    notificationController.new_value = '3'; // Assuming the value has '3' at the 28th index
     var result4 = notificationController.getLocation(notificationController.new_value);
     expect(result4, 'Left Notification Warning');
 
     // Test case 5: int.parse(_value[28]) is 4
-    notificationController.new_value = 'SomeValue28:4'; // Assuming the value has '4' at the 28th index
+    notificationController.new_value = '4'; // Assuming the value has '4' at the 28th index
     var result5 = notificationController.getLocation(notificationController.new_value);
     expect(result5, 'Left Notification Danger');
 
     // Test case 6: int.parse(_value[28]) is 5
-    notificationController.new_value = 'SomeValue28:5'; // Assuming the value has '5' at the 28th index
+    notificationController.new_value = '5'; // Assuming the value has '5' at the 28th index
     var result6 = notificationController.getLocation(notificationController.new_value);
     expect(result6, 'Rear Notification Danger');
   });
