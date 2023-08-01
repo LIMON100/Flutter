@@ -108,4 +108,29 @@ class RadarNotificationController {
       return [false, isRightBlinking];
     }
   }
+  String value = '';
+  String get new_value => value;
+  set new_value(String newValue) {
+    value = newValue;
+  }
+
+  String getLocation(String value) {
+    if (value.length < 29) {
+      return 'Notification Not Available';
+    }
+    switch (int.parse(value[28])) {
+      case 1:
+        return 'Right Notification Warning';
+      case 2:
+        return 'Right Notification Danger';
+      case 3:
+        return 'Left Notification Warning';
+      case 4:
+        return 'Left Notification Danger';
+      case 5:
+        return 'Rear Notification Danger';
+      default:
+        return '';
+    }
+  }
 }
