@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:xml/xml.dart' as xml;
@@ -89,6 +91,7 @@ class RadarNotificationController {
     }
   }
 
+  // Right blinking
   List<dynamic> startRightBlinking() {
     if (_rightBlinkTimer != null) {
       _rightBlinkTimer!.cancel();
@@ -108,6 +111,8 @@ class RadarNotificationController {
       return [false, isRightBlinking];
     }
   }
+
+  // Warning text
   String value = '';
   String get new_value => value;
   set new_value(String newValue) {
@@ -133,4 +138,73 @@ class RadarNotificationController {
         return '';
     }
   }
+
+  // Left icon check
+  bool isBlinkingIcon1 = false;
+  bool isBlinkingIcon2 = false;
+  bool isBlinkingIcon3 = false;
+
+  Future<List<bool>> startBlinking3(String value) {
+    Completer<List<bool>> completer = Completer<List<bool>>();
+    Timer? _blinkTimer;
+    bool isBlinking = false;
+
+    _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+      int parsedValue = int.tryParse(value) ?? 0;
+
+      // When the value is 3, isBlinkingIcon2 and isBlinkingIcon3 will return false
+      if (parsedValue == 3) {
+        isBlinkingIcon1 = true;
+        isBlinkingIcon2 = false;
+        isBlinkingIcon3 = false;
+        completer.complete([isBlinkingIcon1, isBlinkingIcon2, isBlinkingIcon3]);
+        _blinkTimer?.cancel();
+        return;
+      }
+      // When the value is 6, isBlinkingIcon1 and isBlinkingIcon3 will return false
+      else if (parsedValue == 6) {
+        isBlinkingIcon1 = false;
+        isBlinkingIcon2 = true;
+        isBlinkingIcon3 = false;
+        completer.complete([isBlinkingIcon1, isBlinkingIcon2, isBlinkingIcon3]);
+        _blinkTimer?.cancel();
+        return;
+      }
+      // When the value is 9, isBlinkingIcon2 and isBlinkingIcon1 will return false
+      else if (parsedValue == 9) {
+        isBlinkingIcon1 = false;
+        isBlinkingIcon2 = false;
+        isBlinkingIcon3 = true;
+        completer.complete([isBlinkingIcon1, isBlinkingIcon2, isBlinkingIcon3]);
+        _blinkTimer?.cancel();
+        return;
+      }
+
+      isBlinkingIcon1 = (parsedValue == 3) ? !isBlinkingIcon1 : false;
+      isBlinkingIcon2 = (parsedValue == 6) ? !isBlinkingIcon2 : false;
+      isBlinkingIcon3 = (parsedValue == 9) ? !isBlinkingIcon3 : false;
+
+      isBlinking = !isBlinking;
+    });
+
+    // Return the Future from the Completer
+    return completer.future;
+  }
+
+  // void startBlinking3(String value) {
+  //   Timer _blinkTimer;
+  //   bool isBlinking = false;
+  //
+  //   _blinkTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+  //     isBlinkingIcon1 = (int.tryParse(value) == 3) ? !isBlinkingIcon1 : false;
+  //     isBlinkingIcon2 = (int.tryParse(value) == 6) ? !isBlinkingIcon2 : false;
+  //     isBlinkingIcon3 = (int.tryParse(value) == 9) ? !isBlinkingIcon3 : false;
+  //     isBlinking = !isBlinking;
+  //   });
+  //   // Stop the blinking after 3 seconds
+  //   Future.delayed(Duration(seconds: 3)).then((_) {
+  //     _blinkTimer?.cancel();
+  //     isBlinking = false;
+  //   });
+  // }
 }
