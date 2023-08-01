@@ -115,10 +115,10 @@ class RadarNotificationController {
   }
 
   String getLocation(String value) {
-    if (value.length < 29) {
+    if (value == '') {
       return 'Notification Not Available';
     }
-    switch (int.parse(value[28])) {
+    switch (int.parse(value)) {
       case 1:
         return 'Right Notification Warning';
       case 2:
