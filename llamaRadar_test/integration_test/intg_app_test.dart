@@ -11,6 +11,7 @@ import 'package:lamaradar/mode/dash_cam.dart';
 import 'package:lamaradar/main.dart' as app;
 import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
+import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/bleScreen.dart' as newapp;
 import 'package:lamaradar/mode/goToRide.dart' as rideapp;
 // import 'package:lamaradar/temp/CollisionWarningPage2.dart' as collisionapp;
@@ -363,7 +364,38 @@ void main() {
   // });
 
   //Show popDialog for dashcam
-  testWidgets('Test Pop-up Dashcam Dialog', (WidgetTester tester) async {
+  // testWidgets('Test Pop-up Dashcam Dialog', (WidgetTester tester) async {
+  //
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // final findButton = find.byKey(Key("PairDevice"));
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Delay for a short period to simulate the scan duration
+  //   await tester.pump(Duration(seconds: 2)); // Increase the duration if needed
+  //
+  //   // Verify that the list of available devices is shown
+  //   expect(find.byType(ListView), findsOneWidget);
+  //
+  //   // Delay to allow navigation to complete
+  //   await tester.pumpAndSettle();
+  //
+  //   final connectButton = find.text('Connect');
+  //   // Tap the "Connect" button
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //   await tester.pump(Duration(seconds: 16));
+  //   expect(find.text('Close') , findsOneWidget);
+  // });
+
+  // STOP ride
+  testWidgets('Test Stop ride', (WidgetTester tester) async {
 
     app.main();
 
@@ -389,8 +421,12 @@ void main() {
     // Tap the "Connect" button
     await tester.tap(connectButton);
     await tester.pumpAndSettle();
-    await tester.pump(Duration(seconds: 16));
-    expect(find.text('Close') , findsOneWidget);
+    await tester.pump(Duration(seconds: 5));
+
+    final stopButton = find.text('Stop Ride');
+    await tester.tap(stopButton);
+    await tester.pumpAndSettle();
+    expect(BleScreen, findsOneWidget);
   });
 
 }
