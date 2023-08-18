@@ -4,6 +4,7 @@ import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery_saver/files.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:http/http.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/mockito.dart';
@@ -20,8 +21,9 @@ import 'package:lamaradar/temp/CollisionWarningPage2.dart';
 import 'package:lamaradar/mode/goToRide.dart';
 import 'package:lamaradar/sideBar.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-
+import 'package:http/http.dart' as http;
 import '../test/radar_test.dart';
+
 
 class MockMethodChannel extends Mock implements MethodChannel {}
 
@@ -32,7 +34,7 @@ class WifiService {
 }
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
-
+class MockHttpClient extends Mock implements http.Client {}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -396,5 +398,69 @@ void main() {
   //   await tester.pump(Duration(seconds: 5));
   //   expect(find.text('Download complete'), findsOneWidget);
   // });
+
+  // Has some problem to check
+  // testWidgets('Test Start and Stop Camera', (WidgetTester tester) async {
+  //   // Build the widget tree
+  //   await tester.pumpWidget(MaterialApp(home: DashCam()));
+  //
+  //   // Find and tap the recording button
+  //   final recordingButton = find.text('Open Camera');
+  //   await tester.tap(recordingButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Verify that the recording stopped
+  //   expect(find.text('Stop Camera'), findsOneWidget);
+  //   // verify(http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'))).called(1);
+  //
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // Verify that the recording started
+  //   final recordingButton2 = find.text('Stop Camera');
+  //   await tester.tap(recordingButton2);
+  //   await tester.pumpAndSettle();
+  //
+  //   expect(find.text('Open Camera'), findsOneWidget);
+  // });
+
+  // Wifi connection for dashcam
+  testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ConnectWifiForDashCam(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Find and tap the button to scan WiFi networks
+    final scanButton = find.byKey(Key('scanButton')); // Replace with your button's key
+    expect(scanButton, findsOneWidget);
+    await tester.tap(scanButton);
+    await tester.pumpAndSettle();
+
+    await tester.pump(Duration(seconds: 10));
+    // Find and tap the WiFi network starting with "CARDV"
+    final wifiNetworkItem = find.byWidgetPredicate((widget) {
+      if (widget is ListTile && widget.title is Text) {
+        final text = (widget.title as Text).data;
+        return text != null && text.startsWith('CARDV');
+      }
+      return false;
+    });
+    // expect(wifiNetworkItem, findsOneWidget);
+    await tester.tap(wifiNetworkItem);
+    await tester.pumpAndSettle();
+
+    await tester.pump(Duration(seconds: 5));
+
+    final connectButton = find.text('Open Dashcam');
+    // expect(connectButton, findsOneWidget);
+    await tester.tap(connectButton);
+    await tester.pumpAndSettle();
+
+    // await tester.pump(Duration(seconds: ));
+    expect(DashCam, findsOneWidget);
+  });
 
 }
