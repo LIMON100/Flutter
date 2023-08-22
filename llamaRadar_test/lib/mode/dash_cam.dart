@@ -93,10 +93,13 @@ class _DashCamState extends State<DashCam> {
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
+      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
-      options: VlcPlayerOptions(),
+      options: VlcPlayerOptions(
+        advanced: VlcAdvancedOptions([
+          VlcAdvancedOptions.networkCaching(0),
+        ]),),
     );
     getFilesFromCamera();
   }
@@ -155,10 +158,13 @@ class _DashCamState extends State<DashCam> {
       _videoPlayerController.dispose();
     } else {
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4?network-caching=1?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
-        options: VlcPlayerOptions(),
+        options: VlcPlayerOptions(
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(0),
+          ]),),
       );
       _videoPlayerController.initialize().then((_) {
         _videoPlayerController.play();
@@ -860,13 +866,13 @@ class _HomeState extends State<Home> {
                         ),
 
                         SizedBox(height: 5),
-                        CircleButton(
-                          onPressed: () {
-                            flipMovieMirror();
-                          },
-                          color: Color(0xFFa8caba),
-                          text: 'FlipTest',
-                        ),
+                        // CircleButton(
+                        //   onPressed: () {
+                        //     flipMovieMirror();
+                        //   },
+                        //   color: Color(0xFFa8caba),
+                        //   text: 'FlipTest',
+                        // ),
 
                       ],
                     ),
