@@ -102,7 +102,51 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
+  // void _startWifiScan(BuildContext context) async {
+  //   try {
+  //     bool? isSuccess = await FlutterIotWifi.scan();
+  //     if (isSuccess!) {
+  //       // Wait for the scan process to complete
+  //       await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+  //
+  //       List<dynamic> networks = await FlutterIotWifi.list();
+  //       showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return Dialog(
+  //             child: Container(
+  //               width: 300, // Adjust the width as needed
+  //               child: ListView.builder(
+  //                 shrinkWrap: true,
+  //                 itemCount: networks.length,
+  //                 itemBuilder: (context, index) {
+  //                   final wifiNetwork = networks[index];
+  //                   return ListTile(
+  //                     title: Text(wifiNetwork.toString()),
+  //                     onTap: () {
+  //                       _connect(context, wifiNetwork.toString());
+  //                       Navigator.of(context).pop(); // Close the dialog after selection
+  //                     },
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     } else {
+  //       print('Failed to scan Wi-Fi networks');
+  //       await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+  //       _startWifiScan(context);
+  //     }
+  //   } catch (e) {
+  //     print('Failed to scan Wi-Fi networks: $e');
+  //   }
+  // }
+
+  // For Lower android version
   void _startWifiScan(BuildContext context) async {
+    print("Inside startscan");
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -110,33 +154,59 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
 
         List<dynamic> networks = await FlutterIotWifi.list();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Dialog(
-              child: Container(
-                width: 300, // Adjust the width as needed
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: networks.length,
-                  itemBuilder: (context, index) {
-                    final wifiNetwork = networks[index];
-                    return ListTile(
-                      title: Text(wifiNetwork.toString()),
-                      onTap: () {
-                        _connect(context, wifiNetwork.toString());
-                        Navigator.of(context).pop(); // Close the dialog after selection
-                      },
-                    );
-                  },
+        print(networks);
+
+        if (networks.isEmpty) {
+          // Show a pop-up message when the networks list is empty
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: Text('No WiFi Networks Found'),
+                content: Text(
+                    "Can't find any WiFi network. Please connect to the WiFi named 'CARDV'."
                 ),
-              ),
-            );
-          },
-        );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop(); // Close the dialog
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Show the list of available WiFi networks
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return Dialog(
+                child: Container(
+                  width: 300, // Adjust the width as needed
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: networks.length,
+                    itemBuilder: (context, index) {
+                      final wifiNetwork = networks[index];
+                      return ListTile(
+                        title: Text(wifiNetwork.toString()),
+                        onTap: () {
+                          _connect(context, wifiNetwork.toString());
+                          Navigator.of(dialogContext).pop(); // Close the dialog after selection
+                        },
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        }
       } else {
         print('Failed to scan Wi-Fi networks');
-        await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+        await Future.delayed(Duration(seconds: 6)); // Adjust the delay as needed
         _startWifiScan(context);
       }
     } catch (e) {
@@ -216,7 +286,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 _value = value.toString();
               });
             });
-
             print('Found characteristic ${characteristic.uuid}');
             // break;
           }
@@ -365,8 +434,56 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       default:
         return '';
     }
-
   }
+
+  // String _getLocation() {
+  //   if (_value.length > 33) {
+  //     return 'Notification Not Available';
+  //   }
+  //   switch (_value[28]) {
+  //     case "1":
+  //       return 'Right Notification Warning';
+  //     case "2":
+  //       return 'Right Notification Danger';
+  //     case "3":
+  //       return 'Left Notification Warning';
+  //     case "4":
+  //       return 'Left Notification Danger';
+  //     case "5":
+  //       return 'Rear Notification Danger';
+  //     default:
+  //       return '';
+  //   }
+  // }
+
+  //TEST MULTIPLE NOTIFICATION
+  // String _getLocation() {
+  //   if (_value.length < 33) {
+  //     return 'Notification Not Available';
+  //   }
+  //   switch (_value[30] + _value[31]) {
+  //     case "33":
+  //       return 'Left Notification Warning';
+  //     case "34":
+  //       return 'Right Notification Warning';
+  //     case "36":
+  //       return 'Rear Notification Warning';
+  //     case "40":
+  //       return 'Front Notification Warning';
+  //
+  //     case "65":
+  //       return 'left Notification Danger';
+  //     case "66":
+  //       return 'Right Notification Danger';
+  //     case "68":
+  //       return 'Rear Notification Danger';
+  //     case "72":
+  //       return 'Front Notification Danger';
+  //
+  //     default:
+  //       return 'Safe';
+  //   }
+  // }
 
   Widget _getLeftIcon() {
     double opacity = 1.0;
@@ -446,7 +563,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
       if (right_danger_counter >= 2 && !isRearCamOpen) {
-        showStreamPopup();
+        // showStreamPopup();
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
@@ -487,7 +604,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       setState(() {
         _isBlinkingIcon1 = (int.tryParse(_value[15]) == 3) ? !_isBlinkingIcon1 : false;
         _isBlinkingIcon2 = (int.tryParse(_value[15]) == 6) ? !_isBlinkingIcon2 : false;
-        _isBlinkingIcon3 = (int.tryParse(_value[15]) == 9) ? !_isBlinkingIcon1 : false;
+        _isBlinkingIcon3 = (int.tryParse(_value[15]) == 9) ? !_isBlinkingIcon3 : false;
         _isBlinking = !_isBlinking;
       });
     });
@@ -510,10 +627,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
     _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mov',
-      hwAcc: HwAcc.full,
+      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+      hwAcc: HwAcc.disabled,
       autoPlay: true,
-      options: VlcPlayerOptions(),
+      options: VlcPlayerOptions(
+        advanced: VlcAdvancedOptions([
+          VlcAdvancedOptions.networkCaching(0),
+        ]),),
     );
 
     await _controller!.initialize();
@@ -587,28 +707,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // camera open
   late VlcPlayerController _videoPlayerController;
 
-  // void toggleCameraStreaming() {
-  //   if (isCameraStreaming) {
-  //     _videoPlayerController.stop();
-  //     _videoPlayerController.dispose();
-  //   }
-  //   else {
-  //     _videoPlayerController = VlcPlayerController.network(
-  //       'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
-  //       hwAcc: HwAcc.full,
-  //       autoPlay: true,
-  //       options: VlcPlayerOptions(),
-  //     );
-  //     _videoPlayerController.initialize().then((_) {
-  //       _videoPlayerController.play();
-  //     });
-  //   }
-  //
-  //   setState(() {
-  //     isCameraStreaming = !isCameraStreaming;
-  //     isRearCamOpen = !isRearCamOpen;
-  //   });
-  // }
   void toggleCameraStreaming() {
     if (isCameraStreaming) {
       _videoPlayerController.stop();
@@ -617,10 +715,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       Connectivity().onConnectivityChanged.listen((connectivity) {
         if (connectivity == ConnectivityResult.wifi) {
           _videoPlayerController = VlcPlayerController.network(
-            'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
-            hwAcc: HwAcc.full,
+            'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+            hwAcc: HwAcc.disabled,
             autoPlay: true,
-            options: VlcPlayerOptions(),
+            options: VlcPlayerOptions(
+              advanced: VlcAdvancedOptions([
+                VlcAdvancedOptions.networkCaching(10),
+              ]),),
           );
           _videoPlayerController.initialize().then((_) {
             _videoPlayerController.play();
@@ -629,10 +730,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
 
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mov?network-caching=100?clock-jitter=0?clock-synchro=0',
-        hwAcc: HwAcc.full,
+        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+        hwAcc: HwAcc.disabled,
         autoPlay: true,
-        options: VlcPlayerOptions(),
+        options: VlcPlayerOptions(
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(10),
+          ]),),
       );
       _videoPlayerController.initialize().then((_) {
         _videoPlayerController.play();
@@ -714,6 +818,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           onPressed: () {
                             _startLeftBlinking();
                             _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
+
                           },
                           icon: Icon(
                             Indicator.image2vector,
@@ -756,9 +861,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         SizedBox(width: 15),
                         Text(
                           _getLocation(),
-                          style: TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 17),
                         ),
-                        SizedBox(width: 20),
+                        SizedBox(width: 15),
                         _getRightIcon(),
                       ],
                     ),
@@ -779,7 +884,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     //   child: Row(
                     //     mainAxisAlignment: MainAxisAlignment.center,
                     //     children: [
-                    //       Text(_value[28]),
+                    //       // Text(_value[30]),
+                    //       Text(_value[30] + _value[31]),
+                    //       // Text(_value[31]),
+                    //       // Text(_value[32]),
                     //     ],
                     //   ),
                     // ),
@@ -887,7 +995,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                 onPressed: () {
                                   setState(() {
                                     _tailight = !_tailight;
-                                    _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                    // _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
+                                    //New data
+                                    // _sendData([0x02, 0x01, 0x45, 0x00, 0x01, 0x49]);
+                                    _sendData([0x02, 0x01, 0x41, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x61]);
                                   });
                                 },
                               ),
