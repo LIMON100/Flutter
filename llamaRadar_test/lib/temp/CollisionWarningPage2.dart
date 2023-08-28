@@ -102,7 +102,51 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
+  // void _startWifiScan(BuildContext context) async {
+  //   try {
+  //     bool? isSuccess = await FlutterIotWifi.scan();
+  //     if (isSuccess!) {
+  //       // Wait for the scan process to complete
+  //       await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
+  //
+  //       List<dynamic> networks = await FlutterIotWifi.list();
+  //       showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return Dialog(
+  //             child: Container(
+  //               width: 300, // Adjust the width as needed
+  //               child: ListView.builder(
+  //                 shrinkWrap: true,
+  //                 itemCount: networks.length,
+  //                 itemBuilder: (context, index) {
+  //                   final wifiNetwork = networks[index];
+  //                   return ListTile(
+  //                     title: Text(wifiNetwork.toString()),
+  //                     onTap: () {
+  //                       _connect(context, wifiNetwork.toString());
+  //                       Navigator.of(context).pop(); // Close the dialog after selection
+  //                     },
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     } else {
+  //       print('Failed to scan Wi-Fi networks');
+  //       await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+  //       _startWifiScan(context);
+  //     }
+  //   } catch (e) {
+  //     print('Failed to scan Wi-Fi networks: $e');
+  //   }
+  // }
+
+  // For Lower android version
   void _startWifiScan(BuildContext context) async {
+    print("Inside startscan");
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -110,33 +154,59 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
 
         List<dynamic> networks = await FlutterIotWifi.list();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Dialog(
-              child: Container(
-                width: 300, // Adjust the width as needed
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: networks.length,
-                  itemBuilder: (context, index) {
-                    final wifiNetwork = networks[index];
-                    return ListTile(
-                      title: Text(wifiNetwork.toString()),
-                      onTap: () {
-                        _connect(context, wifiNetwork.toString());
-                        Navigator.of(context).pop(); // Close the dialog after selection
-                      },
-                    );
-                  },
+        print(networks);
+
+        if (networks.isEmpty) {
+          // Show a pop-up message when the networks list is empty
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: Text('No WiFi Networks Found'),
+                content: Text(
+                    "Can't find any WiFi network. Please connect to the WiFi named 'CARDV'."
                 ),
-              ),
-            );
-          },
-        );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop(); // Close the dialog
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Show the list of available WiFi networks
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return Dialog(
+                child: Container(
+                  width: 300, // Adjust the width as needed
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: networks.length,
+                    itemBuilder: (context, index) {
+                      final wifiNetwork = networks[index];
+                      return ListTile(
+                        title: Text(wifiNetwork.toString()),
+                        onTap: () {
+                          _connect(context, wifiNetwork.toString());
+                          Navigator.of(dialogContext).pop(); // Close the dialog after selection
+                        },
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        }
       } else {
         print('Failed to scan Wi-Fi networks');
-        await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
+        await Future.delayed(Duration(seconds: 6)); // Adjust the delay as needed
         _startWifiScan(context);
       }
     } catch (e) {
@@ -458,7 +528,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
-    } else if (_getLocation() == 'Right Notification Warning') {
+
+      if (right_danger_counter >= 3 && !isRearCamOpen) {
+        showStreamPopup();
+        right_danger_counter = 0;
+      }
+      right_danger_counter = right_danger_counter + 1;
+      print("POPUP COUNTER");
+      print(right_danger_counter);
+    }
+    else if (_getLocation() == 'Right Notification Warning') {
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/danger_beep.mp3');
       right_greenPlayer.play();
@@ -497,9 +576,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-      // print("FIND RIGHT NOTIFICAITON COUNTER");
-      // print(right_danger_counter);
-      // print(isRearCamOpen);
     } else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
     } else {
@@ -569,15 +645,71 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     await _controller!.initialize();
   }
 
+  // Can't close the pop-up window, it will run 5 seconds and then close
+  // void showStreamPopup() {
+  //   if (_controller == null) {
+  //     return;
+  //   }
+  //   WidgetsBinding.instance!.addPostFrameCallback((_) {
+  //     showDialog(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (BuildContext context) {
+  //         return Dialog(
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Text('Rear Dashcam'),
+  //               SizedBox(height: 16),
+  //               Container(
+  //                 width: MediaQuery.of(context).size.width,
+  //                 height: MediaQuery.of(context).size.width * 9 / 16,
+  //                 child: VlcPlayer(
+  //                   controller: _controller!,
+  //                   aspectRatio: 16 / 9,
+  //                 ),
+  //               ),
+  //               SizedBox(height: 16),
+  //               ElevatedButton(
+  //                 onPressed: () {
+  //                   // Navigator.of(context).pop();
+  //                   // initializePlayer();
+  //                   // Navigator.pop(context);
+  //                   // Navigator.of(context).push(
+  //                   //   MaterialPageRoute(
+  //                   //       builder: (context) => CollisionWarningPage2(device: widget.device)),
+  //                   //   );
+  //                 },
+  //                 child: Text('Close'),
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //       },
+  //     );
+  //   });
+  //   Future.delayed(Duration(seconds: 5)).then((_) {
+  //     Navigator.of(context).pop();
+  //     initializePlayer();
+  //   });
+  // }
 
+  // Can close pop-up window
+  bool _isShowingPopup = false;
   void showStreamPopup() {
     if (_controller == null) {
       return;
     }
+
+    if (_isShowingPopup) {
+      return;
+    }
+
     WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _isShowingPopup = true;
       showDialog(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: true,
         builder: (BuildContext context) {
           return Dialog(
             child: Column(
@@ -586,8 +718,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 Text('Rear Dashcam'),
                 SizedBox(height: 16),
                 Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width * 9 / 16,
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width,
+                  height: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 9 / 16,
                   child: VlcPlayer(
                     controller: _controller!,
                     aspectRatio: 16 / 9,
@@ -596,13 +734,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.of(context).pop();
-                    // initializePlayer();
-                    // Navigator.pop(context);
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //       builder: (context) => CollisionWarningPage2(device: widget.device)),
-                    //   );
+                    _isShowingPopup = false;
+                    Navigator.of(context).pop();
                   },
                   child: Text('Close'),
                 ),
@@ -612,10 +745,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         },
       );
     });
-    Future.delayed(Duration(seconds: 5)).then((_) {
-      Navigator.of(context).pop();
-      initializePlayer();
-    });
+    initializePlayer();
   }
 
   // Dispose function
@@ -650,7 +780,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             autoPlay: true,
             options: VlcPlayerOptions(
               advanced: VlcAdvancedOptions([
-                VlcAdvancedOptions.networkCaching(0),
+                VlcAdvancedOptions.networkCaching(10),
               ]),),
           );
           _videoPlayerController.initialize().then((_) {
@@ -665,7 +795,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.networkCaching(10),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -791,9 +921,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         SizedBox(width: 15),
                         Text(
                           _getLocation(),
-                          style: TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 17),
                         ),
-                        SizedBox(width: 20),
+                        SizedBox(width: 15),
                         _getRightIcon(),
                       ],
                     ),
