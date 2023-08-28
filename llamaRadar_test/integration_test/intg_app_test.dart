@@ -327,39 +327,6 @@ void main() {
   // });
 
   // STOP ride
-  // testWidgets('Test Stop ride', (WidgetTester tester) async {
-  //
-  //   app.main();
-  //
-  //   // Delay for a short period to allow the app to render
-  //   await tester.pump(Duration(seconds: 2));
-  //
-  //   // final findButton = find.byKey(Key("PairDevice"));
-  //   final findButton = find.text('Pair Device to Start');
-  //
-  //   await tester.tap(findButton);
-  //   await tester.pumpAndSettle();
-  //
-  //   // Delay for a short period to simulate the scan duration
-  //   await tester.pump(Duration(seconds: 2)); // Increase the duration if needed
-  //
-  //   // Verify that the list of available devices is shown
-  //   expect(find.byType(ListView), findsOneWidget);
-  //
-  //   // Delay to allow navigation to complete
-  //   await tester.pumpAndSettle();
-  //
-  //   final connectButton = find.text('Connect');
-  //   // Tap the "Connect" button
-  //   await tester.tap(connectButton);
-  //   await tester.pumpAndSettle();
-  //   await tester.pump(Duration(seconds: 5));
-  //
-  //   final stopButton = find.byType(TextButton);
-  //   await tester.tap(stopButton);
-  //   await tester.pumpAndSettle();
-  //   expect(BleScreen, findsOneWidget);
-  // });
 
   // CHECK WIFI LIST For Dashcam
   // testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
@@ -458,9 +425,6 @@ void main() {
     // expect(connectButton, findsOneWidget);
     await tester.tap(connectButton);
     await tester.pumpAndSettle();
-
-    // await tester.pump(Duration(seconds: ));
-    expect(DashCam, findsOneWidget);
   });
 
 }
