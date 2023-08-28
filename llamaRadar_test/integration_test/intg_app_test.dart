@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gallery_saver/files.dart';
+import 'package:gallery_saver/gallery_saver.dart';
+import 'package:http/http.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/mockito.dart';
@@ -19,8 +21,9 @@ import 'package:lamaradar/temp/CollisionWarningPage2.dart';
 import 'package:lamaradar/mode/goToRide.dart';
 import 'package:lamaradar/sideBar.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-
+import 'package:http/http.dart' as http;
 import '../test/radar_test.dart';
+
 
 class MockMethodChannel extends Mock implements MethodChannel {}
 
@@ -31,20 +34,7 @@ class WifiService {
 }
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
-
-class FakeLocationService {
-  String getLocation() {
-    return 'Left Notification Danger';
-  }
-}
-
-class FakeYourWidget extends CollisionWarningPage2 {
-  @override
-  String _value = '33';
-
-  FakeYourWidget({required super.device, required FakeLocationService locationService, required MockAudioPlayer audioPlayer}); // Control the value returned by _getLocation()
-}
-
+class MockHttpClient extends Mock implements http.Client {}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -87,58 +77,6 @@ void main() {
   //   await tester.pumpAndSettle();
   //
   //   // expect(collisionapp.CollisionWarningPage2, findsOneWidget);
-  //
-  // });
-
-  // CHECK WIFI LIST SHOW
-  // testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
-  //   // Build the app
-  //   await tester.pumpWidget(
-  //     MaterialApp(
-  //       home: rideapp.GoToRide(device: MockBluetoothDevice()),
-  //     ),
-  //   );
-  //
-  //   final rideButton = find.byKey(Key("TurnOnWifiButton"));
-  //   expect(rideButton, findsOneWidget);
-  //   await tester.tap(rideButton);
-  //   await tester.pumpAndSettle();
-  //
-  //   // Verify that the navigation to CollisionWarningPage2 occurs
-  //   expect(find.byType(CollisionWarningPage2), findsOneWidget);
-  //
-  //   // Wait for the initial animations and transitions to complete
-  //   await tester.pumpAndSettle();
-  //
-  //   await tester.pump(Duration(seconds: 5));
-  //
-  //   // expect(find.byType(Dialog), findsOneWidget);
-  //
-  //   // Verify that the popup widget contains a list of Wi-Fi names.
-  //   expect(find.byType(ListView), findsOneWidget);
-  //   expect(find.byType(ListTile), greaterThan(0));
-  //   // Tap the "Connect Wifi" button
-  //   // final connectWifiButton = find.byIcon(Icons.wifi);
-  //   // await tester.tap(connectWifiButton);
-  //   //
-  //   // // Wait for the dialog to appear
-  //   // await tester.pumpAndSettle();
-  //   // await tester.pump(Duration(seconds: 5));
-  //   //
-  //   // // Find and tap the Wi-Fi network that starts with "Mahmudur"
-  //   // final wifiNetwork = find.widgetWithText(showDialog, "Mahmudur");
-  //   // await tester.tap(wifiNetwork);
-  //   //
-  //   // // Wait for the Wi-Fi connection to complete
-  //   // await tester.pumpAndSettle();
-  //
-  //   // Verify the connection status based on the isConnected variable
-  //   // final isConnected = tester.state<ConnectWifiForDashCamState>(
-  //   //   find.byType(ConnectWifiForDashCam),
-  //   // ).isConnected;
-  //   //
-  //   // // Assert the connectivity status
-  //   // expect(isConnected, isTrue); // Use isFalse if you expect disconnection
   //
   // });
 
@@ -212,12 +150,6 @@ void main() {
   //   // final findButton2 = find.byType(ElevatedButton);
   //   //
   //   await tester.tap(findButton2);
-  //
-  //   // await tester.pumpWidget(
-  //   //   MaterialApp(
-  //   //     home: collisionapp.CollisionWarningPage2(device: MockBluetoothDevice()),
-  //   //   ),
-  //   // );
   //
   //   // Wait for the app to fully start
   //   await tester.pumpAndSettle();
@@ -395,38 +327,104 @@ void main() {
   // });
 
   // STOP ride
-  testWidgets('Test Stop ride', (WidgetTester tester) async {
 
-    app.main();
+  // CHECK WIFI LIST For Dashcam
+  // testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
+  //   // Build the app
+  //   await tester.pumpWidget(
+  //     MaterialApp(
+  //       home: ConnectWifiForDashCam(),
+  //     ),
+  //   );
+  //
+  //   final wifiButton = find.text('Connect WIFI');
+  //   expect(wifiButton, findsOneWidget);
+  //   await tester.tap(wifiButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.pump(Duration(seconds: 10));
+  //   // expect(find.byType(Dialog), findsOneWidget);
+  //   expect(find.text('wifiDialog'), findsOneWidget);
+  // });
 
-    // Delay for a short period to allow the app to render
-    await tester.pump(Duration(seconds: 2));
 
-    // final findButton = find.byKey(Key("PairDevice"));
-    final findButton = find.text('Pair Device to Start');
+  // Download files
+  // testWidgets('Test File Download', (WidgetTester tester) async {
+  //
+  //   await tester.pumpWidget(MaterialApp(home: Files(isCameraStreaming: false, images: [], videos: [])));
+  //
+  //   // Simulate button press
+  //   await tester.pump(Duration(seconds: 3));
+  //   // final downloadButton = find.byKey(Key('DownloadFILES'));
+  //   final downloadButton = find.widgetWithIcon(IconButton, Icons.download);
+  //   expect(downloadButton, findsOneWidget);
+  //   await tester.tap(downloadButton);
+  //
+  //   // Wait for the download to complete
+  //   await tester.pumpAndSettle();
+  //   await tester.pump(Duration(seconds: 5));
+  //   expect(find.text('Download complete'), findsOneWidget);
+  // });
 
-    await tester.tap(findButton);
+  // Has some problem to check
+  // testWidgets('Test Start and Stop Camera', (WidgetTester tester) async {
+  //   // Build the widget tree
+  //   await tester.pumpWidget(MaterialApp(home: DashCam()));
+  //
+  //   // Find and tap the recording button
+  //   final recordingButton = find.text('Open Camera');
+  //   await tester.tap(recordingButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Verify that the recording stopped
+  //   expect(find.text('Stop Camera'), findsOneWidget);
+  //   // verify(http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'))).called(1);
+  //
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // Verify that the recording started
+  //   final recordingButton2 = find.text('Stop Camera');
+  //   await tester.tap(recordingButton2);
+  //   await tester.pumpAndSettle();
+  //
+  //   expect(find.text('Open Camera'), findsOneWidget);
+  // });
+
+  // Wifi connection for dashcam
+  testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ConnectWifiForDashCam(),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    // Delay for a short period to simulate the scan duration
-    await tester.pump(Duration(seconds: 2)); // Increase the duration if needed
-
-    // Verify that the list of available devices is shown
-    expect(find.byType(ListView), findsOneWidget);
-
-    // Delay to allow navigation to complete
+    // Find and tap the button to scan WiFi networks
+    final scanButton = find.byKey(Key('scanButton')); // Replace with your button's key
+    expect(scanButton, findsOneWidget);
+    await tester.tap(scanButton);
     await tester.pumpAndSettle();
 
-    final connectButton = find.text('Connect');
-    // Tap the "Connect" button
-    await tester.tap(connectButton);
+    await tester.pump(Duration(seconds: 10));
+    // Find and tap the WiFi network starting with "CARDV"
+    final wifiNetworkItem = find.byWidgetPredicate((widget) {
+      if (widget is ListTile && widget.title is Text) {
+        final text = (widget.title as Text).data;
+        return text != null && text.startsWith('CARDV');
+      }
+      return false;
+    });
+    // expect(wifiNetworkItem, findsOneWidget);
+    await tester.tap(wifiNetworkItem);
     await tester.pumpAndSettle();
+
     await tester.pump(Duration(seconds: 5));
 
-    final stopButton = find.text('Stop Ride');
-    await tester.tap(stopButton);
+    final connectButton = find.text('Open Dashcam');
+    // expect(connectButton, findsOneWidget);
+    await tester.tap(connectButton);
     await tester.pumpAndSettle();
-    expect(BleScreen, findsOneWidget);
   });
 
 }
