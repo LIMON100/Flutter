@@ -48,7 +48,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool isCameraStreaming = false;
 
   // Wifi connection
-  final String ssid = "CARDV";
+  final String ssid = ' ';
   final String password = "12345678";
   List<String> availableNetworks = [];
 
