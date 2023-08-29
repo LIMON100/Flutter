@@ -93,12 +93,12 @@ class _DashCamState extends State<DashCam> {
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+      'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
-          VlcAdvancedOptions.networkCaching(0),
+          VlcAdvancedOptions.networkCaching(5),
         ]),),
     );
     getFilesFromCamera();
@@ -158,12 +158,12 @@ class _DashCamState extends State<DashCam> {
       _videoPlayerController.dispose();
     } else {
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.networkCaching(5),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -240,13 +240,14 @@ class _DashCamState extends State<DashCam> {
               images: images,
               videos: videos,
             ),
-            About(),
+            // About(),
           ],
         ),
         bottomNavigationBar: CurvedNavigationBar(
           height: 50,
           backgroundColor: Colors.indigoAccent,
-          color: Colors.indigo.shade200,
+          // color: Colors.indigo.shade200,
+          color: Colors.blueGrey.shade200,
           animationDuration: Duration(milliseconds: 300),
           // currentIndex: _currentIndex,
           onTap: (index) {
@@ -265,11 +266,11 @@ class _DashCamState extends State<DashCam> {
               color:
               _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
             ),
-            Icon(
-              Icons.history,
-              color:
-              _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
-            ),
+            // Icon(
+            //   Icons.history,
+            //   color:
+            //   _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
+            // ),
           ],
         ),
       ),
@@ -302,7 +303,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //WIFI
-  final String ssid = 'CARDV';
+  final String ssid = ' ';
   final password = '12345678';
   bool isConnected = false;
   bool isCameraStreaming = false;
@@ -798,7 +799,7 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
-                  height: 400,
+                  height: 360,
                   width: 400,
                   // child: isCameraStreaming && _controller != null
                   child: isCameraStreaming && widget.videoPlayerController != null
@@ -1274,7 +1275,6 @@ class _FilesState extends State<Files> {
         fileStream.add(bytes);
         receivedBytes += bytes.length;
         print("Progress in receivebytes");
-        print(receivedBytes);
         setState(() {
           _progress = receivedBytes.toDouble() / totalBytes;
         });
@@ -1673,16 +1673,16 @@ class _FilesState extends State<Files> {
 }
 
 
-class About extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // backgroundColor: Colors.deepPurple.shade100,
-      backgroundColor: Colors.transparent,
-      body: Container(
-        alignment: Alignment.center,
-        child: Text("About"),
-      ),
-    );
-  }
-}
+// class About extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       // backgroundColor: Colors.deepPurple.shade100,
+//       backgroundColor: Colors.transparent,
+//       body: Container(
+//         alignment: Alignment.center,
+//         child: Text("About"),
+//       ),
+//     );
+//   }
+// }
