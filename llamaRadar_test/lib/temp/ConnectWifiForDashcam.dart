@@ -23,7 +23,7 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
 
   bool isConnected = false;
   bool isConnectedFromEmptyList = false;
-  final String ssid = 'CARDV';
+  final String ssid = ' ';
   final password = '12345678';
 
   Future<bool> _checkPermissions() async {
@@ -173,7 +173,6 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
 
   void _connect(BuildContext context, String ssid) async {
     if (!mounted) {
-      // Widget is no longer active, do not proceed
       return;
     }
 
