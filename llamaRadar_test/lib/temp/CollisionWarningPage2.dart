@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
+import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -316,9 +317,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Send data part
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
-      // List<int> byteData = utf8.encode(dataToSend);
       await _characteristic_write!.write(dataToSend);
-      // Wait for the response from the BLE device
       final response = await _characteristic_write!.value.first;
     }
   }
@@ -638,7 +637,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
+          VlcRtpOptions.rtpOverRtsp(true), // New method try and test
           VlcAdvancedOptions.networkCaching(0),
+          VlcAdvancedOptions.clockJitter(0),
+          VlcAdvancedOptions.fileCaching(0),
+          VlcAdvancedOptions.liveCaching(0),
         ]),),
     );
 
@@ -780,7 +783,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             autoPlay: true,
             options: VlcPlayerOptions(
               advanced: VlcAdvancedOptions([
-                VlcAdvancedOptions.networkCaching(10),
+                VlcAdvancedOptions.networkCaching(0),
+                VlcAdvancedOptions.clockJitter(0),
+                VlcAdvancedOptions.fileCaching(0),
+                VlcAdvancedOptions.liveCaching(0),
               ]),),
           );
           _videoPlayerController.initialize().then((_) {
@@ -795,7 +801,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(10),
+            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(0),
+            VlcAdvancedOptions.liveCaching(0),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -837,6 +846,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
+  String _selectedOption = 'OFF';
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(text),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -857,6 +874,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
               centerTitle: true,
               foregroundColor: Colors.black,
               title: const Text('Ride Info'),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device)),
+                    );
+                  },
+                ),
+              ],
               flexibleSpace: Container(
                 decoration: BoxDecoration(
                   // color: Color(0xFF6497d3),
@@ -877,8 +905,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         IconButton(
                           onPressed: () {
                             _startLeftBlinking();
-                            _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
-
+                            // _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
+                          //   New test data
+                            _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
                           },
                           icon: Icon(
                             Indicator.image2vector,
@@ -901,7 +930,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         IconButton(
                           onPressed: () {
                             _startRightBlinking();
-                            _sendData([0x02, 0x01, 0xA, 0x02, 0xF]);
+                            // _sendData([0x02, 0x01, 0x13, 0x00, 0x00, 0x16]);
+                          //  New Data
+                            _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
                           },
                           icon: Icon(
                             Indicator.image2vector__1_,
@@ -969,7 +1000,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                   Text('Camera'),
                                 ],
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: 20),
                               Column(
                                 children: [
                                   Icon(
@@ -1029,39 +1060,83 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              SizedBox(width: 45),
                               IconButton(
                                 icon: Icon(_cameraOn ? Icons.camera_alt : Icons
                                     .camera_alt_outlined),
                                 onPressed: () {
                                   setState(() {
                                     _cameraOn = !_cameraOn;
-                                    _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
                                   });
                                   // open camera if _cameraOn is true
                                 },
                               ),
-                              SizedBox(width: 20),
+                              SizedBox(width: 1),
                               IconButton(
                                 icon: Icon(Icons.social_distance_rounded),
                                 onPressed: () {
                                   _handleButtonPress();
-                                  _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                                  // _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
+                                //  new Data
+                                  _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
                                 },
                               ),
-                              SizedBox(width: 20),
-                              IconButton(
-                                icon: Icon(_tailight ? Icons.lightbulb : Icons
-                                    .lightbulb_outline),
-                                onPressed: () {
-                                  setState(() {
-                                    _tailight = !_tailight;
-                                    // _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                                    //New data
-                                    // _sendData([0x02, 0x01, 0x45, 0x00, 0x01, 0x49]);
-                                    _sendData([0x02, 0x01, 0x41, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x61]);
-                                  });
-                                },
+                              SizedBox(width: 2),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(_tailight ? Icons.lightbulb : Icons.lightbulb_outline),
+                                    onPressed: () {},
+                                    padding: EdgeInsets.all(0), // Remove padding around the icon
+                                  ),
+                                  DropdownButton<String>(
+                                    value: _selectedOption, // Set the selected option
+                                    onChanged: (String? value) {
+                                      setState(() {
+                                        _selectedOption = value!; // Update the selected option
+                                        switch (value) {
+                                          case 'OFF':
+                                          // Send the command for OFF
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                            break;
+                                          case 'ON':
+                                          // Send the command for ON
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
+                                            break;
+                                          case 'FLASHING':
+                                          // Send the command for FLASHING
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
+                                            break;
+                                          case 'PULSE':
+                                          // Send the command for PULSE
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x03, 0x19]);
+                                            break;
+                                          case 'PELOTON':
+                                          // Send the command for PULSE
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x04, 0x19]);
+                                            break;
+                                          case 'QUICKLY_FLASH':
+                                          // Send the command for PULSE
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
+                                            break;
+                                          default:
+                                          // Handle default case
+                                            break;
+                                        }
+                                      });
+                                    },
+                                    items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH']
+                                        .map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
                               ),
+
                             ],
                           ),
                         ],
@@ -1074,8 +1149,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         buildCameraButton(),
-                        // SizedBox(width: 10),
-                        // Dashcam
                       ],
                     ),
                     Container(
