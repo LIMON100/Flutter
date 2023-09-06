@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
+import 'package:lamaradar/temp/LedValuesProvider.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -16,6 +17,8 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:provider/provider.dart';
+import 'package:lamaradar/temp/LedValuesProvider.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -630,6 +633,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // Open pop-up window for dashcam rear warning
+
   Future<void> initializePlayer() async {
     _controller = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
@@ -637,13 +641,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
-          VlcRtpOptions.rtpOverRtsp(true), // New method try and test
+          // VlcRtpOptions.rtpOverRtsp(true), // New method try and test
           VlcAdvancedOptions.networkCaching(0),
           VlcAdvancedOptions.clockJitter(0),
           VlcAdvancedOptions.fileCaching(0),
           VlcAdvancedOptions.liveCaching(0),
-        ]),),
+        ]),
+      ),
     );
+
+
 
     await _controller!.initialize();
   }
@@ -847,6 +854,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   String _selectedOption = 'OFF';
+  bool isCustomSelected = false;
 
   PopupMenuItem<String> _buildMenuItem(String value, String text) {
     return PopupMenuItem<String>(
@@ -855,8 +863,90 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
+  void _sendData2(LedValuesProvider ledValuesProvider) {
+    int leftLed = ledValuesProvider.leftLedValue.round();
+    int rightLed = ledValuesProvider.rightLedValue.round();
+
+    print('Left LED: $leftLed');
+    print('Right LED: $rightLed');
+
+    _sendData([0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, rightLed, leftLed, 0x01, 0x64]);
+  }
+
+  // Custom tailight dialog
+  void _showCustomDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final ledValuesProvider = Provider.of<LedValuesProvider>(context);
+        return Center(
+          child: Container(
+            width: 400, // Set the desired width of the dialog
+            child: AlertDialog(
+              title: Center( // Center-align the title
+                child: Text('Custom Options'),
+              ),
+              content: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min, // Minimize the dialog size
+                    children: [
+                      Text('Left LED Brightness: ${ledValuesProvider.leftLedValue.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.leftLedValue,
+                        min: 0,
+                        max: 100,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateLeftLedValue(newValue);
+                          });
+                        },
+                      ),
+                      Text('Right LED Brightness: ${ledValuesProvider.rightLedValue.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.rightLedValue,
+                        min: 0,
+                        max: 100,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateRightLedValue(newValue);
+                          });
+                        },
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              // Reset the LED values to their defaults
+                              ledValuesProvider.resetLedValues();
+                            },
+                            child: Text('Reset'),
+                          ),
+                          SizedBox(width: 16), // Add spacing between buttons
+                          ElevatedButton(
+                            onPressed: () {
+                              _sendData2(ledValuesProvider); // Pass the ledValuesProvider
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ledValuesProvider = Provider.of<LedValuesProvider>(context);
     Color screenColor = Theme.of(context).backgroundColor;
     return OrientationBuilder(
       builder: (context, orientation) {
@@ -1097,11 +1187,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                         _selectedOption = value!; // Update the selected option
                                         switch (value) {
                                           case 'OFF':
-                                          // Send the command for OFF
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
                                             break;
                                           case 'ON':
-                                          // Send the command for ON
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
                                             break;
                                           case 'FLASHING':
@@ -1109,24 +1197,26 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
                                             break;
                                           case 'PULSE':
-                                          // Send the command for PULSE
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x03, 0x19]);
                                             break;
                                           case 'PELOTON':
-                                          // Send the command for PULSE
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x04, 0x19]);
                                             break;
                                           case 'QUICKLY_FLASH':
-                                          // Send the command for PULSE
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
                                             break;
+                                          case 'CUSTOM':
+                                            isCustomSelected = true;
+                                            _showCustomDialog();
+                                            // _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
+                                            break;
                                           default:
-                                          // Handle default case
+                                            isCustomSelected = false;
                                             break;
                                         }
                                       });
                                     },
-                                    items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH']
+                                    items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH', 'CUSTOM']
                                         .map((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
@@ -1136,7 +1226,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                   ),
                                 ],
                               ),
-
                             ],
                           ),
                         ],
