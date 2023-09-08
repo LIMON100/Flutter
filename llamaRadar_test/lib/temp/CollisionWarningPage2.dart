@@ -856,21 +856,61 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   String _selectedOption = 'OFF';
   bool isCustomSelected = false;
 
-  PopupMenuItem<String> _buildMenuItem(String value, String text) {
-    return PopupMenuItem<String>(
-      value: value,
-      child: Text(text),
-    );
+  List<int> calculateChecksum(List<int> data) {
+    int csk = 0;
+    for (int value in data) {
+      csk += value;
+    }
+    int cskResult = csk % 256;
+    data.add(cskResult); // Add the checksum to the end of the list
+    return data;
   }
 
+  // _send2data for multiple input
   void _sendData2(LedValuesProvider ledValuesProvider) {
     int leftLed = ledValuesProvider.leftLedValue.round();
     int rightLed = ledValuesProvider.rightLedValue.round();
+    int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
+    int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
 
+    // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
+    turnOnTime = turnOnTime.clamp(0, 65535);
+    turnOffTime = turnOffTime.clamp(0, 65535);
+
+    String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
+    String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
+
+    onTimeHex = onTimeHex.padLeft(4, '0');
+    offTimeHex = offTimeHex.padLeft(4, '0');
+
+    String on1 = onTimeHex.substring(0, 2);
+    String on2 = onTimeHex.substring(2);
+
+    String off1 = offTimeHex.substring(0, 2);
+    String off2 = offTimeHex.substring(2);
+
+    print(ledValuesProvider);
     print('Left LED: $leftLed');
     print('Right LED: $rightLed');
+    print('ON Time: $turnOnTime');
+    print('OFF Time: $turnOffTime');
 
-    _sendData([0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, rightLed, leftLed, 0x01, 0x64]);
+    print([
+      '0x02, 0x01, 0x12, 0x00',
+      int.parse(on1, radix: 16),
+      int.parse(on2, radix: 16),
+      int.parse(off1, radix: 16),
+      int.parse(off2, radix: 16),
+      rightLed,
+      leftLed,
+      '0x01',
+      '0x64',
+    ]);
+
+    List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
+    List<int> dataWithChecksum = calculateChecksum(data);
+    print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+    _sendData(data);
   }
 
   // Custom tailight dialog
@@ -910,6 +950,29 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         onChanged: (newValue) {
                           setState(() {
                             ledValuesProvider.updateRightLedValue(newValue);
+                          });
+                        },
+                      ),
+                      // Set Timer
+                      Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.turnOnTime,
+                        min: 0,
+                        max: 6,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateTurnOnTime(newValue);
+                          });
+                        },
+                      ),
+                      Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.turnOffTime,
+                        min: 0,
+                        max: 60,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateTurnOffTime(newValue);
                           });
                         },
                       ),
@@ -1208,7 +1271,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                           case 'CUSTOM':
                                             isCustomSelected = true;
                                             _showCustomDialog();
-                                            // _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
                                             break;
                                           default:
                                             isCustomSelected = false;
