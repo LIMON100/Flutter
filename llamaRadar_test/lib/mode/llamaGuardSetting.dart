@@ -97,26 +97,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return data;
   }
 
-  // void _sendData2(LedValuesProvider ledValuesProvider) {
-  //   int leftLed = ledValuesProvider.leftLedValue.round();
-  //   int rightLed = ledValuesProvider.rightLedValue.round();
-  //   int turnontime = ledValuesProvider.turnOnTime.round();
-  //   int turnofftime = ledValuesProvider.turnOffTime.round();
-  //
-  //   print(ledValuesProvider);
-  //   print('Left LED: $leftLed');
-  //   print('Right LED: $rightLed');
-  //
-  //   print('ON Time: $turnontime');
-  //   print('OFF Time: $turnofftime');
-  //
-  //   print(['0x02, 0x01, 0x12, 0x00, on1, on2, off1, off2, 0x$rightLed, 0x$leftLed, 0x01, 0x64']);
-  //
-  //   // _sendData([0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, rightLed, leftLed, 0x01, 0x64]);
-  //   // _sendData([0x02, 0x01, 0x12, 0x00, on1, on2, off1, off2, rightLed, leftLed, 0x01, 0x64]);
-  // }
-
-  // Tested _send2data for multiple input
+  // _send2data for multiple input
   void _sendData2(LedValuesProvider ledValuesProvider) {
     int leftLed = ledValuesProvider.leftLedValue.round();
     int rightLed = ledValuesProvider.rightLedValue.round();
@@ -127,19 +108,15 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     turnOnTime = turnOnTime.clamp(0, 65535);
     turnOffTime = turnOffTime.clamp(0, 65535);
 
-    // Convert turnOnTime and turnOffTime to hexadecimal strings
     String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
     String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
 
-    // Ensure that onTimeHex and offTimeHex have at least 4 characters
     onTimeHex = onTimeHex.padLeft(4, '0');
     offTimeHex = offTimeHex.padLeft(4, '0');
 
-    // Extract the first 2 characters for on1 and the last 2 characters for on2
     String on1 = onTimeHex.substring(0, 2);
     String on2 = onTimeHex.substring(2);
 
-    // Extract the first 2 characters for off1 and the last 2 characters for off2
     String off1 = offTimeHex.substring(0, 2);
     String off2 = offTimeHex.substring(2);
 
@@ -151,7 +128,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
     print([
       '0x02, 0x01, 0x12, 0x00',
-      int.parse(on1, radix: 16), // Convert hexadecimal strings back to integers
+      int.parse(on1, radix: 16),
       int.parse(on2, radix: 16),
       int.parse(off1, radix: 16),
       int.parse(off2, radix: 16),
@@ -160,6 +137,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
       '0x01',
       '0x64',
     ]);
+
+    List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
+    List<int> dataWithChecksum = calculateChecksum(data);
+    print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+    _sendData(data);
   }
 
   void showPopUp(){
@@ -170,6 +152,17 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
       ),
     );
   }
+  bool isSwitched = false;
+  double sliderValue = 0.0;
+  double maxSliderValue = 60.0;
+
+  bool isMilliseconds = false;
+  double timeOnValue = 0.0;
+  double timeOffValue = 0.0;
+  double maxTimeOnValueSeconds = 6.0;
+  double maxTimeOffValueSeconds = 60.0;
+  double maxTimeOnValueMilliseconds = 1000.0;
+  double maxTimeOffValueMilliseconds = 1000.0;
 
   @override
   Widget build(BuildContext context) {
@@ -191,84 +184,84 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
           children: [
             SizedBox(height: 20),
 
-            ListTile(
-              title: Text('Set Taillight Mode'),
-              subtitle: Row(
-                children: [
-                  Text('Left LED: ${ledValuesProvider.leftLedValue.toInt()}'),
-                  SizedBox(width: 20), // Add spacing between text
-                  Text('Right LED: ${ledValuesProvider.rightLedValue.toInt()}'),
-                ],
-              ),
-            ),
+            // ListTile(
+            //   title: Text('Set Taillight Mode'),
+            //   subtitle: Row(
+            //     children: [
+            //       Text('Left LED: ${ledValuesProvider.leftLedValue.toInt()}'),
+            //       SizedBox(width: 20), // Add spacing between text
+            //       Text('Right LED: ${ledValuesProvider.rightLedValue.toInt()}'),
+            //     ],
+            //   ),
+            // ),
+            //
+            // Divider(),
+            // Column(
+            //   children: [
+            //     Text('Left LED Brightness: ${ledValuesProvider.leftLedValue.toInt()}'),
+            //     Slider(
+            //       value: ledValuesProvider.leftLedValue,
+            //       min: 0,
+            //       max: 100,
+            //       onChanged: (newValue) {
+            //         ledValuesProvider.updateLeftLedValue(newValue);
+            //       },
+            //     ),
+            //     Text('Right LED Brightness: ${ledValuesProvider.rightLedValue.toInt()}'),
+            //     Slider(
+            //       value: ledValuesProvider.rightLedValue,
+            //       min: 0,
+            //       max: 100,
+            //       onChanged: (newValue) {
+            //         ledValuesProvider.updateRightLedValue(newValue);
+            //       },
+            //     ),
+            //     // Set Timer
+            //     Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
+            //     Slider(
+            //       value: ledValuesProvider.turnOnTime,
+            //       min: 0,
+            //       max: 6,
+            //       onChanged: (newValue) {
+            //         setState(() {
+            //           ledValuesProvider.updateTurnOnTime(newValue);
+            //         });
+            //       },
+            //     ),
+            //     Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
+            //     Slider(
+            //       value: ledValuesProvider.turnOffTime,
+            //       min: 0,
+            //       max: 60,
+            //       onChanged: (newValue) {
+            //         setState(() {
+            //           ledValuesProvider.updateTurnOffTime(newValue);
+            //         });
+            //       },
+            //     ),
+            //     Row(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: [
+            //         ElevatedButton(
+            //           onPressed: () {
+            //             // Reset the LED values to their defaults
+            //             ledValuesProvider.resetLedValues();
+            //           },
+            //           child: Text('Reset'),
+            //         ),
+            //         SizedBox(width: 16), // Add spacing between buttons
+            //         ElevatedButton(
+            //           onPressed: () {
+            //             _sendData2(ledValuesProvider); // Pass the ledValuesProvider
+            //           },
+            //           child: Text('Save'),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
 
-            Divider(),
-            Column(
-              children: [
-                Text('Left LED Brightness: ${ledValuesProvider.leftLedValue.toInt()}'),
-                Slider(
-                  value: ledValuesProvider.leftLedValue,
-                  min: 0,
-                  max: 100,
-                  onChanged: (newValue) {
-                    ledValuesProvider.updateLeftLedValue(newValue);
-                  },
-                ),
-                Text('Right LED Brightness: ${ledValuesProvider.rightLedValue.toInt()}'),
-                Slider(
-                  value: ledValuesProvider.rightLedValue,
-                  min: 0,
-                  max: 100,
-                  onChanged: (newValue) {
-                    ledValuesProvider.updateRightLedValue(newValue);
-                  },
-                ),
-                // Set Timer
-                Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
-                Slider(
-                  value: ledValuesProvider.turnOnTime,
-                  min: 0,
-                  max: 6,
-                  onChanged: (newValue) {
-                    setState(() {
-                      ledValuesProvider.updateTurnOnTime(newValue);
-                    });
-                  },
-                ),
-                Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
-                Slider(
-                  value: ledValuesProvider.turnOffTime,
-                  min: 0,
-                  max: 60,
-                  onChanged: (newValue) {
-                    setState(() {
-                      ledValuesProvider.updateTurnOffTime(newValue);
-                    });
-                  },
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        // Reset the LED values to their defaults
-                        ledValuesProvider.resetLedValues();
-                      },
-                      child: Text('Reset'),
-                    ),
-                    SizedBox(width: 16), // Add spacing between buttons
-                    ElevatedButton(
-                      onPressed: () {
-                        _sendData2(ledValuesProvider); // Pass the ledValuesProvider
-                      },
-                      child: Text('Save'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            Divider(),
+            // Divider(),
             ListTile(
               title: Text('Tailight Mode'),
               subtitle: Text('Current Mode: '), // Display current mode
@@ -391,20 +384,64 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               ),
             ),
             Divider(),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _sendData([0x02, 0x01, 0x12, 0x00, 0xea, 0x60, 0xea, 0x60, 0x01, 0x64, 0x01, 0x72]);
-                  // List<int> data = [0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, 0x50, 0x50, 0x01];
-                  // List<int> dataWithChecksum = calculateChecksum(data);
-                  // print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.green, // Change button color based on state
+            // Center(
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       _sendData([0x02, 0x01, 0x12, 0x00, 0xea, 0x60, 0xea, 0x60, 0x01, 0x64, 0x01, 0x72]);
+            //       // List<int> data = [0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, 0x50, 0x50, 0x01];
+            //       // List<int> dataWithChecksum = calculateChecksum(data);
+            //       // print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+            //     },
+            //     style: ElevatedButton.styleFrom(
+            //       primary: Colors.green, // Change button color based on state
+            //     ),
+            //     child: Text('TEST OTHER'),
+            //   ),
+            // )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Seconds'),
+                Switch(
+                  value: isMilliseconds,
+                  onChanged: (value) {
+                    setState(() {
+                      isMilliseconds = value;
+                      if (isMilliseconds) {
+                        timeOnValue = 0.0;
+                        timeOffValue = 0.0;
+                      } else {
+                        timeOnValue = 0.0;
+                        timeOffValue = 0.0;
+                      }
+                    });
+                  },
                 ),
-                child: Text('TEST OTHER'),
-              ),
-            )
+                Text('Milliseconds'),
+              ],
+            ),
+            Text('Time On: ${timeOnValue.toStringAsFixed(2)}'),
+            Slider(
+              value: timeOnValue,
+              min: 0,
+              max: isMilliseconds ? maxTimeOnValueMilliseconds : maxTimeOnValueSeconds,
+              onChanged: (newValue) {
+                setState(() {
+                  timeOnValue = newValue;
+                });
+              },
+            ),
+            Text('Time Off: ${timeOffValue.toStringAsFixed(2)}'),
+            Slider(
+              value: timeOffValue,
+              min: 0,
+              max: isMilliseconds ? maxTimeOffValueMilliseconds : maxTimeOffValueSeconds,
+              onChanged: (newValue) {
+                setState(() {
+                  timeOffValue = newValue;
+                });
+              },
+            ),
           ],
         ),
       ),
