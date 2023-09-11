@@ -872,6 +872,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     int rightLed = ledValuesProvider.rightLedValue.round();
     int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
     int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
+    print(ledValuesProvider.turnOnTime.round());
+
 
     // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
     turnOnTime = turnOnTime.clamp(0, 65535);
@@ -912,6 +914,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
     _sendData(data);
   }
+
+  bool isMilliseconds = false;
+  bool isSwitched = false;
+  double timeOnValue = 0.0;
+  double timeOffValue = 0.0;
+  double maxTimeOnValueSeconds = 6.0;
+  double maxTimeOffValueSeconds = 60.0;
+  double maxTimeOnValueMilliseconds = 1000.0;
+  double maxTimeOffValueMilliseconds = 1000.0;
+
+
 
   // Custom tailight dialog
   void _showCustomDialog() {
@@ -954,14 +967,38 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         },
                       ),
                       // Set Timer
+                      // Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
+                      // Slider(
+                      //   value: ledValuesProvider.turnOnTime,
+                      //   min: 0,
+                      //   max: 6,
+                      //   onChanged: (newValue) {
+                      //     setState(() {
+                      //       ledValuesProvider.updateTurnOnTime(newValue);
+                      //     });
+                      //   },
+                      // ),
+                      // Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
+                      // Slider(
+                      //   value: ledValuesProvider.turnOffTime,
+                      //   min: 0,
+                      //   max: 60,
+                      //   onChanged: (newValue) {
+                      //     setState(() {
+                      //       ledValuesProvider.updateTurnOffTime(newValue);
+                      //     });
+                      //   },
+                      // ),
+
                       Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
                       Slider(
                         value: ledValuesProvider.turnOnTime,
                         min: 0,
-                        max: 6,
+                        // max: isMilliseconds ? 1000 : 6,
+                        max: isMilliseconds ? maxTimeOnValueMilliseconds : maxTimeOnValueSeconds,
                         onChanged: (newValue) {
                           setState(() {
-                            ledValuesProvider.updateTurnOnTime(newValue);
+                            ledValuesProvider.updateTurnOnTime(isMilliseconds ? newValue : newValue / 1000);
                           });
                         },
                       ),
@@ -969,13 +1006,63 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       Slider(
                         value: ledValuesProvider.turnOffTime,
                         min: 0,
-                        max: 60,
+                        max: isMilliseconds ? maxTimeOffValueMilliseconds : maxTimeOffValueSeconds,
                         onChanged: (newValue) {
                           setState(() {
-                            ledValuesProvider.updateTurnOffTime(newValue);
+                            ledValuesProvider.updateTurnOffTime(isMilliseconds ? newValue : newValue / 1000);
                           });
                         },
                       ),
+                      // Time change slider
+                      SizedBox(width: 16), //
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('sec'),
+                          Switch(
+                            value: isMilliseconds,
+                            onChanged: (value) {
+                              setState(() {
+                                isMilliseconds = value;
+                                if (isMilliseconds) {
+                                  ledValuesProvider.turnOnTime = 0.0;
+                                  ledValuesProvider.turnOffTime = 0.0;
+                                } else {
+                                  ledValuesProvider.turnOnTime = 0.0;
+                                  ledValuesProvider.turnOffTime = 0.0;
+                                }
+                              });
+                            },
+                          ),
+                          Text('ms'),
+                        ],
+                      ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     Text('sec'),
+                      //     Switch(
+                      //       value: isMilliseconds,
+                      //       onChanged: (value) {
+                      //         setState(() {
+                      //           isMilliseconds = value;
+                      //
+                      //           // Check if isMilliseconds is false (seconds mode)
+                      //           // and the turnOnTime or turnOffTime exceeds 60
+                      //           if (!isMilliseconds &&
+                      //               (ledValuesProvider.turnOnTime > 60 || ledValuesProvider.turnOffTime > 60)) {
+                      //             // Reset to milliseconds value
+                      //             ledValuesProvider.updateTurnOnTime(ledValuesProvider.turnOnTime * 1000);
+                      //             ledValuesProvider.updateTurnOffTime(ledValuesProvider.turnOffTime * 1000);
+                      //           }
+                      //         });
+                      //       },
+                      //     ),
+                      //     Text('ms'),
+                      //   ],
+                      // ),
+
+                      SizedBox(width: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
