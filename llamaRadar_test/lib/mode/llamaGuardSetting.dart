@@ -184,83 +184,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
           children: [
             SizedBox(height: 20),
 
-            // ListTile(
-            //   title: Text('Set Taillight Mode'),
-            //   subtitle: Row(
-            //     children: [
-            //       Text('Left LED: ${ledValuesProvider.leftLedValue.toInt()}'),
-            //       SizedBox(width: 20), // Add spacing between text
-            //       Text('Right LED: ${ledValuesProvider.rightLedValue.toInt()}'),
-            //     ],
-            //   ),
-            // ),
-            //
-            // Divider(),
-            // Column(
-            //   children: [
-            //     Text('Left LED Brightness: ${ledValuesProvider.leftLedValue.toInt()}'),
-            //     Slider(
-            //       value: ledValuesProvider.leftLedValue,
-            //       min: 0,
-            //       max: 100,
-            //       onChanged: (newValue) {
-            //         ledValuesProvider.updateLeftLedValue(newValue);
-            //       },
-            //     ),
-            //     Text('Right LED Brightness: ${ledValuesProvider.rightLedValue.toInt()}'),
-            //     Slider(
-            //       value: ledValuesProvider.rightLedValue,
-            //       min: 0,
-            //       max: 100,
-            //       onChanged: (newValue) {
-            //         ledValuesProvider.updateRightLedValue(newValue);
-            //       },
-            //     ),
-            //     // Set Timer
-            //     Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
-            //     Slider(
-            //       value: ledValuesProvider.turnOnTime,
-            //       min: 0,
-            //       max: 6,
-            //       onChanged: (newValue) {
-            //         setState(() {
-            //           ledValuesProvider.updateTurnOnTime(newValue);
-            //         });
-            //       },
-            //     ),
-            //     Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
-            //     Slider(
-            //       value: ledValuesProvider.turnOffTime,
-            //       min: 0,
-            //       max: 60,
-            //       onChanged: (newValue) {
-            //         setState(() {
-            //           ledValuesProvider.updateTurnOffTime(newValue);
-            //         });
-            //       },
-            //     ),
-            //     Row(
-            //       mainAxisAlignment: MainAxisAlignment.center,
-            //       children: [
-            //         ElevatedButton(
-            //           onPressed: () {
-            //             // Reset the LED values to their defaults
-            //             ledValuesProvider.resetLedValues();
-            //           },
-            //           child: Text('Reset'),
-            //         ),
-            //         SizedBox(width: 16), // Add spacing between buttons
-            //         ElevatedButton(
-            //           onPressed: () {
-            //             _sendData2(ledValuesProvider); // Pass the ledValuesProvider
-            //           },
-            //           child: Text('Save'),
-            //         ),
-            //       ],
-            //     ),
-            //   ],
-            // ),
-
             // Divider(),
             ListTile(
               title: Text('Tailight Mode'),
@@ -296,55 +219,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               },
             ),
             Divider(),
-            // SSID SET & PASSWORD
-            // if (showWifiSettings)
-            //   Padding(
-            //     padding: const EdgeInsets.symmetric(horizontal: 16),
-            //     child: Column(
-            //       mainAxisSize: MainAxisSize.min,
-            //       children: <Widget>[
-            //         Container(
-            //           child: TextField(
-            //             controller: ssidController,
-            //             decoration: InputDecoration(
-            //               labelText: 'SSID: $ssidVal',
-            //             ),
-            //           ),
-            //         ),
-            //         SizedBox(height: 16),
-            //         Container(
-            //           child: ElevatedButton(
-            //             child: Text('Change SSID'),
-            //             onPressed: () {
-            //               String ssid = ssidController.text.trim();
-            //               _sendData([0x02, 0x01, 0x21, 0x00, 0x04, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8d]);
-            //               // changeSSID(ssid);
-            //             },
-            //           ),
-            //         ),
-            //         SizedBox(height: 16), // Add vertical spacing
-            //         Container(
-            //           child: TextField(
-            //             controller: passController,
-            //             decoration: InputDecoration(
-            //               labelText: 'Pass: $passVal',
-            //             ),
-            //           ),
-            //         ),
-            //         SizedBox(height: 16),
-            //         Container(
-            //           child: ElevatedButton(
-            //             child: Text('Change WiFi Pass'),
-            //             onPressed: () {
-            //               String pass = passController.text.trim();
-            //               // changePASS(pass);
-            //             },
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-
             ListTile(
               title: Text('Radar'),
               trailing: Switch(
@@ -398,50 +272,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             //     child: Text('TEST OTHER'),
             //   ),
             // )
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Seconds'),
-                Switch(
-                  value: isMilliseconds,
-                  onChanged: (value) {
-                    setState(() {
-                      isMilliseconds = value;
-                      if (isMilliseconds) {
-                        timeOnValue = 0.0;
-                        timeOffValue = 0.0;
-                      } else {
-                        timeOnValue = 0.0;
-                        timeOffValue = 0.0;
-                      }
-                    });
-                  },
-                ),
-                Text('Milliseconds'),
-              ],
-            ),
-            Text('Time On: ${timeOnValue.toStringAsFixed(2)}'),
-            Slider(
-              value: timeOnValue,
-              min: 0,
-              max: isMilliseconds ? maxTimeOnValueMilliseconds : maxTimeOnValueSeconds,
-              onChanged: (newValue) {
-                setState(() {
-                  timeOnValue = newValue;
-                });
-              },
-            ),
-            Text('Time Off: ${timeOffValue.toStringAsFixed(2)}'),
-            Slider(
-              value: timeOffValue,
-              min: 0,
-              max: isMilliseconds ? maxTimeOffValueMilliseconds : maxTimeOffValueSeconds,
-              onChanged: (newValue) {
-                setState(() {
-                  timeOffValue = newValue;
-                });
-              },
-            ),
           ],
         ),
       ),
