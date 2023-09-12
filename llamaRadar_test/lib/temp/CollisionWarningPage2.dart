@@ -867,13 +867,69 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // _send2data for multiple input
-  void _sendData2(LedValuesProvider ledValuesProvider) {
+  // void _sendData2(LedValuesProvider ledValuesProvider, isMilliseconds) {
+  //   int leftLed = ledValuesProvider.leftLedValue.round();
+  //   int rightLed = ledValuesProvider.rightLedValue.round();
+  //   int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
+  //   int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
+  //   print(ledValuesProvider.turnOnTime.round());
+  //   print('Left LED: $leftLed');
+  //   print('Right LED: $rightLed');
+  //   print('ON Time: $turnOnTime');
+  //   print('OFF Time: $turnOffTime');
+  //
+  //   // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
+  //   turnOnTime = turnOnTime.clamp(0, 65535);
+  //   turnOffTime = turnOffTime.clamp(0, 65535);
+  //
+  //   String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
+  //   String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
+  //
+  //   onTimeHex = onTimeHex.padLeft(4, '0');
+  //   offTimeHex = offTimeHex.padLeft(4, '0');
+  //
+  //   String on1 = onTimeHex.substring(0, 2);
+  //   String on2 = onTimeHex.substring(2);
+  //
+  //   String off1 = offTimeHex.substring(0, 2);
+  //   String off2 = offTimeHex.substring(2);
+  //
+  //   print([
+  //     '0x02, 0x01, 0x12, 0x00',
+  //     int.parse(on1, radix: 16),
+  //     int.parse(on2, radix: 16),
+  //     int.parse(off1, radix: 16),
+  //     int.parse(off2, radix: 16),
+  //     rightLed,
+  //     leftLed,
+  //     '0x01',
+  //     '0x64',
+  //   ]);
+  //
+  //   List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
+  //   List<int> dataWithChecksum = calculateChecksum(data);
+  //   print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+  //   _sendData(data);
+  // }
+  void _sendData2(LedValuesProvider ledValuesProvider, bool isMilliseconds) {
     int leftLed = ledValuesProvider.leftLedValue.round();
     int rightLed = ledValuesProvider.rightLedValue.round();
-    int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
-    int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
-    print(ledValuesProvider.turnOnTime.round());
+    int turnOnTime = ledValuesProvider.turnOnTime.round();
+    int turnOffTime = ledValuesProvider.turnOffTime.round();
 
+    // Multiply by 60 if isMilliseconds is true
+    if (isMilliseconds) {
+      turnOnTime *= 60;
+      turnOffTime *= 60;
+    } else {
+      turnOnTime *= 10000;
+      turnOffTime *= 1000;
+    }
+
+    print('Left LED: $leftLed');
+    print('Right LED: $rightLed');
+    print('ON Time: $turnOnTime');
+    print('OFF Time: $turnOffTime');
 
     // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
     turnOnTime = turnOnTime.clamp(0, 65535);
@@ -890,12 +946,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     String off1 = offTimeHex.substring(0, 2);
     String off2 = offTimeHex.substring(2);
-
-    print(ledValuesProvider);
-    print('Left LED: $leftLed');
-    print('Right LED: $rightLed');
-    print('ON Time: $turnOnTime');
-    print('OFF Time: $turnOffTime');
 
     print([
       '0x02, 0x01, 0x12, 0x00',
@@ -914,6 +964,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
     _sendData(data);
   }
+
 
   bool isMilliseconds = false;
   bool isSwitched = false;
@@ -998,7 +1049,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         max: isMilliseconds ? maxTimeOnValueMilliseconds : maxTimeOnValueSeconds,
                         onChanged: (newValue) {
                           setState(() {
-                            ledValuesProvider.updateTurnOnTime(isMilliseconds ? newValue : newValue / 1000);
+                            ledValuesProvider.updateTurnOnTime(newValue);
                           });
                         },
                       ),
@@ -1009,7 +1060,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         max: isMilliseconds ? maxTimeOffValueMilliseconds : maxTimeOffValueSeconds,
                         onChanged: (newValue) {
                           setState(() {
-                            ledValuesProvider.updateTurnOffTime(isMilliseconds ? newValue : newValue / 1000);
+                            // ledValuesProvider.updateTurnOffTime(isMilliseconds ? newValue : newValue / 1000);
+                            ledValuesProvider.updateTurnOffTime(newValue);
                           });
                         },
                       ),
@@ -1076,7 +1128,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           SizedBox(width: 16), // Add spacing between buttons
                           ElevatedButton(
                             onPressed: () {
-                              _sendData2(ledValuesProvider); // Pass the ledValuesProvider
+                              _sendData2(ledValuesProvider, isMilliseconds); // Pass the ledValuesProvider
                               Navigator.of(context).pop(); // Close the dialog
                             },
                             child: Text('Save'),
