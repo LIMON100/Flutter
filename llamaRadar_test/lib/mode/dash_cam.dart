@@ -98,7 +98,10 @@ class _DashCamState extends State<DashCam> {
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
-          VlcAdvancedOptions.networkCaching(5),
+          VlcAdvancedOptions.networkCaching(0),
+          VlcAdvancedOptions.clockJitter(0),
+          VlcAdvancedOptions.fileCaching(0),
+          VlcAdvancedOptions.liveCaching(0),
         ]),),
     );
     getFilesFromCamera();
@@ -163,7 +166,10 @@ class _DashCamState extends State<DashCam> {
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(5),
+            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(0),
+            VlcAdvancedOptions.liveCaching(0),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -330,7 +336,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    flipMovieMirror();
+    // flipMovieMirror();
     isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
     images = widget.images;
     videos = widget.videos;
@@ -620,11 +626,31 @@ class _HomeState extends State<Home> {
       if (response.statusCode == 200) {
         print('Image captured');
         await getFilesFromCamera();
+        // Add snakbar message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('                  Image captured successfully.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
 
       } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('             Image cannot capture due to network.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
         print('Error occured: ${response.statusCode}');
+        // Add snakbar message
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('             Image cannot capture due to network.'),
+          duration: Duration(seconds: 2), // Adjust the duration as needed
+        ),
+      );
       print('Error: $e');
     }
   }
@@ -736,56 +762,151 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // Widget buildCameraButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: CircleButton(
+  //         onPressed: () {
+  //           setDateOfCam();
+  //           widget.toggleCameraStreaming();
+  //           setState(() {
+  //             // Update the local variable instead
+  //             isCameraStreaming = !isCameraStreaming;
+  //           });
+  //         },
+  //         color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+  //         text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
-        child: CircleButton(
-          onPressed: () {
-            setDateOfCam();
-            widget.toggleCameraStreaming();
-            setState(() {
-              // Update the local variable instead
-              isCameraStreaming = !isCameraStreaming;
-            });
-          },
-          color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
-          text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+        child: Column(
+          children: [
+            IconButton(
+              onPressed: () {
+                setDateOfCam();
+                widget.toggleCameraStreaming();
+                setState(() {
+                  // Update the local variable instead
+                  isCameraStreaming = !isCameraStreaming;
+                });
+              },
+              icon: Icon(
+                Icons.camera,
+                size: 45, // Adjust the icon size as needed
+              ),
+              color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+            ),
+            SizedBox(height: 15),
+            SizedBox(width: 15),
+            Text(
+              isCameraStreaming ? '  Close Camera' : '  Open Camera',
+              style: TextStyle(
+                color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+
+
+
   // Recording part
+  // Widget buildRecordingButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: CircleButton(
+  //         onPressed: () async {
+  //           setDateOfCam();
+  //           setTimeOfCam();
+  //           if (isRecording) {
+  //             // Stop record
+  //             stopRecordingCmd();
+  //           } else {
+  //             // Start Recording
+  //             changeToVideoMode();
+  //             setDateOfCam();
+  //             setTimeOfCam();
+  //             startRecordingCmd();
+  //           }
+  //           setState(() {
+  //             isRecording = !isRecording;
+  //           });
+  //         },
+  //         color: isRecording ? Colors.red : Color(0xFFa8caba),
+  //         text: isRecording ? 'Stop Recording' : 'Start Recording',
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget buildRecordingButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
-        margin: EdgeInsets.only(top: 10),
-        child: CircleButton(
-          onPressed: () async {
-            setDateOfCam();
-            setTimeOfCam();
-            if (isRecording) {
-              // Stop record
-              stopRecordingCmd();
-            } else {
-              // Start Recording
-              changeToVideoMode();
-              setDateOfCam();
-              setTimeOfCam();
-              startRecordingCmd();
-            }
-            setState(() {
-              isRecording = !isRecording;
-            });
-          },
-          color: isRecording ? Colors.red : Color(0xFFa8caba),
-          text: isRecording ? 'Stop Recording' : 'Start Recording',
+        margin: EdgeInsets.only(top: 1),
+        child: Column(
+          children: [
+            IconButton(
+              onPressed: () async {
+                setDateOfCam();
+                setTimeOfCam();
+                if (isRecording) {
+                  // Stop record
+                  stopRecordingCmd();
+                } else {
+                  // Start Recording
+                  changeToVideoMode();
+                  setDateOfCam();
+                  setTimeOfCam();
+                  startRecordingCmd();
+                }
+                setState(() {
+                  isRecording = !isRecording;
+                });
+              },
+              icon: Icon(
+                isRecording ? Icons.stop : Icons.videocam,
+                size: 40,
+              ),
+              color: isRecording ? Colors.red : Color(0xFFa8caba),
+            ),
+            SizedBox(height: 8),
+            Text(
+              isRecording ? 'Stop Recording' : 'Start Recording',
+              style: TextStyle(
+                color: isRecording ? Colors.red : Color(0xFFa8caba),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  double rotationAngle = 0.0;
+  void changeOrientation() {
+    setState(() {
+      rotationAngle += 90.0; // Rotate by 90 degrees
+      print("ROTATE ANGLE");
+      print(rotationAngle);
+      if (rotationAngle >= 360.0) {
+        rotationAngle = 0.0;
+      }
+    });
   }
 
   @override
@@ -803,32 +924,25 @@ class _HomeState extends State<Home> {
                   width: 400,
                   // child: isCameraStreaming && _controller != null
                   child: isCameraStreaming && widget.videoPlayerController != null
-                  //     ? VlcPlayer(
-                  //   controller: widget.videoPlayerController,
-                  //   aspectRatio: 16 / 9,
-                  //   placeholder: Center(child: CircularProgressIndicator()),
-                  // )
-                  //     ? Transform.rotate(
-                  //   angle: 3.14159,
-                  //   alignment: Alignment.center,
-                  //   //transform: Matrix4.rotationY(1*2*3.14159),
-                  //   child: VlcPlayer(
-                  //     controller: widget.videoPlayerController,
-                  //     aspectRatio: 16 / 9,
-                  //     placeholder: Center(child: CircularProgressIndicator()),
-                  //   ),
-                  // )
-                      ? VlcPlayer(
-                    controller: widget.videoPlayerController,
-                    aspectRatio: 16 / 9,
-                    placeholder: Center(child: CircularProgressIndicator()),
-
+                  ?Transform.rotate(
+                    angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
+                    child: VlcPlayer(
+                      controller: widget.videoPlayerController,
+                      aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
+                    ),
                   )
                       : Image.asset(
                     'images/test_background3.jpg',
                     fit: BoxFit.fitWidth,
                   ),
                 ),
+                SizedBox(height: 20.0),
+                if (isCameraStreaming)
+                  IconButton(
+                    icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
+                    onPressed: changeOrientation,
+                    iconSize: 48.0, // Adjust the icon size as needed
+                  ),
                 SizedBox(height: 54),
                 SingleChildScrollView(
                   child: Container(
@@ -841,25 +955,97 @@ class _HomeState extends State<Home> {
                         ),
 
                         SizedBox(height: 5),
+                        // Center(
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment
+                        //         .center, // Align buttons in the center
+                        //     children: [
+                        //       buildRecordingButton(),
+                        //       SizedBox(width: 20),
+                        //       // Align(
+                        //       //   alignment: Alignment.center,
+                        //       //   child: CircleButton(
+                        //       //     onPressed: () {
+                        //       //       setDateOfCam();
+                        //       //       setTimeOfCam();
+                        //       //       changeToPhotoMode();
+                        //       //       takePicture();
+                        //       //       changeToVideoMode();
+                        //       //     },
+                        //       //     color: Color(0xFFa8caba),
+                        //       //     text: 'Capture',
+                        //       //   ),
+                        //       // ),
+                        //       Align(
+                        //         alignment: Alignment.center,
+                        //         child: Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             IconButton(
+                        //               onPressed: () {
+                        //                 setDateOfCam();
+                        //                 setTimeOfCam();
+                        //                 changeToPhotoMode();
+                        //                 takePicture();
+                        //                 changeToVideoMode();
+                        //               },
+                        //               icon: Icon(
+                        //                 Icons.camera_alt,
+                        //                 size: 40,
+                        //                 color: Color(0xFFa8caba),
+                        //               ),
+                        //             ),
+                        //             SizedBox(height: 4),
+                        //             Text(
+                        //               'Capture',
+                        //               style: TextStyle(
+                        //                 color: Color(0xFFa8caba),
+                        //                 fontWeight: FontWeight.bold,
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //
+                        //     ],
+                        //   ),
+                        // ),
                         Center(
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment
-                                .center, // Align buttons in the center
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               buildRecordingButton(),
-                              SizedBox(width: 15),
+                              SizedBox(width: 40),
                               Align(
                                 alignment: Alignment.center,
-                                child: CircleButton(
-                                  onPressed: () {
-                                    setDateOfCam();
-                                    setTimeOfCam();
-                                    changeToPhotoMode();
-                                    takePicture();
-                                    changeToVideoMode();
-                                  },
-                                  color: Color(0xFFa8caba),
-                                  text: 'Capture',
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        setDateOfCam();
+                                        setTimeOfCam();
+                                        changeToPhotoMode();
+                                        takePicture();
+                                        changeToVideoMode();
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Color(0xFFa8caba),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   Capture',
+                                      style: TextStyle(
+                                        color: Color(0xFFa8caba),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -867,14 +1053,6 @@ class _HomeState extends State<Home> {
                         ),
 
                         SizedBox(height: 5),
-                        // CircleButton(
-                        //   onPressed: () {
-                        //     flipMovieMirror();
-                        //   },
-                        //   color: Color(0xFFa8caba),
-                        //   text: 'FlipTest',
-                        // ),
-
                       ],
                     ),
                   ),
@@ -889,16 +1067,14 @@ class _HomeState extends State<Home> {
   }
 }
 
-Future<void> flipMovieMirror() async {
-  final response = await http
-      .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=4'));
-  if (response.statusCode == 200) {
-    print(response.body);
-    print('Movie Flipped');
-  } else {
-    print('Flip Error: ${response.statusCode}');
-  }
-}
+// Future<void> flipMovieMirror() async {
+//   final response = await http
+//       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=4'));
+//   if (response.statusCode == 200) {
+//   } else {
+//     print('Flip Error: ${response.statusCode}');
+//   }
+// }
 
 Future<void> movieQualitySet() async {
   final response = await http
@@ -955,7 +1131,7 @@ class _FilesState extends State<Files> {
   void initState() {
     super.initState();
     movieQualitySet();
-    flipMovieMirror();
+    // flipMovieMirror();
     // Fetch files from the camera on page load
     images = widget.images;
     videos = widget.videos;
