@@ -919,30 +919,61 @@ class _HomeState extends State<Home> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Container(
-                  height: 360,
-                  width: 400,
-                  // child: isCameraStreaming && _controller != null
-                  child: isCameraStreaming && widget.videoPlayerController != null
-                  ?Transform.rotate(
-                    angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
-                    child: VlcPlayer(
-                      controller: widget.videoPlayerController,
-                      aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
+                // Container(
+                //   height: 360,
+                //   width: 400,
+                //   // child: isCameraStreaming && _controller != null
+                //   child: isCameraStreaming && widget.videoPlayerController != null
+                //   ?Transform.rotate(
+                //     angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
+                //     child: VlcPlayer(
+                //       controller: widget.videoPlayerController,
+                //       aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
+                //     ),
+                //   )
+                //       : Image.asset(
+                //     'images/test_background3.jpg',
+                //     fit: BoxFit.fitWidth,
+                //   ),
+                // ),
+                // SizedBox(height: 20.0),
+                // if (isCameraStreaming)
+                //   IconButton(
+                //     icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
+                //     onPressed: changeOrientation,
+                //     iconSize: 48.0, // Adjust the icon size as needed
+                //   ),
+                Stack(
+                  children: [
+                    Container(
+                      height: 360,
+                      width: 400,
+                      child: isCameraStreaming && widget.videoPlayerController != null
+                          ? Transform.rotate(
+                        angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
+                        child: VlcPlayer(
+                          controller: widget.videoPlayerController,
+                          aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
+                        ),
+                      )
+                          : Image.asset(
+                        'images/test_background3.jpg',
+                        fit: BoxFit.fitWidth,
+                      ),
                     ),
-                  )
-                      : Image.asset(
-                    'images/test_background3.jpg',
-                    fit: BoxFit.fitWidth,
-                  ),
+                    if (isCameraStreaming)
+                      Positioned(
+                        bottom: 16.0,
+                        right: 16.0,
+                        child: IconButton(
+                          color: Colors.red,
+                          icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
+                          onPressed: changeOrientation,
+                          iconSize: 48.0, // Adjust the icon size as needed
+                        ),
+                      ),
+                  ],
                 ),
-                SizedBox(height: 20.0),
-                if (isCameraStreaming)
-                  IconButton(
-                    icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
-                    onPressed: changeOrientation,
-                    iconSize: 48.0, // Adjust the icon size as needed
-                  ),
                 SizedBox(height: 54),
                 SingleChildScrollView(
                   child: Container(
