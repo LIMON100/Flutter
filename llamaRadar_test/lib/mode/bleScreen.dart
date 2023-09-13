@@ -329,7 +329,7 @@ class _BleScreenState extends State<BleScreen> {
         appBar: AppBar(
           centerTitle: true,
           foregroundColor: Colors.black,
-          title: const Text('BLE'),
+          title: const Text('Llama Guard'),
           flexibleSpace: Container(
             decoration: BoxDecoration(
               // color: Color(0xFF6497d3),

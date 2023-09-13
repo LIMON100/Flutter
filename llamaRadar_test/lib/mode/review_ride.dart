@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lamaradar/temp/glowing_button.dart';
 import 'LlamaDefenderPage.dart';
 
 class ReviewRide extends StatefulWidget {

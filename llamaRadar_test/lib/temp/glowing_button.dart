@@ -34,37 +34,6 @@ class _GlowingButton2State extends State<GlowingButton2> {
           _isPressed = false;
         });
       },
-      // child: AnimatedContainer(
-      //   duration: Duration(milliseconds: 200),
-      //   padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      //   decoration: BoxDecoration(
-      //     borderRadius: BorderRadius.circular(30.0),
-      //     gradient: LinearGradient(
-      //       begin: Alignment.topLeft,
-      //       end: Alignment.bottomRight,
-      //       colors: [
-      //         _isPressed ? Colors.greenAccent : Colors.cyan,
-      //         _isPressed ? Colors.cyan : Colors.greenAccent,
-      //       ],
-      //     ),
-      //     boxShadow: [
-      //       BoxShadow(
-      //         color: Colors.grey.withOpacity(0.5),
-      //         blurRadius: 6.0,
-      //         spreadRadius: 2.0,
-      //         offset: Offset(0.0, 3.0),
-      //       ),
-      //     ],
-      //   ),
-      //   child: Text(
-      //     widget.text,
-      //     style: TextStyle(
-      //       color: Colors.white,
-      //       fontSize: 18.0,
-      //       fontWeight: FontWeight.bold,
-      //     ),
-      //   ),
-      // ),
 
       child: AnimatedContainer(
         // transform: Matrix4.identity()..scale(scale),
