@@ -21,6 +21,7 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -320,8 +321,6 @@ class _HomeState extends State<Home> {
   //IP Address
   final String ipAddress = '192.168.1.254';
 
-  //files
-
   final String url = 'http://192.168.1.254';
   bool isFront = false;
   bool isSensor = false;
@@ -331,16 +330,17 @@ class _HomeState extends State<Home> {
   bool isRecording = false;
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
+  static const String rotationAngleKey = 'rotation_angle';
 
   // Rtsp Streaming
   @override
   void initState() {
     super.initState();
-    // flipMovieMirror();
     isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
     images = widget.images;
     videos = widget.videos;
     initializePlayer();
+    _loadRotationAngle();
     movieQualitySet();
   }
 
@@ -697,7 +697,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-// 2 -3
+  // 2 -3
   Future<void> camFront() async {
     final response = await http
         .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
@@ -762,26 +762,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // Widget buildCameraButton() {
-  //   return Align(
-  //     alignment: Alignment.topCenter,
-  //     child: Container(
-  //       margin: EdgeInsets.only(top: 10),
-  //       child: CircleButton(
-  //         onPressed: () {
-  //           setDateOfCam();
-  //           widget.toggleCameraStreaming();
-  //           setState(() {
-  //             // Update the local variable instead
-  //             isCameraStreaming = !isCameraStreaming;
-  //           });
-  //         },
-  //         color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
-  //         text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
-  //       ),
-  //     ),
-  //   );
-  // }
+  // Open/Close camera streaming
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
@@ -818,8 +799,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
-
 
 
   // Recording part
@@ -897,15 +876,37 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Change camera orientation
+  Orientation currentOrientation = Orientation.portrait;
   double rotationAngle = 0.0;
+
+  void _loadRotationAngle() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() {
+        rotationAngle = prefs.getDouble(rotationAngleKey) ?? 0.0;
+      });
+    } catch (e) {
+      print("Error loading rotation angle: $e");
+    }
+  }
+
+  void _saveRotationAngle(double angle) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setDouble(rotationAngleKey, angle);
+    } catch (e) {
+      print("Error saving rotation angle: $e");
+    }
+  }
+
   void changeOrientation() {
     setState(() {
       rotationAngle += 90.0; // Rotate by 90 degrees
-      print("ROTATE ANGLE");
-      print(rotationAngle);
       if (rotationAngle >= 360.0) {
         rotationAngle = 0.0;
       }
+      _saveRotationAngle(rotationAngle); // Save the new angle
     });
   }
 
@@ -913,47 +914,31 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
+      body: OrientationBuilder(
+          builder: (context, orientation)
+    {
+      currentOrientation = orientation;
+      return Stack(
         children: [
           SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                // Container(
-                //   height: 360,
-                //   width: 400,
-                //   // child: isCameraStreaming && _controller != null
-                //   child: isCameraStreaming && widget.videoPlayerController != null
-                //   ?Transform.rotate(
-                //     angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
-                //     child: VlcPlayer(
-                //       controller: widget.videoPlayerController,
-                //       aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
-                //     ),
-                //   )
-                //       : Image.asset(
-                //     'images/test_background3.jpg',
-                //     fit: BoxFit.fitWidth,
-                //   ),
-                // ),
-                // SizedBox(height: 20.0),
-                // if (isCameraStreaming)
-                //   IconButton(
-                //     icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
-                //     onPressed: changeOrientation,
-                //     iconSize: 48.0, // Adjust the icon size as needed
-                //   ),
                 Stack(
                   children: [
                     Container(
                       height: 360,
                       width: 400,
-                      child: isCameraStreaming && widget.videoPlayerController != null
+                      child: isCameraStreaming &&
+                          widget.videoPlayerController != null
                           ? Transform.rotate(
-                        angle: rotationAngle * 3.14159265359 / 180, // Apply rotation based on user choice
+                        angle: rotationAngle * 3.14159265359 / 180,
+                        // Apply rotation based on user choice
                         child: VlcPlayer(
                           controller: widget.videoPlayerController,
-                          aspectRatio: 16 / 9, // Adjust this to match your desired aspect ratio
+                          aspectRatio: currentOrientation == Orientation.portrait
+                                ? 16 / 9
+                                : 9 / 16,
                         ),
                       )
                           : Image.asset(
@@ -967,7 +952,8 @@ class _HomeState extends State<Home> {
                         right: 16.0,
                         child: IconButton(
                           color: Colors.red,
-                          icon: Icon(Icons.cameraswitch_outlined), // You can choose a different icon
+                          icon: Icon(Icons.cameraswitch_outlined),
+                          // You can choose a different icon
                           onPressed: changeOrientation,
                           iconSize: 48.0, // Adjust the icon size as needed
                         ),
@@ -1093,19 +1079,13 @@ class _HomeState extends State<Home> {
             ),
           ),
         ],
-      ),
+      );
+      }
+    ),
     );
   }
 }
 
-// Future<void> flipMovieMirror() async {
-//   final response = await http
-//       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=4'));
-//   if (response.statusCode == 200) {
-//   } else {
-//     print('Flip Error: ${response.statusCode}');
-//   }
-// }
 
 Future<void> movieQualitySet() async {
   final response = await http
@@ -1327,31 +1307,6 @@ class _FilesState extends State<Files> {
     }
   }
 
-  // Delete all files
-  // Future<void> deleteAllFiles() async {
-  //   final url = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
-  //
-  //   try {
-  //     if (current == 0) {
-  //       // Delete all files
-  //       final response = await http.get(url);
-  //       if (response.statusCode == 200) {
-  //         print('All files deleted successfully');
-  //         await getFilesFromCamera();
-  //       } else {
-  //         print('Failed to delete all files. Status code: ${response.statusCode}');
-  //       }
-  //     } else if (current == 1) {
-  //       // Delete only videos
-  //       // Add your logic to delete video files here
-  //     } else if (current == 2) {
-  //       // Delete only images
-  //       // Add your logic to delete image files here
-  //     }
-  //   } catch (e) {
-  //     print('Failed to delete files: $e');
-  //   }
-  // }
   Future<void> deleteAllFiles() async {
     try {
       if (current == 0) {
@@ -1408,39 +1363,6 @@ class _FilesState extends State<Files> {
       print('Failed to delete files: $e');
     }
   }
-
-
-
-  // Download Files to gallery
-  // void downloadFile(String url) async {
-  //   if (url.endsWith('.JPG')) {
-  //     url = 'http://192.168.1.254/CARDV/photo/$url';
-  //   } else {
-  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
-  //   }
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     if (response.statusCode == 200) {
-  //       final bytes = response.bodyBytes;
-  //       final fileName = url.split('/').last;
-  //       final directory = await getTemporaryDirectory();
-  //       final filePath = '${directory.path}/$fileName';
-  //       final file = File(filePath);
-  //       await file.writeAsBytes(bytes);
-  //
-  //       // Save the file to the gallery
-  //       await GallerySaver.saveImage(filePath);
-  //       print('File saved to gallery');
-  //
-  //       // Delete the temporary file
-  //       await file.delete();
-  //     } else {
-  //       print('Error downloading file: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error downloading file: $e');
-  //   }
-  // }
 
   // Download files
   bool _isDownloading = false;
