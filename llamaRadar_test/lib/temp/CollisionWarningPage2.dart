@@ -19,6 +19,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:provider/provider.dart';
 import 'package:lamaradar/temp/LedValuesProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -76,6 +77,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
+    _loadRotationAngle();
     initializePlayer();
   }
 
@@ -649,9 +651,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         ]),
       ),
     );
-
-
-
     await _controller!.initialize();
   }
 
@@ -867,50 +866,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // _send2data for multiple input
-  // void _sendData2(LedValuesProvider ledValuesProvider, isMilliseconds) {
-  //   int leftLed = ledValuesProvider.leftLedValue.round();
-  //   int rightLed = ledValuesProvider.rightLedValue.round();
-  //   int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
-  //   int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
-  //   print(ledValuesProvider.turnOnTime.round());
-  //   print('Left LED: $leftLed');
-  //   print('Right LED: $rightLed');
-  //   print('ON Time: $turnOnTime');
-  //   print('OFF Time: $turnOffTime');
-  //
-  //   // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
-  //   turnOnTime = turnOnTime.clamp(0, 65535);
-  //   turnOffTime = turnOffTime.clamp(0, 65535);
-  //
-  //   String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
-  //   String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
-  //
-  //   onTimeHex = onTimeHex.padLeft(4, '0');
-  //   offTimeHex = offTimeHex.padLeft(4, '0');
-  //
-  //   String on1 = onTimeHex.substring(0, 2);
-  //   String on2 = onTimeHex.substring(2);
-  //
-  //   String off1 = offTimeHex.substring(0, 2);
-  //   String off2 = offTimeHex.substring(2);
-  //
-  //   print([
-  //     '0x02, 0x01, 0x12, 0x00',
-  //     int.parse(on1, radix: 16),
-  //     int.parse(on2, radix: 16),
-  //     int.parse(off1, radix: 16),
-  //     int.parse(off2, radix: 16),
-  //     rightLed,
-  //     leftLed,
-  //     '0x01',
-  //     '0x64',
-  //   ]);
-  //
-  //   List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
-  //   List<int> dataWithChecksum = calculateChecksum(data);
-  //   print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
-  //   _sendData(data);
-  // }
   void _sendData2(LedValuesProvider ledValuesProvider, bool isMilliseconds) {
     int leftLed = ledValuesProvider.leftLedValue.round();
     int rightLed = ledValuesProvider.rightLedValue.round();
@@ -919,8 +874,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     // Multiply by 60 if isMilliseconds is true
     if (isMilliseconds) {
-      turnOnTime *= 60;
-      turnOffTime *= 60;
+      turnOnTime *= 1;
+      turnOffTime *= 1;
     } else {
       turnOnTime *= 10000;
       turnOffTime *= 1000;
@@ -974,7 +929,41 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   double maxTimeOffValueSeconds = 60.0;
   double maxTimeOnValueMilliseconds = 1000.0;
   double maxTimeOffValueMilliseconds = 1000.0;
+  static const String rotationAngleKey = 'rotation_angle';
 
+  // Change camera orientation
+  Orientation currentOrientation = Orientation.portrait;
+  double rotationAngle = 0.0;
+
+  void _loadRotationAngle() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() {
+        rotationAngle = prefs.getDouble(rotationAngleKey) ?? 0.0;
+      });
+    } catch (e) {
+      print("Error loading rotation angle: $e");
+    }
+  }
+
+  void _saveRotationAngle(double angle) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setDouble(rotationAngleKey, angle);
+    } catch (e) {
+      print("Error saving rotation angle: $e");
+    }
+  }
+
+  void changeOrientation() {
+    setState(() {
+      rotationAngle += 90.0; // Rotate by 90 degrees
+      if (rotationAngle >= 360.0) {
+        rotationAngle = 0.0;
+      }
+      _saveRotationAngle(rotationAngle); // Save the new angle
+    });
+  }
 
 
   // Custom tailight dialog
@@ -1018,29 +1007,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         },
                       ),
                       // Set Timer
-                      // Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
-                      // Slider(
-                      //   value: ledValuesProvider.turnOnTime,
-                      //   min: 0,
-                      //   max: 6,
-                      //   onChanged: (newValue) {
-                      //     setState(() {
-                      //       ledValuesProvider.updateTurnOnTime(newValue);
-                      //     });
-                      //   },
-                      // ),
-                      // Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
-                      // Slider(
-                      //   value: ledValuesProvider.turnOffTime,
-                      //   min: 0,
-                      //   max: 60,
-                      //   onChanged: (newValue) {
-                      //     setState(() {
-                      //       ledValuesProvider.updateTurnOffTime(newValue);
-                      //     });
-                      //   },
-                      // ),
-
                       Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
                       Slider(
                         value: ledValuesProvider.turnOnTime,
@@ -1089,30 +1055,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Text('ms'),
                         ],
                       ),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [
-                      //     Text('sec'),
-                      //     Switch(
-                      //       value: isMilliseconds,
-                      //       onChanged: (value) {
-                      //         setState(() {
-                      //           isMilliseconds = value;
-                      //
-                      //           // Check if isMilliseconds is false (seconds mode)
-                      //           // and the turnOnTime or turnOffTime exceeds 60
-                      //           if (!isMilliseconds &&
-                      //               (ledValuesProvider.turnOnTime > 60 || ledValuesProvider.turnOffTime > 60)) {
-                      //             // Reset to milliseconds value
-                      //             ledValuesProvider.updateTurnOnTime(ledValuesProvider.turnOnTime * 1000);
-                      //             ledValuesProvider.updateTurnOffTime(ledValuesProvider.turnOffTime * 1000);
-                      //           }
-                      //         });
-                      //       },
-                      //     ),
-                      //     Text('ms'),
-                      //   ],
-                      // ),
 
                       SizedBox(width: 16),
                       Row(
@@ -1152,6 +1094,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     Color screenColor = Theme.of(context).backgroundColor;
     return OrientationBuilder(
       builder: (context, orientation) {
+        currentOrientation = orientation;
         return Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -1442,21 +1385,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       ],
                     ),
                     Container(
-                      height: 200,
+                      height: 280,
                       width: 300,
                       child: isCameraStreaming && _videoPlayerController != null
-                      //     ? VlcPlayer(
-                      //   controller: _videoPlayerController,
-                      //   aspectRatio: 16 / 9,
-                      //   placeholder: Center(child: CircularProgressIndicator()),
-                      // )
                           ? Transform.rotate(
-                        angle: 3.14159,
-                        alignment: Alignment.center,
+                        angle: rotationAngle * 3.14159265359 / 180,
+                        // Apply rotation based on user choice
                         child: VlcPlayer(
                           controller: _videoPlayerController,
-                          aspectRatio: 16 / 9,
-                          placeholder: Center(child: CircularProgressIndicator()),
+                          aspectRatio: currentOrientation == Orientation.portrait
+                              ? 16 / 9
+                              : 9 / 16,
                         ),
                       )
                           : Image.asset(
@@ -1464,6 +1403,18 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         fit: BoxFit.fitWidth,
                       ),
                     ),
+                    if (isCameraStreaming)
+                      Positioned(
+                        bottom: 16.0,
+                        right: 16.0,
+                        child: IconButton(
+                          color: Colors.red,
+                          icon: Icon(Icons.cameraswitch_outlined),
+                          // You can choose a different icon
+                          onPressed: changeOrientation,
+                          iconSize: 40.0, // Adjust the icon size as needed
+                        ),
+                      ),
                     // Stop ride
                     SizedBox(height: 30),
                     Row(
@@ -1506,6 +1457,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           SizedBox(width: 16),
                           FloatingActionButton(
                             onPressed: () {
+                              _sendData([0x02, 0x01, 0x53, 0x00, 0x01, 0x57]);
                               setState(() {
                                 _powerOn = !_powerOn;
                               });
@@ -1516,6 +1468,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
+                    // Divider(),
+                    // Center(
+                    //   child: ElevatedButton(
+                    //     onPressed: () {
+                    //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
+                    //       _sendData([0x02, 0x01, 0x33, 0x00, 0x04, 0x54]);
+                    //     },
+                    //     style: ElevatedButton.styleFrom(
+                    //       primary: Colors.green, // Change button color based on state
+                    //     ),
+                    //     child: Text('TEST System'),
+                    //   ),
+                    // ),
+                    // Divider(),
+                    // Text("  System Info: $_value"),
+                    // Divider(),
                   ],
                 ),
               ),
