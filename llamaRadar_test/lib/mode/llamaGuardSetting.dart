@@ -189,7 +189,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               title: Text('Tailight Mode'),
               subtitle: Text('Current Mode: '), // Display current mode
               onTap: () {
-                _sendData([0x02, 0x01, 0x13, 0x00, 0x00, 0x16]);
+                _sendData([0x02, 0x01, 0x11, 0x00, 0x00, 0x14]);
               },
             ),
             Divider(),
@@ -214,6 +214,14 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             Divider(),
             ListTile(
               title: Text('Firmware'),
+              subtitle: Text('Version: '), // Display current mode
+              onTap: () {
+                _sendData([0x02, 0x01, 0xF0, 0x00, 0x00, 0xF4]);
+              },
+            ),
+            Divider(),
+            ListTile(
+              title: Text('Firmware Update'),
               onTap: () {
                 _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
               },
@@ -261,17 +269,59 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             // Center(
             //   child: ElevatedButton(
             //     onPressed: () {
-            //       _sendData([0x02, 0x01, 0x12, 0x00, 0xea, 0x60, 0xea, 0x60, 0x01, 0x64, 0x01, 0x72]);
-            //       // List<int> data = [0x02, 0x01, 0x12, 0x00, 0x03, 0xe8, 0x13, 0x88, 0x50, 0x50, 0x01];
-            //       // List<int> dataWithChecksum = calculateChecksum(data);
-            //       // print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+            //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
+            //       _sendData([0x02, 0x01, 0x43, 0x00, 0x01, 0x47]);
             //     },
             //     style: ElevatedButton.styleFrom(
             //       primary: Colors.green, // Change button color based on state
             //     ),
-            //     child: Text('TEST OTHER'),
+            //     child: Text('TEST System'),
             //   ),
-            // )
+            // ),
+            // Divider(),
+            // Text("  System Info: $_value"),
+            Row(
+              children: [
+                Expanded(
+                  child: Divider(),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
+
+                    Future.delayed(Duration(seconds: 2), () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("Reset Successfully"),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text("OK"),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // Close the dialog
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    });
+                  },
+                  child: Text(
+                    "Reset Device",
+                    style: TextStyle(
+                      fontSize: 18, // Adjust the font size as needed
+                      color: Colors.black, // Change the text color to your desired color
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(),
+                ),
+              ],
+            ),
+
           ],
         ),
       ),
