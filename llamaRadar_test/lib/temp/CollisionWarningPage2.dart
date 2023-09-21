@@ -644,7 +644,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         ]),
       ),
     );
-    // await _videoPlayerController!.initialize();
+    await _videoPlayerController!.initialize();
   }
 
   // Can't close the pop-up window, it will run 5 seconds and then close
@@ -799,6 +799,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       isCameraStreaming = !isCameraStreaming;
       isRearCamOpen = !isRearCamOpen;
     });
+  }
+
+  // Dispose function
+  @override
+  void dispose() {
+    _leftBlinkTimer?.cancel();
+    _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
+    _stopBlinking();
+    _videoPlayerController.dispose();
+    super.dispose();
   }
 
 
@@ -1065,22 +1081,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-  // Dispose function
-  @override
-  void dispose() {
-    _leftBlinkTimer?.cancel();
-    _rightBlinkTimer?.cancel();
-    right_redPlayer.dispose();
-    right_greenPlayer.dispose();
-    rear_greenPlayer.dispose();
-    rear_redPlayer.dispose();
-    left_greenPlayer.dispose();
-    left_redPlayer.dispose();
-    _stopBlinking();
-    // _controller?.dispose();
-    _videoPlayerController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1378,37 +1378,74 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         buildCameraButton(),
                       ],
                     ),
+                    // Container(
+                    //   height: 280,
+                    //   width: 300,
+                    //   child: isCameraStreaming && _videoPlayerController != null
+                    //       ? Transform.rotate(
+                    //     angle: rotationAngle * 3.14159265359 / 180,
+                    //     // Apply rotation based on user choice
+                    //     child: VlcPlayer(
+                    //       controller: _videoPlayerController,
+                    //       aspectRatio: currentOrientation == Orientation.portrait
+                    //           ? 16 / 9
+                    //           : 9 / 16,
+                    //     ),
+                    //   )
+                    //       : Image.asset(
+                    //     'images/test_background3.jpg',
+                    //     fit: BoxFit.fitWidth,
+                    //   ),
+                    // ),
+                    // if (isCameraStreaming)
+                    //   Positioned(
+                    //     bottom: 16.0,
+                    //     right: 16.0,
+                    //     child: IconButton(
+                    //       color: Colors.red,
+                    //       icon: Icon(Icons.cameraswitch_outlined),
+                    //       // You can choose a different icon
+                    //       onPressed: changeOrientation,
+                    //       iconSize: 40.0, // Adjust the icon size as needed
+                    //     ),
+                    //   ),
+                    SizedBox(width:50),
                     Container(
                       height: 280,
                       width: 300,
-                      child: isCameraStreaming && _videoPlayerController != null
-                          ? Transform.rotate(
-                        angle: rotationAngle * 3.14159265359 / 180,
-                        // Apply rotation based on user choice
-                        child: VlcPlayer(
-                          controller: _videoPlayerController,
-                          aspectRatio: currentOrientation == Orientation.portrait
-                              ? 16 / 9
-                              : 9 / 16,
+                      child: Center(
+                        child: Stack(
+                          children: [
+                            isCameraStreaming && _videoPlayerController != null
+                                ? Transform.rotate(
+                              angle: rotationAngle * 3.14159265359 / 180,
+                              child: VlcPlayer(
+                                controller: _videoPlayerController,
+                                aspectRatio: currentOrientation == Orientation.portrait
+                                    ? 16 / 9
+                                    : 9 / 16,
+                              ),
+                            )
+                                : Image.asset(
+                              'images/test_background3.jpg',
+                              fit: BoxFit.fitWidth,
+                            ),
+                            if (isCameraStreaming)
+                              Positioned(
+                                bottom: 16.0,
+                                right: 16.0,
+                                child: IconButton(
+                                  color: Colors.red,
+                                  icon: Icon(Icons.cameraswitch_outlined),
+                                  onPressed: changeOrientation,
+                                  iconSize: 40.0,
+                                ),
+                              ),
+                          ],
                         ),
-                      )
-                          : Image.asset(
-                        'images/test_background3.jpg',
-                        fit: BoxFit.fitWidth,
                       ),
                     ),
-                    if (isCameraStreaming)
-                      Positioned(
-                        bottom: 16.0,
-                        right: 16.0,
-                        child: IconButton(
-                          color: Colors.red,
-                          icon: Icon(Icons.cameraswitch_outlined),
-                          // You can choose a different icon
-                          onPressed: changeOrientation,
-                          iconSize: 40.0, // Adjust the icon size as needed
-                        ),
-                      ),
+
                     // Stop ride
                     SizedBox(height: 30),
                     Row(
