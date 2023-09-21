@@ -49,8 +49,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
 
   // for popup dashcam windows
-  VlcPlayerController? _controller;
+  // VlcPlayerController? _controller;
   bool isCameraStreaming = false;
+  late VlcPlayerController _videoPlayerController;
 
   // Wifi connection
   final String ssid = ' ';
@@ -532,14 +533,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       right_redPlayer.setAsset('assets/warning_beep.mp3');
       right_redPlayer.play();
-
-      if (right_danger_counter >= 3 && !isRearCamOpen) {
-        showStreamPopup();
-        right_danger_counter = 0;
-      }
-      right_danger_counter = right_danger_counter + 1;
-      print("POPUP COUNTER");
-      print(right_danger_counter);
     }
     else if (_getLocation() == 'Right Notification Warning') {
       color = Colors.yellow;
@@ -575,8 +568,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
-      if (right_danger_counter >= 2 && !isRearCamOpen) {
-        // showStreamPopup();
+      if (right_danger_counter >= 5 && !isRearCamOpen) {
+        showStreamPopup();
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
@@ -637,8 +630,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Open pop-up window for dashcam rear warning
 
   Future<void> initializePlayer() async {
-    _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+    _videoPlayerController = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
@@ -651,7 +644,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         ]),
       ),
     );
-    await _controller!.initialize();
+    // await _videoPlayerController!.initialize();
   }
 
   // Can't close the pop-up window, it will run 5 seconds and then close
@@ -706,7 +699,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Can close pop-up window
   bool _isShowingPopup = false;
   void showStreamPopup() {
-    if (_controller == null) {
+    if (_videoPlayerController == null) {
       return;
     }
 
@@ -736,7 +729,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       .size
                       .width * 9 / 16,
                   child: VlcPlayer(
-                    controller: _controller!,
+                    controller: _videoPlayerController!,
                     aspectRatio: 16 / 9,
                   ),
                 ),
@@ -757,24 +750,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     initializePlayer();
   }
 
-  // Dispose function
-  @override
-  void dispose() {
-    _leftBlinkTimer?.cancel();
-    _rightBlinkTimer?.cancel();
-    right_redPlayer.dispose();
-    right_greenPlayer.dispose();
-    rear_greenPlayer.dispose();
-    rear_redPlayer.dispose();
-    left_greenPlayer.dispose();
-    left_redPlayer.dispose();
-    _stopBlinking();
-    super.dispose();
-    _controller?.dispose();
-  }
-
   // camera open
-  late VlcPlayerController _videoPlayerController;
+  // late VlcPlayerController _videoPlayerController;
 
   void toggleCameraStreaming() {
     if (isCameraStreaming) {
@@ -784,7 +761,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       Connectivity().onConnectivityChanged.listen((connectivity) {
         if (connectivity == ConnectivityResult.wifi) {
           _videoPlayerController = VlcPlayerController.network(
-            'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+            'rtsp://192.168.1.254/xxxx.mp4',
             hwAcc: HwAcc.disabled,
             autoPlay: true,
             options: VlcPlayerOptions(
@@ -802,7 +779,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
 
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
@@ -1086,6 +1063,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         );
       },
     );
+  }
+
+  // Dispose function
+  @override
+  void dispose() {
+    _leftBlinkTimer?.cancel();
+    _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
+    _stopBlinking();
+    // _controller?.dispose();
+    _videoPlayerController.dispose();
+    super.dispose();
   }
 
   @override
