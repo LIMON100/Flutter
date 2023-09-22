@@ -202,6 +202,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
               },
             ),
+            Divider(),
             ListTile(
               title: Text('WiFi Settings'),
               subtitle: Text('Set SSID/Password'),
@@ -324,6 +325,75 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               ],
             ),
 
+            SizedBox(height:20),
+            Row(
+              children: [
+                Expanded(
+                  child: Divider(),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Show a confirmation dialog
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Confirmation"),
+                          content: Text("Are you sure you want to do a factory reset?"),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text("NO"),
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close the dialog
+                              },
+                            ),
+                            TextButton(
+                              child: Text("YES"),
+                              onPressed: () {
+                                // Perform the factory reset action here
+                                _sendData([0x02, 0x01, 0x55, 0x00, 0x01, 0x59]);
+
+                                // Show a success dialog after the reset
+                                Future.delayed(Duration(seconds: 2), () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Reset Successfully"),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: Text("OK"),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close the success dialog
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                });
+
+                                Navigator.of(context).pop(); // Close the confirmation dialog
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Text(
+                    "Factory Reset",
+                    style: TextStyle(
+                      fontSize: 18, // Adjust the font size as needed
+                      color: Colors.red, // Change the text color to your desired color
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(),
+                ),
+              ],
+            ),
           ],
         ),
       ),
