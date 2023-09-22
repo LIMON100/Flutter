@@ -71,6 +71,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool isRearCamOpen = false;
   bool _isFirstData = true;
   bool _isFirstDataRight = true;
+  String _selectedOption = 'OFF';
 
   @override
   void initState() {
@@ -846,7 +847,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-  String _selectedOption = 'OFF';
   bool isCustomSelected = false;
 
   List<int> calculateChecksum(List<int> data) {
@@ -1110,7 +1110,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device)),
+                      MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device, selectedOption: _selectedOption)),
                     );
                   },
                 ),
