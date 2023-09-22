@@ -69,7 +69,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool isConnected = false;
   List<dynamic> wifiNetworks = [];
   bool isRearCamOpen = false;
-
+  bool _isFirstData = true;
+  bool _isFirstDataRight = true;
 
   @override
   void initState() {
@@ -1131,12 +1132,32 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // IconButton(
+                        //   onPressed: () {
+                        //     _startLeftBlinking();
+                        //     // _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
+                        //   //   New test data
+                        //     _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
+                        //   },
+                        //   icon: Icon(
+                        //     Indicator.image2vector,
+                        //     size: 48,
+                        //     color: _isLeftBlinking ? Colors.orange : Colors.black,
+                        //   ),
+                        // ),
                         IconButton(
                           onPressed: () {
-                            _startLeftBlinking();
-                            // _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
-                          //   New test data
-                            _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
+                            if (!_isLeftBlinking) {
+                              _startLeftBlinking();
+                              // Determine which data to send based on the state
+                              if (_isFirstData) {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
+                                _isFirstData = false; // Toggle the state for the next press
+                              } else {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                _isFirstData = true; // Toggle the state for the next press
+                              }
+                            }
                           },
                           icon: Icon(
                             Indicator.image2vector,
@@ -1156,12 +1177,33 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
 
                         SizedBox(width: 60),
+                        // IconButton(
+                        //   onPressed: () {
+                        //     _startRightBlinking();
+                        //     // _sendData([0x02, 0x01, 0x13, 0x00, 0x00, 0x16]);
+                        //   //  New Data
+                        //     _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
+                        //   },
+                        //   icon: Icon(
+                        //     Indicator.image2vector__1_,
+                        //     size: 48,
+                        //     color: _isRightBlinking ? Colors.orange : Colors.black,
+                        //   ),
+                        // ),
+
                         IconButton(
                           onPressed: () {
-                            _startRightBlinking();
-                            // _sendData([0x02, 0x01, 0x13, 0x00, 0x00, 0x16]);
-                          //  New Data
-                            _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
+                            if (!_isRightBlinking) {
+                              _startRightBlinking();
+                              // Determine which data to send based on the state
+                              if (_isFirstDataRight) {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
+                                _isFirstDataRight = false; // Toggle the state for the next press
+                              } else {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                _isFirstDataRight = true; // Toggle the state for the next press
+                              }
+                            }
                           },
                           icon: Icon(
                             Indicator.image2vector__1_,
