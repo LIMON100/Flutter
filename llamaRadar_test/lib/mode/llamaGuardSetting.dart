@@ -6,7 +6,8 @@ import '../temp/LedValuesProvider.dart';
 
 class LlamaGuardSetting extends StatefulWidget {
   final BluetoothDevice device;
-  LlamaGuardSetting({Key? key, required this.device}) : super(key: key);
+  final String selectedOption;
+  LlamaGuardSetting({Key? key, required this.device, required this.selectedOption}) : super(key: key);
 
   @override
   _LlamaGuardSettingState createState() => _LlamaGuardSettingState();
@@ -187,11 +188,12 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             // Divider(),
             ListTile(
               title: Text('Tailight Mode'),
-              subtitle: Text('Current Mode: '), // Display current mode
-              onTap: () {
-                _sendData([0x02, 0x01, 0x11, 0x00, 0x00, 0x14]);
-              },
+              subtitle: Text('Current Mode: ${widget.selectedOption}'), // Display current mode
+              // onTap: () {
+              //   _sendData([0x02, 0x01, 0x11, 0x00, 0x00, 0x14]);
+              // },
             ),
+
             Divider(),
             ListTile(
               title: Text('WiFi'),
@@ -266,20 +268,20 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               ),
             ),
             Divider(),
-            // Center(
-            //   child: ElevatedButton(
-            //     onPressed: () {
-            //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
-            //       _sendData([0x02, 0x01, 0x43, 0x00, 0x01, 0x47]);
-            //     },
-            //     style: ElevatedButton.styleFrom(
-            //       primary: Colors.green, // Change button color based on state
-            //     ),
-            //     child: Text('TEST System'),
-            //   ),
-            // ),
-            // Divider(),
-            // Text("  System Info: $_value"),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
+                  _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x54]);
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.green, // Change button color based on state
+                ),
+                child: Text('TEST System'),
+              ),
+            ),
+            Divider(),
+            Text("  System Info: $_value"),
             Row(
               children: [
                 Expanded(
