@@ -1,4 +1,6 @@
+import 'package:lamaradar/temp/ConnectionProvider.dart';
 import 'package:lamaradar/temp/LedValuesProvider.dart';
+import 'package:lamaradar/provider/BluetoothStateProvider.dart';
 import 'package:provider/provider.dart';
 
 import 'SideBar.dart';
@@ -12,10 +14,29 @@ import 'package:page_transition/page_transition.dart';
 // }
 
 
+// void main() {
+//   runApp(
+//     ChangeNotifierProvider(
+//       create: (context) => LedValuesProvider(),
+//       child: SplashScreen(),
+//     ),
+//   );
+// }
+
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => LedValuesProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LedValuesProvider>(
+          create: (_) => LedValuesProvider(),
+        ),
+        ChangeNotifierProvider<ConnectionProvider>(
+          create: (_) => ConnectionProvider(),
+        ),
+        ChangeNotifierProvider<BluetoothStateProvider>(
+          create: (_) => BluetoothStateProvider(),
+        ),
+      ],
       child: SplashScreen(),
     ),
   );
