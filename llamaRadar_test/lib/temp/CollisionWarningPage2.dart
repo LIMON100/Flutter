@@ -493,19 +493,25 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //   }
   // }
 
+  // Left/Right/Rear icon
+  int right_danger_counter = 0;
+
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+    final popupState = Provider.of<PopupWindowProvider>(context, listen: false);
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
       left_redPlayer.setAsset('assets/warning_beep.mp3');
       left_redPlayer.play();
-    } else if (_getLocation() == 'Left Notification Warning') {
+    }
+    else if (_getLocation() == 'Left Notification Warning') {
       color = Colors.yellow;
       left_greenPlayer.setAsset('assets/danger_beep.mp3');
       left_greenPlayer.play();
-    } else {
+    }
+    else {
       color = Colors.green;
       left_greenPlayer.stop();
       left_redPlayer.stop();
@@ -526,7 +532,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-  int right_danger_counter = 0;
 
   Widget _getRightIcon() {
     double opacity = 1.0;
@@ -579,9 +584,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-    } else if (_getLocation() == 'Rear Notification Warning') {
+    }
+    else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
-    } else {
+    }
+    else {
       color = Colors.green;
       rear_redPlayer.stop();
       rear_greenPlayer.stop();
