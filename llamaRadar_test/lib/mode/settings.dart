@@ -5,12 +5,15 @@ import 'package:http/http.dart' as http;
 import 'package:lamaradar/mode/dash_cam.dart';
 import 'dart:io';
 import 'dart:ui';
-import 'dart:async';
+import 'dart:convert';
 
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:xml/xml.dart' as xml;
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class DashSettings extends StatefulWidget {
@@ -21,15 +24,7 @@ class DashSettings extends StatefulWidget {
 
 
 class _DashSettingsState extends State<DashSettings> {
-
-  @override
-  void initState() {
-    super.initState();
-    startContinuousFunction();
-    batteryChecker();
-    ssidAndPassChecker();
-    currentModeChecker();
-  }
+  Map<String, bool> settings = {};
 
   bool isFront = false;
   bool isSensor = false;
@@ -48,6 +43,18 @@ class _DashSettingsState extends State<DashSettings> {
   String ssidVal ='';
   String passVal ='';
   String modeVal ='';
+
+  @override
+  void initState() {
+    super.initState();
+    startContinuousFunction();
+    batteryChecker();
+    ssidAndPassChecker();
+    currentModeChecker();
+    loadSettings();
+
+  }
+
   void startContinuousFunction() {
     Timer.periodic(Duration(seconds: 2), (timer) async {
       final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3012'));
@@ -236,35 +243,33 @@ class _DashSettingsState extends State<DashSettings> {
     }
   }
 
+  void loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      setval1 = prefs.getBool('setval1') ?? false;
+      setval2 = prefs.getBool('setval2') ?? false;
+      setval3 = prefs.getBool('setval3') ?? false;
+      setval4 = prefs.getBool('setval4') ?? false;
+      setval5 = prefs.getBool('setval5') ?? false;
+      setval6 = prefs.getBool('setval6') ?? false;
+      setval7 = prefs.getBool('setval7') ?? false;
+      setval8 = prefs.getBool('setval8') ?? false;
 
-  // Future<String> pullFirmware() async {
-  //   final response = await http.get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3012'));
-  //   if (response.statusCode == 200) {
-  //     print('Auto recording changed to ');
-  //     final xmlDoc = xml.XmlDocument.parse(response.body);
-  //     print(xmlDoc);
-  //     return "Firm";
-  // final fileElements = xmlDoc.findAllElements('File');
-  //   } else {
-  //     return "";
-  //     print('Auto recording  Error: ${response.statusCode}');
-  //   }
-  // }
+    });
+  }
 
-  // Future<String> pullFirmware() async {
-  //   var url = Uri.parse("http://192.168.1.254/?custom=1&cmd=3012");
-  //   var response = await http.get(url);
-  //
-  //   if (response.statusCode == 200) {
-  //     return response.body;
-  //   } else {
-  //     throw Exception('Firmware error.');
-  //   }
-  // }
+
+  Future<void> addBoolToSF(String key, bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool(key, value);
+  }
+
+
   onChangeFunction1(bool newValue1) {
     autoPowerOff();
     setState(() {
       setval1 = newValue1;
+      addBoolToSF('setval1',newValue1);
     });
   }
 
@@ -276,6 +281,7 @@ class _DashSettingsState extends State<DashSettings> {
     }
     setState(() {
       setval2 = newValue2;
+      addBoolToSF('setval2',newValue2);
     });
   }
 
@@ -287,6 +293,8 @@ class _DashSettingsState extends State<DashSettings> {
     }
     setState(() {
       setval3 = newValue3;
+      addBoolToSF('setval3',newValue3);
+
     });
   }
 
@@ -298,6 +306,8 @@ class _DashSettingsState extends State<DashSettings> {
     }
     setState(() {
       setval4 = newValue4;
+      addBoolToSF('setval4',newValue4);
+
     });
   }
 
@@ -305,6 +315,8 @@ class _DashSettingsState extends State<DashSettings> {
     gSensorSens();
     setState(() {
       setval5 = newValue5;
+      addBoolToSF('setval5',newValue5);
+
     });
   }
 
@@ -313,6 +325,8 @@ class _DashSettingsState extends State<DashSettings> {
 
     setState(() {
       setval6 = newValue6;
+      addBoolToSF('setval6',newValue6);
+
     });
   }
 
@@ -321,6 +335,8 @@ class _DashSettingsState extends State<DashSettings> {
 
     setState(() {
       setval7 = newValue7;
+      addBoolToSF('setval7',newValue7);
+
     });
   }
 
@@ -329,6 +345,8 @@ class _DashSettingsState extends State<DashSettings> {
 
     setState(() {
       setval8 = newValue8;
+      addBoolToSF('setval8',newValue8);
+
     });
   }
 
@@ -391,6 +409,7 @@ class _DashSettingsState extends State<DashSettings> {
             ),
             SizedBox(height: 2),
             Column(
+
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Container(
@@ -467,22 +486,6 @@ class _DashSettingsState extends State<DashSettings> {
             ),
             SizedBox(height: 2),
 
-
-            // Column(
-            //   children: [
-            //     ElevatedButton(
-            //       onPressed: () {
-            //         startContinuousFunction();
-            //       },
-            //       child: Text('Check data Test'),
-            //     ),
-            //     // Diğer widget'lar
-            //   ],
-            // ),
-            // SizedBox(height: 10),
-            // buildAccountOption(context, "Change WIFI Name"),
-            // buildAccountOption(context, "Change WIFI Password"),
-            // buildAccountOption(context, "Firmware Version"),
             SizedBox(height: 10),
             Row(
               children: [
@@ -526,100 +529,6 @@ class _DashSettingsState extends State<DashSettings> {
           ],
         ),
       ),
-
-
-      //second body
-      // body: Column(
-      //   children: [
-      //     SizedBox(height: 60),
-      //     SizedBox(height: 5),
-      //     Container(
-      //       width: 350,
-      //       child: Column(
-      //         mainAxisAlignment: MainAxisAlignment.center,
-      //           children: [
-      //
-      //
-      //             SizedBox(height: 10),
-      //             CircleButton(
-      //               onPressed: () async {
-      //                 if (isFront) {
-      //                   camBehind();
-      //                 } else {
-      //                   camFront();
-      //                 }
-      //                 setState(() {
-      //                   isFront = !isFront;
-      //                 });
-      //               },
-      //               color: isFront ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-      //               text: isFront ? 'Front Camera' : 'Back Camera',
-      //             ),
-      //             SizedBox(height: 10),
-      //             CircleButton(
-      //               onPressed: () async {
-      //                 if (isSensor) {
-      //                   gSensorSens();
-      //                 } else {
-      //                   gSensorSens();
-      //                 }
-      //                 setState(() {
-      //                   isSensor = !isSensor;
-      //                 });
-      //               },
-      //               color: isSensor ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-      //               text: isSensor ? 'G Sensor sensitivity' : ' g sensor off',
-      //             ),
-      //             SizedBox(height: 10),
-      //             CircleButton(
-      //               onPressed: () async {
-      //                 if (isAutoOn) {
-      //                   autoPowerOff();
-      //                 } else {
-      //                   autoPowerOff();
-      //                 }
-      //                 setState(() {
-      //                   isAutoOn = !isAutoOn;
-      //                 });
-      //               },
-      //               color: isAutoOn ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-      //               text: isAutoOn ? 'Auto Power Off' : ' Auto Power On',
-      //             ),
-      //
-      //             SizedBox(height: 10),
-      //
-      //             CircleButton(
-      //               onPressed: () async {
-      //                 if (isExposure) {
-      //                   exposureChange();
-      //                 } else {
-      //                   exposureChange();
-      //                 }
-      //                 setState(() {
-      //                   isExposure = !isExposure;
-      //                 });
-      //               },
-      //               color: isExposure ? Color(0xFF517fa4) : Colors.deepPurpleAccent,
-      //               text: isExposure ? 'Exposure Off' : ' Exposure On +6',
-      //             ),
-      //
-      //             SizedBox(height: 10),
-      //
-      //             CircleButton(
-      //               onPressed: () async {
-      //                 dashCamReset();
-      //
-      //               },
-      //               color:Colors.deepPurpleAccent ,
-      //               text: 'Restore factory settings',
-      //             ),
-      //             SizedBox(height: 10),
-      //           ],
-      //
-      //     ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 
