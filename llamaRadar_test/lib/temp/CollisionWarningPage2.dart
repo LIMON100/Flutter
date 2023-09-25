@@ -6,7 +6,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
-import 'package:lamaradar/temp/LedValuesProvider.dart';
+import 'package:lamaradar/provider/LedValuesProvider.dart';
+import 'package:lamaradar/provider/PopupWindowProvider.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -18,7 +19,7 @@ import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:provider/provider.dart';
-import 'package:lamaradar/temp/LedValuesProvider.dart';
+import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
@@ -565,13 +566,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getRearIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+    final popupState = Provider.of<PopupWindowProvider>(context, listen: false);
 
     if (_getLocation() == 'Rear Notification Danger') {
       color = Colors.red;
       rear_redPlayer.setAsset('assets/warning_beep.mp3');
       rear_redPlayer.play();
       if (right_danger_counter >= 5 && !isRearCamOpen) {
-        showStreamPopup();
+        if (popupState.isPopupWindowEnabled) {
+          showStreamPopup();
+        }
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
@@ -1411,7 +1415,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-
                     // Open rear up cam
                     SizedBox(height: 30),
                     Row(
@@ -1541,22 +1544,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-                    // Divider(),
-                    // Center(
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
-                    //       _sendData([0x02, 0x01, 0x33, 0x00, 0x04, 0x54]);
-                    //     },
-                    //     style: ElevatedButton.styleFrom(
-                    //       primary: Colors.green, // Change button color based on state
-                    //     ),
-                    //     child: Text('TEST System'),
-                    //   ),
-                    // ),
-                    // Divider(),
-                    // Text("  System Info: $_value"),
-                    // Divider(),
                   ],
                 ),
               ),
