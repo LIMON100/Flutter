@@ -499,7 +499,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
-    final popupState = Provider.of<PopupWindowProvider>(context, listen: false);
 
     if (_getLocation() == 'Left Notification Danger') {
       color = Colors.red;
