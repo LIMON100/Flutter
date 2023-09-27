@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:lamaradar/provider/BluetoothStateProvider.dart';
 import 'package:provider/provider.dart';
 
-import '../temp/LedValuesProvider.dart';
+import '../provider/LedValuesProvider.dart';
+import '../provider/PopupWindowProvider.dart';
 
 class LlamaGuardSetting extends StatefulWidget {
   final BluetoothDevice device;
@@ -17,15 +19,36 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   bool isTailightModeEnabled = false;
   bool isRadarEnabled = false;
-  bool isBluetoothEnabled = false;
+  bool isBluetoothEnabled = true;
+  bool popupWindow = false;
   BluetoothCharacteristic? _characteristic_write;
   BluetoothCharacteristic? _characteristic;
   TextEditingController ssidController = TextEditingController();
   TextEditingController passController = TextEditingController();
+  late BluetoothDevice _device;
   String ssidVal ='';
   String passVal ='';
   String _value = '';
-  late BluetoothDevice _device;
+  String textFirmware = '';
+  String textFirmwareVersion = '0.0.0';
+  String textFirmwareDate = 'Aug 01 2023';
+  String currentSSID = '';
+  String currentpass = '';
+  List<int> notificationValue = [];
+  List<String> hexList = [];
+  String textResultFirmware = '';
+  bool isNotificationReceived = false;
+
+  bool showWifiSettings = false;
+  String currentTailightMode = 'NO';
+  String currentSsid = 'NO';
+  String currentPassword = 'NO';
+
+  double leftLedValue = 50.0;
+  double rightLedValue = 50.0;
+
+  //Text Field
+
 
   @override
   void initState() {
@@ -58,10 +81,23 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
+                notificationValue = value;
+
+                // CHecking Write->Notification command
+                hexList = intsToHexStrings(notificationValue);
+                List<String> hexList2 = hexList;
+                textResultFirmware = hexListToText(hexList2);
+                print('WIFI');
+                print(textResultFirmware);
+                if(textResultFirmware[2] == 'ð'){
+                  functionForFirmware(textResultFirmware);
+                }
+                if(textResultFirmware == ssidController){
+                  functionForWifi(textResultFirmware);
+                }
               });
             });
             print('Found characteristic ${characteristic.uuid}');
-            // break;
           }
         }
       }
@@ -71,6 +107,100 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     });
   }
 
+  List<String> intsToHexStrings(List<int> intList) {
+    List<String> hexList = [];
+
+    for (int intValue in intList) {
+      String hexString = intValue.toRadixString(16).toUpperCase().padLeft(2, '0');
+      hexList.add(hexString);
+    }
+    return hexList;
+  }
+
+  // Firmware version
+  void functionForFirmware(textResultFirmware) {
+
+    List<String> parts = splitTextResultFirmware(textResultFirmware);
+
+    if (parts.length == 2) {
+      textFirmwareVersion = parts[0].trim().substring(1);
+      textFirmwareDate = parts[1].trim();
+      print("Version: $textFirmwareVersion");
+      print("Date: $textFirmwareDate");
+    }
+  }
+
+  // Wifi ssid password
+  void functionForWifi(textResultFirmware) {
+    print("WIFI CHECK");
+    print(textResultFirmware);
+    List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
+    print("PARTS");
+    print(parts.length);
+    if (parts.length > 2) {
+      currentSSID = parts[4];
+      currentpass = parts[5];
+      currentpass = currentpass.substring(0, currentpass.length - 1);
+
+    } else {
+      print("Invalid format");
+    }
+  }
+
+  // HEX convert
+  List<String> splitTextResultFirmware(String textResult) {
+    List<String> delimiters = ["Sep ", "Oct ", "Nov ", "Dec "]; // Add more if needed
+
+    // Iterate through delimiters and try to split the textResult
+    for (String delimiter in delimiters) {
+      List<String> parts = textResult.split(delimiter);
+      if (parts.length == 2) {
+        return [parts[0].trim(), delimiter + parts[1].trim()];
+      }
+    }
+
+    // If no delimiter is found, return the entire textResult as the version
+    return [textResult.trim(), ""];
+  }
+
+
+  String hexListToText(List<String> hexList) {
+    StringBuffer textBuffer = StringBuffer();
+
+    for (String hex in hexList) {
+      int intValue = int.parse(hex, radix: 16);
+
+      if (intValue < 32) {
+        textBuffer.write(' ');
+      } else {
+        textBuffer.writeCharCode(intValue);
+      }
+    }
+    return textBuffer.toString();
+  }
+
+  List<int> hexToBytes(String hexString) {
+    List<int> byteList = [];
+    for (int i = 0; i < hexString.length; i += 2) {
+      byteList.add(int.parse(hexString.substring(i, i + 2), radix: 16));
+    }
+    return byteList;
+  }
+
+  String bytesToText(List<int> byteList) {
+    StringBuffer textBuffer = StringBuffer();
+
+    for (int i = 0; i < byteList.length; i++) {
+      int byte = byteList[i];
+      if (byte < 32) {
+        textBuffer.write(' ');
+      }
+      else {
+        textBuffer.writeCharCode(byte);
+      }
+    }
+    return textBuffer.toString();
+  }
 
   // Send data part
   Future<void> _sendData(List<int> dataToSend) async {
@@ -79,14 +209,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
       final response = await _characteristic_write!.value.first;
     }
   }
-
-  bool showWifiSettings = false;
-  String currentTailightMode = 'NO';
-  String currentSsid = 'NO';
-  String currentPassword = 'NO';
-
-  double leftLedValue = 50.0; // Initial value for left_led
-  double rightLedValue = 50.0; // Initial value for right_led
 
   List<int> calculateChecksum(List<int> data) {
     int csk = 0;
@@ -153,6 +275,15 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
       ),
     );
   }
+
+  // Dispose method
+  @override
+  void dispose() {
+    ssidController.dispose();
+    passController.dispose();
+    super.dispose();
+  }
+
   bool isSwitched = false;
   double sliderValue = 0.0;
   double maxSliderValue = 60.0;
@@ -164,6 +295,93 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   double maxTimeOffValueSeconds = 60.0;
   double maxTimeOnValueMilliseconds = 1000.0;
   double maxTimeOffValueMilliseconds = 1000.0;
+  bool showVersionAndDate = false;
+  bool showWifissidpass = false;
+
+
+  // Command for wifi SSID and PASSWORD
+  String command  = '';
+  String cskHex = '';
+  void generateCommand() {
+    String ssid = ssidController.text;
+    String pass = passController.text;
+
+    // Validate SSID and Password lengths
+    if (ssid.isEmpty || ssid.length > 11) {
+      setState(() {
+        command = 'Invalid SSID length';
+      });
+      return;
+    }
+
+    if (pass.isEmpty || pass.length > 16) {
+      setState(() {
+        command = 'Invalid Password length';
+      });
+      return;
+    }
+
+    // Convert SSID and Password to hexadecimal
+    String ssidHex = '';
+    String passHex = '';
+
+    for (int i = 0; i < ssid.length; i++) {
+      ssidHex += '0x${ssid.codeUnitAt(i).toRadixString(16).padLeft(2, '0')},';
+    }
+
+    for (int i = 0; i < pass.length; i++) {
+      String hexValue = pass.codeUnitAt(i).toRadixString(16).toUpperCase(); // Ensure uppercase
+      if (hexValue.length == 1) {
+        hexValue = '0$hexValue';
+      }
+      passHex += '0x$hexValue,';
+    }
+
+    ssidHex = ssidHex.substring(0, ssidHex.length - 1);
+    passHex = passHex.substring(0, passHex.length - 1);
+
+    // Calculate the checksum (CSK)
+    int cskValue = 0;
+
+    // Construct the command without the CSK
+    String fullCommand =
+        '0x02,0x01,0x21,0x00,0x${ssid.length.toRadixString(16)},$ssidHex,0x${pass.length.toRadixString(16)},$passHex';
+
+
+    // Calculate CSK using XOR on each byte
+    List<String> commandBytes = fullCommand.split(',');
+    for (String byteStr in commandBytes) {
+      int byteValue = int.parse(byteStr.replaceAll('0x', ''), radix: 16);
+      cskValue ^= byteValue;
+    }
+
+    // TEST CHECKSUM
+    List<int> command3 = fullCommand.split(',').map((hex) {
+      return int.parse(hex.startsWith('0x') ? hex.substring(2) : hex, radix: 16);
+    }).toList();
+
+
+    // Convert CSK to hexadecimal
+    String cskHex = '0x${cskValue.toRadixString(16)}';
+
+    // Update the full command string with CSK as the last element
+    fullCommand += ',$cskHex';
+
+    print('CSK');
+    print(fullCommand);
+    print("CHECKNN");
+    print(calculateChecksum(command3));
+
+    List<int> command2 = fullCommand.split(',').map((hex) {
+      return int.parse(hex.startsWith('0x') ? hex.substring(2) : hex, radix: 16);
+    }).toList();
+
+    _sendData(command3);
+
+    setState(() {
+      command = fullCommand;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,17 +415,61 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             Divider(),
             ListTile(
               title: Text('WiFi'),
-              subtitle: Text('Current SSID: \nCurrent Password: '), // Display current SSID and password
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showWifissidpass)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Current SSID: $currentSSID',
+                          // style: TextStyle(color: Colors.black), // Change color to black
+                        ),
+                        Text(
+                          'Current Password: $currentpass',
+                          // style: TextStyle(color: Colors.black), // Change color to black
+                        ),
+                      ],
+                    ),
+                ],
+              ), // Display current SSID and password
               onTap: () {
                 _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
+                showWifissidpass = true;
               },
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: ssidController,
+                    decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
+                  ),
+                  TextField(
+                    controller: passController,
+                    decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: generateCommand,
+                    child: Text('SAVE'),
+                  ),
+                  // SizedBox(height: 20),
+                  // Text('Generated Command: $command'),
+                ],
+              ),
             ),
             Divider(),
             ListTile(
               title: Text('WiFi Settings'),
               subtitle: Text('Set SSID/Password'),
               onTap: () {
-                _sendData([0x02, 0x01, 0x21, 0x00, 0x04, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8d]);
+                // _sendData([0x02, 0x01, 0x21, 0x00, 0x04, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8d]);
+                _sendData([0x02,0x01,0x21,0x00,0x9,0x6c,0x69,0x6d,0x6f,0x6e,0x70,0x61,0x63,0x65,0x8,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x55]);
                 setState(() {
                   showWifiSettings = !showWifiSettings; // Toggle the flag
                   showPopUp();
@@ -217,9 +479,24 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             Divider(),
             ListTile(
               title: Text('Firmware'),
-              subtitle: Text('Version: '), // Display current mode
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showVersionAndDate)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Version: $textFirmwareVersion'),
+                        Text('Date: $textFirmwareDate'),
+                      ],
+                    )
+                ],
+              ),
               onTap: () {
                 _sendData([0x02, 0x01, 0xF0, 0x00, 0x00, 0xF4]);
+                setState(() {
+                  showVersionAndDate = true;
+                });
               },
             ),
             Divider(),
@@ -249,40 +526,61 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 inactiveThumbColor: Colors.red,
               ),
             ),
+            Divider(),
+            // Popup window
+            Consumer<PopupWindowProvider>(
+              builder: (context, popupState, _) {
+                return ListTile(
+                  title: Text('Enable Pop-up Rearcam'),
+                  trailing: Switch(
+                    value: popupState.isPopupWindowEnabled,
+                    onChanged: (value) {
+                      popupState.setPopupWindowEnabled(value);
+                    },
+                    activeColor: Colors.green,
+                    inactiveTrackColor: Colors.red,
+                    inactiveThumbColor: Colors.red,
+                  ),
+                );
+              },
+            ),
 
             Divider(),
-            ListTile(
-              title: Text('Bluetooth'),
-              trailing: Switch(
-                value: isBluetoothEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    isBluetoothEnabled = value;
-                  });
-                  if (isBluetoothEnabled) {
-                    _sendData([0x02, 0x01, 0x40, 0x00, 0x01, 0x44]);
-                  }
-                },
-                activeColor: Colors.green,
-                inactiveTrackColor: Colors.red,
-                inactiveThumbColor: Colors.red,
-              ),
+            // Bluetooth
+            Consumer<BluetoothStateProvider>(
+              builder: (context, appState, _) {
+                return ListTile(
+                  title: Text('Bluetooth'),
+                  trailing: Switch(
+                    value: appState.isBluetoothEnabled,
+                    onChanged: (value) {
+                      appState.setBluetoothEnabled(value);
+                      if (!value) {
+                        _sendData([0x02, 0x01, 0x40, 0x00, 0x01, 0x44]);
+                      }
+                    },
+                    activeColor: Colors.green,
+                    inactiveTrackColor: Colors.red,
+                    inactiveThumbColor: Colors.red,
+                  ),
+                );
+              },
             ),
-            Divider(),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
-                  _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x54]);
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.green, // Change button color based on state
-                ),
-                child: Text('TEST System'),
-              ),
-            ),
-            Divider(),
-            Text("  System Info: $_value"),
+            // Divider(),
+            // Center(
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
+            //       _sendData([0x02, 0x01, 0xF0, 0x00, 0x01, 0xF4]);
+            //     },
+            //     style: ElevatedButton.styleFrom(
+            //       primary: Colors.green, // Change button color based on state
+            //     ),
+            //     child: Text('TEST System'),
+            //   ),
+            // ),
+            // Divider(),
+            // Text("  System Info: $_value"),
             Row(
               children: [
                 Expanded(
