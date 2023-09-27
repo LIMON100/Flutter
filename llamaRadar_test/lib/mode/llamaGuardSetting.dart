@@ -88,7 +88,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
                 print('WIFI');
-                print(textResultFirmware);
+                print(textResultFirmware.length);
                 if(textResultFirmware[2] == 'ð'){
                   functionForFirmware(textResultFirmware);
                 }
@@ -297,6 +297,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   double maxTimeOffValueMilliseconds = 1000.0;
   bool showVersionAndDate = false;
   bool showWifissidpass = false;
+  bool showSetWifi = false;
 
 
   // Command for wifi SSID and PASSWORD
@@ -440,42 +441,62 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               },
             ),
             Divider(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: ssidController,
-                    decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
-                  ),
-                  TextField(
-                    controller: passController,
-                    decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: generateCommand,
-                    child: Text('SAVE'),
-                  ),
-                  // SizedBox(height: 20),
-                  // Text('Generated Command: $command'),
-                ],
-              ),
-            ),
-            Divider(),
+            // Padding(
+            //   padding: const EdgeInsets.all(16.0),
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       TextField(
+            //         controller: ssidController,
+            //         decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
+            //       ),
+            //       TextField(
+            //         controller: passController,
+            //         decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
+            //       ),
+            //       SizedBox(height: 20),
+            //       ElevatedButton(
+            //         onPressed: generateCommand,
+            //         child: Text('SAVE'),
+            //       ),
+            //       // SizedBox(height: 20),
+            //       // Text('Generated Command: $command'),
+            //     ],
+            //   ),
+            // ),
             ListTile(
               title: Text('WiFi Settings'),
               subtitle: Text('Set SSID/Password'),
               onTap: () {
-                // _sendData([0x02, 0x01, 0x21, 0x00, 0x04, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8d]);
-                _sendData([0x02,0x01,0x21,0x00,0x9,0x6c,0x69,0x6d,0x6f,0x6e,0x70,0x61,0x63,0x65,0x8,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x55]);
+                // _sendData([0x02,0x01,0x21,0x00,0x9,0x6c,0x69,0x6d,0x6f,0x6e,0x70,0x61,0x63,0x65,0x8,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x55]);
                 setState(() {
-                  showWifiSettings = !showWifiSettings; // Toggle the flag
-                  showPopUp();
+                  showSetWifi = !showSetWifi; // Toggle the flag
                 });
               },
             ),
+
+            if (showSetWifi)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: ssidController,
+                      decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
+                    ),
+                    TextField(
+                      controller: passController,
+                      decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: generateCommand,
+                      child: Text('SAVE'),
+                    ),
+                  ],
+                ),
+              ),
             Divider(),
             ListTile(
               title: Text('Firmware'),
