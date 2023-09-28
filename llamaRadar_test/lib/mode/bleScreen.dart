@@ -28,6 +28,9 @@ class _BleScreenState extends State<BleScreen> {
   bool _isScanning = false;
   String? _scanError;
 
+  StreamSubscription<List<BluetoothDevice>>? connectedDevicesSubscription;
+  StreamSubscription<List<ScanResult>>? scanResultsSubscription;
+
   _addDeviceTolist(final BluetoothDevice device) {
     if (!widget.devicesList.contains(device)) {
       setState(() {
@@ -39,14 +42,29 @@ class _BleScreenState extends State<BleScreen> {
   @override
   void initState() {
     super.initState();
-    widget.flutterBlue.connectedDevices
-        .asStream()
-        .listen((List<BluetoothDevice> devices) {
-      for (BluetoothDevice device in devices) {
-        _addDeviceTolist(device);
-      }
-    });
-    widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
+    // Previous
+    // widget.flutterBlue.connectedDevices
+    //     .asStream()
+    //     .listen((List<BluetoothDevice> devices) {
+    //   for (BluetoothDevice device in devices) {
+    //     _addDeviceTolist(device);
+    //   }
+    // });
+    // widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
+    //   for (ScanResult result in results) {
+    //     _addDeviceTolist(result.device);
+    //   }
+    // });
+
+    //  New
+    connectedDevicesSubscription =
+        widget.flutterBlue.connectedDevices.asStream().listen((List<BluetoothDevice> devices) {
+          for (BluetoothDevice device in devices) {
+            _addDeviceTolist(device);
+          }
+        });
+
+    scanResultsSubscription = widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
       for (ScanResult result in results) {
         _addDeviceTolist(result.device);
       }
@@ -61,7 +79,8 @@ class _BleScreenState extends State<BleScreen> {
 
     try {
       await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
-    } catch (e) {
+    }
+    catch (e) {
       print("Error starting scan: $e");
       setState(() {
         _scanError = e.toString();
@@ -311,6 +330,13 @@ class _BleScreenState extends State<BleScreen> {
     //   return _buildConnectDeviceView();
     // }
     return _buildListViewOfDevices();
+  }
+
+  @override
+  void dispose() {
+    connectedDevicesSubscription!.cancel();
+    scanResultsSubscription!.cancel();
+    super.dispose();
   }
 
   @override
