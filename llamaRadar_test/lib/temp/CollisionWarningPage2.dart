@@ -380,11 +380,44 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
+  //Problem
+  // String _getLocation() {
+  //   if (_value.length < 29) {
+  //     return 'Notification Not Available';
+  //   }
+  //   switch (int.parse(_value[28])) {
+  //     case 1:
+  //       return 'Right Notification Warning';
+  //     case 2:
+  //       return 'Right Notification Danger';
+  //     case 3:
+  //       return 'Left Notification Warning';
+  //     case 4:
+  //       return 'Left Notification Danger';
+  //     case 5:
+  //       return 'Rear Notification Danger';
+  //     default:
+  //       return '';
+  //   }
+  // }
+
+
   String _getLocation() {
-    if (_value.length < 29) {
+    // Check if _value is null or empty
+    if (_value == null || _value.isEmpty || _value.length < 29) {
       return 'Notification Not Available';
     }
-    switch (int.parse(_value[28])) {
+
+    // Extract the character at index 28 and parse it as an integer
+    int locationCode;
+    try {
+      locationCode = int.parse(_value[28]);
+    } catch (e) {
+      return 'Invalid Location Code';
+    }
+
+    // Switch on the parsed integer
+    switch (locationCode) {
       case 1:
         return 'Right Notification Warning';
       case 2:
@@ -399,35 +432,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         return '';
     }
   }
-
-  //TEST MULTIPLE NOTIFICATION
-  // String _getLocation() {
-  //   if (_value.length < 33) {
-  //     return 'Notification Not Available';
-  //   }
-  //   switch (_value[30] + _value[31]) {
-  //     case "33":
-  //       return 'Left Notification Warning';
-  //     case "34":
-  //       return 'Right Notification Warning';
-  //     case "36":
-  //       return 'Rear Notification Warning';
-  //     case "40":
-  //       return 'Front Notification Warning';
-  //
-  //     case "65":
-  //       return 'left Notification Danger';
-  //     case "66":
-  //       return 'Right Notification Danger';
-  //     case "68":
-  //       return 'Rear Notification Danger';
-  //     case "72":
-  //       return 'Front Notification Danger';
-  //
-  //     default:
-  //       return 'Safe';
-  //   }
-  // }
 
   // Left/Right/Rear icon
   int right_danger_counter = 0;
