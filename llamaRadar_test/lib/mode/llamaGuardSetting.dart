@@ -47,8 +47,20 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   double leftLedValue = 50.0;
   double rightLedValue = 50.0;
 
-  //Text Field
+  bool isSwitched = false;
+  double sliderValue = 0.0;
+  double maxSliderValue = 60.0;
 
+  bool isMilliseconds = false;
+  double timeOnValue = 0.0;
+  double timeOffValue = 0.0;
+  double maxTimeOnValueSeconds = 6.0;
+  double maxTimeOffValueSeconds = 60.0;
+  double maxTimeOnValueMilliseconds = 1000.0;
+  double maxTimeOffValueMilliseconds = 1000.0;
+  bool showVersionAndDate = false;
+  bool showWifissidpass = false;
+  bool showSetWifi = false;
 
   @override
   void initState() {
@@ -71,7 +83,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
         if (characteristic.properties.notify){
           if (characteristic.uuid.toString() ==
               'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
-            // _service = service;
             _characteristic = characteristic;
 
             // Enable notifications for the characteristic
@@ -179,29 +190,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return textBuffer.toString();
   }
 
-  List<int> hexToBytes(String hexString) {
-    List<int> byteList = [];
-    for (int i = 0; i < hexString.length; i += 2) {
-      byteList.add(int.parse(hexString.substring(i, i + 2), radix: 16));
-    }
-    return byteList;
-  }
-
-  String bytesToText(List<int> byteList) {
-    StringBuffer textBuffer = StringBuffer();
-
-    for (int i = 0; i < byteList.length; i++) {
-      int byte = byteList[i];
-      if (byte < 32) {
-        textBuffer.write(' ');
-      }
-      else {
-        textBuffer.writeCharCode(byte);
-      }
-    }
-    return textBuffer.toString();
-  }
-
   // Send data part
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
@@ -220,53 +208,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return data;
   }
 
-  // _send2data for multiple input
-  void _sendData2(LedValuesProvider ledValuesProvider) {
-    int leftLed = ledValuesProvider.leftLedValue.round();
-    int rightLed = ledValuesProvider.rightLedValue.round();
-    int turnOnTime = (ledValuesProvider.turnOnTime.round() * 10000).toInt();
-    int turnOffTime = (ledValuesProvider.turnOffTime.round() * 1000).toInt();
-
-    // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
-    turnOnTime = turnOnTime.clamp(0, 65535);
-    turnOffTime = turnOffTime.clamp(0, 65535);
-
-    String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
-    String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
-
-    onTimeHex = onTimeHex.padLeft(4, '0');
-    offTimeHex = offTimeHex.padLeft(4, '0');
-
-    String on1 = onTimeHex.substring(0, 2);
-    String on2 = onTimeHex.substring(2);
-
-    String off1 = offTimeHex.substring(0, 2);
-    String off2 = offTimeHex.substring(2);
-
-    print(ledValuesProvider);
-    print('Left LED: $leftLed');
-    print('Right LED: $rightLed');
-    print('ON Time: $turnOnTime');
-    print('OFF Time: $turnOffTime');
-
-    print([
-      '0x02, 0x01, 0x12, 0x00',
-      int.parse(on1, radix: 16),
-      int.parse(on2, radix: 16),
-      int.parse(off1, radix: 16),
-      int.parse(off2, radix: 16),
-      rightLed,
-      leftLed,
-      '0x01',
-      '0x64',
-    ]);
-
-    List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
-    List<int> dataWithChecksum = calculateChecksum(data);
-    print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
-    _sendData(data);
-  }
-
   void showPopUp(){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -283,22 +224,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     passController.dispose();
     super.dispose();
   }
-
-  bool isSwitched = false;
-  double sliderValue = 0.0;
-  double maxSliderValue = 60.0;
-
-  bool isMilliseconds = false;
-  double timeOnValue = 0.0;
-  double timeOffValue = 0.0;
-  double maxTimeOnValueSeconds = 6.0;
-  double maxTimeOffValueSeconds = 60.0;
-  double maxTimeOnValueMilliseconds = 1000.0;
-  double maxTimeOffValueMilliseconds = 1000.0;
-  bool showVersionAndDate = false;
-  bool showWifissidpass = false;
-  bool showSetWifi = false;
-
 
   // Command for wifi SSID and PASSWORD
   String command  = '';
@@ -441,29 +366,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               },
             ),
             Divider(),
-            // Padding(
-            //   padding: const EdgeInsets.all(16.0),
-            //   child: Column(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       TextField(
-            //         controller: ssidController,
-            //         decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
-            //       ),
-            //       TextField(
-            //         controller: passController,
-            //         decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
-            //       ),
-            //       SizedBox(height: 20),
-            //       ElevatedButton(
-            //         onPressed: generateCommand,
-            //         child: Text('SAVE'),
-            //       ),
-            //       // SizedBox(height: 20),
-            //       // Text('Generated Command: $command'),
-            //     ],
-            //   ),
-            // ),
             ListTile(
               title: Text('WiFi Settings'),
               subtitle: Text('Set SSID/Password'),
