@@ -273,11 +273,6 @@ class _DashCamState extends State<DashCam> {
               color:
               _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
             ),
-            // Icon(
-            //   Icons.history,
-            //   color:
-            //   _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
-            // ),
           ],
         ),
       ),
@@ -534,29 +529,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future<void> dashFileList() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=3015';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        String xmlString = response.body;
-        var document = xml.XmlDocument.parse(xmlString);
-        var files = document.findAllElements('NAME');
-        for (var file in files) {
-          print(file.text);
-        }
-
-      } else {
-        print(
-            'Error occured while changing to video mode: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
   Future<void> getDashThumb() async {
     String url = 'http://192.168.1.254/NOVATEK/MOVIE/2014_0321_011922_002.MOV?custom=1&cmd=4001';
     try {
@@ -747,8 +719,8 @@ class _HomeState extends State<Home> {
       print('G sensor Error: ${response.statusCode}');
     }
   }
-  // retrieving files
 
+  // retrieving files
   List<String> fileList = [];
 
   Future<void> fetchFiles() async {
@@ -972,62 +944,6 @@ class _HomeState extends State<Home> {
                         ),
 
                         SizedBox(height: 5),
-                        // Center(
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment
-                        //         .center, // Align buttons in the center
-                        //     children: [
-                        //       buildRecordingButton(),
-                        //       SizedBox(width: 20),
-                        //       // Align(
-                        //       //   alignment: Alignment.center,
-                        //       //   child: CircleButton(
-                        //       //     onPressed: () {
-                        //       //       setDateOfCam();
-                        //       //       setTimeOfCam();
-                        //       //       changeToPhotoMode();
-                        //       //       takePicture();
-                        //       //       changeToVideoMode();
-                        //       //     },
-                        //       //     color: Color(0xFFa8caba),
-                        //       //     text: 'Capture',
-                        //       //   ),
-                        //       // ),
-                        //       Align(
-                        //         alignment: Alignment.center,
-                        //         child: Column(
-                        //           mainAxisAlignment: MainAxisAlignment.center,
-                        //           crossAxisAlignment: CrossAxisAlignment.center,
-                        //           children: [
-                        //             IconButton(
-                        //               onPressed: () {
-                        //                 setDateOfCam();
-                        //                 setTimeOfCam();
-                        //                 changeToPhotoMode();
-                        //                 takePicture();
-                        //                 changeToVideoMode();
-                        //               },
-                        //               icon: Icon(
-                        //                 Icons.camera_alt,
-                        //                 size: 40,
-                        //                 color: Color(0xFFa8caba),
-                        //               ),
-                        //             ),
-                        //             SizedBox(height: 4),
-                        //             Text(
-                        //               'Capture',
-                        //               style: TextStyle(
-                        //                 color: Color(0xFFa8caba),
-                        //                 fontWeight: FontWeight.bold,
-                        //               ),
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       ),
-                        //
-                        //     ],
-                        //   ),
-                        // ),
                         Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1153,9 +1069,6 @@ class _FilesState extends State<Files> {
     });
     getFilesFromCamera();
   }
-
-  // Connectivity class to check connection
-
 
   // Open File
 
@@ -1442,84 +1355,6 @@ class _FilesState extends State<Files> {
     }
   }
 
-  // void _downloadFile(String url, int index) async {
-  //   if (url.endsWith('.JPG')) {
-  //     url = 'http://192.168.1.254/CARDV/photo/$url';
-  //   } else {
-  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
-  //   }
-  //
-  //   setState(() {
-  //     _isDownloading = true;
-  //     _progress = 0.0;
-  //     _downloadIndex = index;
-  //   });
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url),
-  //         headers: {'Accept-Encoding': 'identity'});
-  //
-  //     if (response.statusCode == 200) {
-  //       final totalBytes = response.contentLength?.toDouble() ?? 0.0;
-  //       final fileName = url.split('/').last;
-  //       final directory = await getTemporaryDirectory();
-  //       final filePath = '${directory.path}/$fileName';
-  //       final file = File(filePath);
-  //       num? receivedBytes = 0;
-  //
-  //       final bytes = response.bodyBytes;
-  //
-  //       final completer = Completer<void>();
-  //
-  //       final fileStream = file.openWrite();
-  //
-  //       fileStream.addStream(
-  //         Stream.fromIterable(bytes).map((chunk) {
-  //           receivedBytes = receivedBytes! + chunk.bitLength;
-  //           setState(() {
-  //             _progress = receivedBytes!.toDouble() / totalBytes;
-  //           });
-  //           print("Check chunk");
-  //           print(chunk);
-  //           return [chunk];
-  //         }),
-  //       ).whenComplete(() {
-  //         fileStream.close();
-  //         completer.complete(); // Notify that download is complete
-  //       });
-  //
-  //       if (url.endsWith('.JPG')) {
-  //         await GallerySaver.saveImage(filePath);
-  //       } else {
-  //         await GallerySaver.saveVideo(filePath);
-  //       }
-  //
-  //       print('File saved to gallery: $fileName');
-  //
-  //       setState(() {
-  //         _isDownloading = false;
-  //       });
-  //
-  //       Fluttertoast.showToast(
-  //         msg: 'Download complete',
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //     } else {
-  //       print('Error downloading file: ${response.statusCode}');
-  //       setState(() {
-  //         _isDownloading = false;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Error downloading file: $e');
-  //     setState(() {
-  //       _isDownloading = false;
-  //     });
-  //   }
-  // }
-
-
   @override
   void dispose() {
     videoController?.dispose();
@@ -1615,72 +1450,7 @@ class _FilesState extends State<Files> {
                 },
               ),
             ),
-            // Expanded(
-            //   child: SingleChildScrollView(
-            //     child: Container(
-            //       margin: const EdgeInsets.only(top: 30),
-            //       width: double.infinity,
-            //       child: Column(
-            //         mainAxisAlignment: MainAxisAlignment.center,
-            //         children: [
-            //           if (displayItems.isEmpty)
-            //             Icon(
-            //               icons[current],
-            //               size: 200,
-            //               color: Colors.deepPurple,
-            //             ),
-            //           if (displayItems.isEmpty) const SizedBox(height: 10),
-            //           if (displayItems.isEmpty)
-            //             Text(
-            //               items[current],
-            //               style: GoogleFonts.laila(
-            //                 fontWeight: FontWeight.w500,
-            //                 fontSize: 30,
-            //                 color: Colors.deepPurple,
-            //               ),
-            //             ),
-            //           SizedBox(height: 20),
-            //           if (displayItems.isNotEmpty)
-            //           // WITH ICON
-            //             ListView.builder(
-            //               shrinkWrap: true,
-            //               physics: NeverScrollableScrollPhysics(),
-            //               itemCount: displayItems.length,
-            //               itemBuilder: (context, index) {
-            //                 final bool isImage = displayItems[index].name.endsWith('.JPG');
-            //                 final bool isVideo = displayItems[index].name.endsWith('.MP4');
-            //
-            //                 IconData iconData;
-            //                 if (isImage) {
-            //                   iconData = Icons.photo;
-            //                 } else if (isVideo) {
-            //                   iconData = Icons.videocam;
-            //                 } else {
-            //                   // Handle other file types if needed
-            //                   iconData = Icons.insert_drive_file;
-            //                 }
-            //
-            //                 return ListTile(
-            //                   leading: Icon(iconData),
-            //                   title: Text(displayItems[index].name),
-            //                   subtitle: Text(displayItems[index].time),
-            //                   trailing: IconButton(
-            //                     icon: Icon(Icons.delete),
-            //                     onPressed: () {
-            //                       deleteFile(displayItems[index].name.toString());
-            //                     },
-            //                   ),
-            //                   onTap: () {
-            //                     openImageOrPlayVideo(displayItems[index].name);
-            //                   },
-            //                 );
-            //               },
-            //             ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
+
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
@@ -1786,7 +1556,6 @@ class _FilesState extends State<Files> {
                                 },
                               );
                             }
-
                           },
                         ),
                     ],
@@ -1800,18 +1569,3 @@ class _FilesState extends State<Files> {
     );
   }
 }
-
-
-// class About extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // backgroundColor: Colors.deepPurple.shade100,
-//       backgroundColor: Colors.transparent,
-//       body: Container(
-//         alignment: Alignment.center,
-//         child: Text("About"),
-//       ),
-//     );
-//   }
-// }
