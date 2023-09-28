@@ -85,8 +85,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     initializePlayer();
   }
 
-  // check wifi connected or not
-
   // wifi connection
   Future<bool> _checkPermissions() async {
     if (Platform.isIOS || await Permission.location.request().isGranted) {
@@ -111,48 +109,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       _startWifiScan(context);
     }
   }
-
-  // void _startWifiScan(BuildContext context) async {
-  //   try {
-  //     bool? isSuccess = await FlutterIotWifi.scan();
-  //     if (isSuccess!) {
-  //       // Wait for the scan process to complete
-  //       await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
-  //
-  //       List<dynamic> networks = await FlutterIotWifi.list();
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return Dialog(
-  //             child: Container(
-  //               width: 300, // Adjust the width as needed
-  //               child: ListView.builder(
-  //                 shrinkWrap: true,
-  //                 itemCount: networks.length,
-  //                 itemBuilder: (context, index) {
-  //                   final wifiNetwork = networks[index];
-  //                   return ListTile(
-  //                     title: Text(wifiNetwork.toString()),
-  //                     onTap: () {
-  //                       _connect(context, wifiNetwork.toString());
-  //                       Navigator.of(context).pop(); // Close the dialog after selection
-  //                     },
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     } else {
-  //       print('Failed to scan Wi-Fi networks');
-  //       await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
-  //       _startWifiScan(context);
-  //     }
-  //   } catch (e) {
-  //     print('Failed to scan Wi-Fi networks: $e');
-  //   }
-  // }
 
   // For Lower android version
   void _startWifiScan(BuildContext context) async {
@@ -444,26 +400,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  // String _getLocation() {
-  //   if (_value.length > 33) {
-  //     return 'Notification Not Available';
-  //   }
-  //   switch (_value[28]) {
-  //     case "1":
-  //       return 'Right Notification Warning';
-  //     case "2":
-  //       return 'Right Notification Danger';
-  //     case "3":
-  //       return 'Left Notification Warning';
-  //     case "4":
-  //       return 'Left Notification Danger';
-  //     case "5":
-  //       return 'Rear Notification Danger';
-  //     default:
-  //       return '';
-  //   }
-  // }
-
   //TEST MULTIPLE NOTIFICATION
   // String _getLocation() {
   //   if (_value.length < 33) {
@@ -640,7 +576,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // Open pop-up window for dashcam rear warning
-
   Future<void> initializePlayer() async {
     _videoPlayerController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4',
@@ -763,8 +698,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   // camera open
-  // late VlcPlayerController _videoPlayerController;
-
   void toggleCameraStreaming() {
     if (isCameraStreaming) {
       _videoPlayerController.stop();
@@ -828,7 +761,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _videoPlayerController.dispose();
     super.dispose();
   }
-
 
 
   Widget buildCameraButton() {
@@ -1142,19 +1074,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // IconButton(
-                        //   onPressed: () {
-                        //     _startLeftBlinking();
-                        //     // _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
-                        //   //   New test data
-                        //     _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
-                        //   },
-                        //   icon: Icon(
-                        //     Indicator.image2vector,
-                        //     size: 48,
-                        //     color: _isLeftBlinking ? Colors.orange : Colors.black,
-                        //   ),
-                        // ),
                         IconButton(
                           onPressed: () {
                             if (!_isLeftBlinking) {
