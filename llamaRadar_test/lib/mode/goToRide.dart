@@ -121,17 +121,6 @@ class _GoToRideState extends State<GoToRide> {
               padding: const EdgeInsets.only(bottom: 350.0),
               child: Align(
                 alignment: Alignment.bottomCenter,
-                // child: GlowingButton2(
-                //   text: "Turn on wifi & Go to ride",
-                //   onPressed: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => CollisionWarningPage2(device: widget.device)),
-                //     );
-                //   },
-                //   color1: Color(0xFF517fa4),
-                //   color2: Colors.cyan,
-                // ),
                 child: CircleButton(
                   onPressed: () {
                     Navigator.push(
