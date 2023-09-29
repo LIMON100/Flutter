@@ -38,6 +38,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   List<String> hexList = [];
   String textResultFirmware = '';
   bool isNotificationReceived = false;
+  bool bleConnectionAvailable = false;
 
   bool showWifiSettings = false;
   String currentTailightMode = 'NO';
@@ -120,6 +121,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     }
     setState(() {
       _device = widget.device;
+      bleConnectionAvailable = true;
     });
   }
 
@@ -366,10 +368,27 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ],
               ), // Display current SSID and password
               onTap: () {
-                _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
-                showWifissidpass = true;
+                if (bleConnectionAvailable) {
+                  _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
+                  showWifissidpass = true;
+                } else {
+                  // Show a BLE connection error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('BLE connection error. Make sure BLE is connected.'),
+                      duration: Duration(seconds: 2), // Set the duration to 2 seconds
+                      action: SnackBarAction(
+                        label: 'Dismiss',
+                        onPressed: () {
+                          // Handle the action when the user dismisses the message
+                        },
+                      ),
+                    ),
+                  );
+                }
               },
             ),
+
             Divider(),
             ListTile(
               title: Text('WiFi Settings'),
@@ -425,10 +444,27 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ],
               ),
               onTap: () {
-                _sendData([0x02, 0x01, 0xF0, 0x00, 0x00, 0xF4]);
-                setState(() {
-                  showVersionAndDate = true;
-                });
+                if (bleConnectionAvailable) {
+                  _sendData([0x02, 0x01, 0xF0, 0x00, 0x00, 0xF4]);
+                  setState(() {
+                    showVersionAndDate = true;
+                  });
+                }
+                else {
+                  // Show a BLE connection error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('BLE connection error. Make sure BLE is connected.'),
+                      duration: Duration(seconds: 2), // Set the duration to 2 seconds
+                      action: SnackBarAction(
+                        label: 'Dismiss',
+                        onPressed: () {
+                          // Handle the action when the user dismisses the message
+                        },
+                      ),
+                    ),
+                  );
+                }
               },
             ),
             Divider(),
