@@ -514,6 +514,47 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             // ),
             // Divider(),
             // Text("  System Info: $_value"),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: Divider(),
+            //     ),
+            //     TextButton(
+            //       onPressed: () {
+            //         _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
+            //
+            //         Future.delayed(Duration(seconds: 2), () {
+            //           showDialog(
+            //             context: context,
+            //             builder: (BuildContext context) {
+            //               return AlertDialog(
+            //                 title: Text("Reset Successfully"),
+            //                 actions: <Widget>[
+            //                   TextButton(
+            //                     child: Text("OK"),
+            //                     onPressed: () {
+            //                       Navigator.of(context).pop(); // Close the dialog
+            //                     },
+            //                   ),
+            //                 ],
+            //               );
+            //             },
+            //           );
+            //         });
+            //       },
+            //       child: Text(
+            //         "Reset Device",
+            //         style: TextStyle(
+            //           fontSize: 18, // Adjust the font size as needed
+            //           color: Colors.black, // Change the text color to your desired color
+            //         ),
+            //       ),
+            //     ),
+            //     Expanded(
+            //       child: Divider(),
+            //     ),
+            //   ],
+            // ),
             Row(
               children: [
                 Expanded(
@@ -521,32 +562,56 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
-
-                    Future.delayed(Duration(seconds: 2), () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text("Reset Successfully"),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text("OK"),
-                                onPressed: () {
-                                  Navigator.of(context).pop(); // Close the dialog
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    });
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Confirmation"),
+                          content: Text("Are you sure you want to reset? If you reset then you have to Flash firmware again."),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text("NO"),
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close the dialog
+                              },
+                            ),
+                            TextButton(
+                              child: Text("YES"),
+                              onPressed: () {
+                                // Perform the reset action here
+                                _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
+                                Navigator.of(context).pop(); // Close the dialog
+                                // Show reset success dialog or take further actions if needed
+                                Future.delayed(Duration(seconds: 2), () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Reset Successfully"),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: Text("OK"),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close the dialog
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   child: Text(
                     "Reset Device",
                     style: TextStyle(
-                      fontSize: 18, // Adjust the font size as needed
-                      color: Colors.black, // Change the text color to your desired color
+                      fontSize: 18,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -555,7 +620,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ),
               ],
             ),
-
             SizedBox(height:20),
             Row(
               children: [
@@ -603,7 +667,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                                     },
                                   );
                                 });
-
                                 Navigator.of(context).pop(); // Close the confirmation dialog
                               },
                             ),
