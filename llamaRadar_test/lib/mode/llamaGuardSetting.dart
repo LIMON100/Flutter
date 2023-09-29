@@ -435,10 +435,32 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             ListTile(
               title: Text('Firmware Update'),
               onTap: () {
-                _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Confirmation"),
+                      content: Text("Please check the wifi SSID & Password is correct, if NOT then first set SSID & Password according to your wifi, then proceed next"),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text("NO"),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                        ),
+                        TextButton(
+                          child: Text("YES"),
+                          onPressed: () {
+                            _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
             ),
-            // Text("FIRMWARE TExT: $_value"),
             Divider(),
             ListTile(
               title: Text('Radar'),
