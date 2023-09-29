@@ -567,7 +567,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text("Confirmation"),
-                          content: Text("Are you sure you want to reset? If you reset then you have to Flash firmware again."),
+                          content: Text("Are you sure you want to reset?"),
                           actions: <Widget>[
                             TextButton(
                               child: Text("NO"),
@@ -578,10 +578,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                             TextButton(
                               child: Text("YES"),
                               onPressed: () {
-                                // Perform the reset action here
                                 _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
-                                Navigator.of(context).pop(); // Close the dialog
-                                // Show reset success dialog or take further actions if needed
+                                Navigator.of(context).pop(); // Close the confirmation dialog
                                 Future.delayed(Duration(seconds: 2), () {
                                   showDialog(
                                     context: context,
@@ -592,7 +590,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                                           TextButton(
                                             child: Text("OK"),
                                             onPressed: () {
-                                              Navigator.of(context).pop(); // Close the dialog
+                                              Navigator.of(context).pop(); // Close the success dialog
                                             },
                                           ),
                                         ],
@@ -611,7 +609,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     "Reset Device",
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.black,
+                      color: Colors.red,
                     ),
                   ),
                 ),
@@ -620,6 +618,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ),
               ],
             ),
+
+
             SizedBox(height:20),
             Row(
               children: [
