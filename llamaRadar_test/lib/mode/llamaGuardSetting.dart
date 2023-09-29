@@ -90,6 +90,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
             // Listen to the characteristic notifications
             _characteristic!.value.listen((value) {
+
               setState(() {
                 _value = value.toString();
                 notificationValue = value;
@@ -98,14 +99,18 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 hexList = intsToHexStrings(notificationValue);
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
-                print('WIFI');
-                print(textResultFirmware.length);
+                // print('WIFI');
+                // print(_value);
+                // print(textResultFirmware.length);
+                // print(textResultFirmware[19]);
                 if(textResultFirmware[2] == 'ð'){
                   functionForFirmware(textResultFirmware);
                 }
-                if(textResultFirmware == ssidController){
+
+                if(textResultFirmware[2] != 'ð'){
                   functionForWifi(textResultFirmware);
                 }
+
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -136,18 +141,16 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     if (parts.length == 2) {
       textFirmwareVersion = parts[0].trim().substring(1);
       textFirmwareDate = parts[1].trim();
-      print("Version: $textFirmwareVersion");
-      print("Date: $textFirmwareDate");
+      // print("Version: $textFirmwareVersion");
+      // print("Date: $textFirmwareDate");
     }
   }
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
-    print("WIFI CHECK");
-    print(textResultFirmware);
     List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    print("PARTS");
-    print(parts.length);
+    // print("PARTS");
+    // print(parts.length);
     if (parts.length > 2) {
       currentSSID = parts[4];
       currentpass = parts[5];
@@ -233,14 +236,14 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     String pass = passController.text;
 
     // Validate SSID and Password lengths
-    if (ssid.isEmpty || ssid.length > 11) {
+    if (ssid.isEmpty || ssid.length > 30) {
       setState(() {
         command = 'Invalid SSID length';
       });
       return;
     }
 
-    if (pass.isEmpty || pass.length > 16) {
+    if (pass.isEmpty || pass.length > 30) {
       setState(() {
         command = 'Invalid Password length';
       });
@@ -286,17 +289,15 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
       return int.parse(hex.startsWith('0x') ? hex.substring(2) : hex, radix: 16);
     }).toList();
 
-
-    // Convert CSK to hexadecimal
     String cskHex = '0x${cskValue.toRadixString(16)}';
 
     // Update the full command string with CSK as the last element
     fullCommand += ',$cskHex';
 
-    print('CSK');
-    print(fullCommand);
-    print("CHECKNN");
-    print(calculateChecksum(command3));
+    // print('CSK');
+    // print(fullCommand);
+    // print("CHECKNN");
+    // print(calculateChecksum(command3));
 
     List<int> command2 = fullCommand.split(',').map((hex) {
       return int.parse(hex.startsWith('0x') ? hex.substring(2) : hex, radix: 16);
@@ -344,6 +345,10 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (!showWifissidpass)
+                    Text(
+                      'Press to check current ssid and password',
+                    ),
                   if (showWifissidpass)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,11 +390,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                   children: [
                     TextField(
                       controller: ssidController,
-                      decoration: InputDecoration(labelText: 'SSID (1-11 characters)'),
+                      decoration: InputDecoration(labelText: 'SSID (1-20 characters)'),
                     ),
                     TextField(
                       controller: passController,
-                      decoration: InputDecoration(labelText: 'Password (1-16 characters)'),
+                      decoration: InputDecoration(labelText: 'Password (1-20 characters)'),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
@@ -405,6 +410,10 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (!showVersionAndDate)
+                    Text(
+                      'Press to check Firmware version',
+                    ),
                   if (showVersionAndDate)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,6 +438,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
               },
             ),
+            // Text("FIRMWARE TExT: $_value"),
             Divider(),
             ListTile(
               title: Text('Radar'),
