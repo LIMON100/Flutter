@@ -62,6 +62,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   bool showVersionAndDate = false;
   bool showWifissidpass = false;
   bool showSetWifi = false;
+  String completeValue = '';
 
   @override
   void initState() {
@@ -70,8 +71,70 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     _connectToDevice();
   }
 
+  String accumulatedValue = '';
   // BLE notification
+  // Future<void> _connectToDevice() async {
+  //   List<BluetoothService> services = await widget.device.discoverServices();
+  //   for (BluetoothService service in services) {
+  //     List<BluetoothCharacteristic> characteristics = await service.characteristics;
+  //     for (BluetoothCharacteristic characteristic in characteristics) {
+  //       if (characteristic.uuid.toString() ==
+  //           'beb5483e-36e1-4688-b7f5-ea07361b26a7') {
+  //         _characteristic_write = characteristic;
+  //       }
+  //
+  //       if (characteristic.properties.notify){
+  //         if (characteristic.uuid.toString() ==
+  //             'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
+  //           _characteristic = characteristic;
+  //
+  //           // Enable notifications for the characteristic
+  //           await _characteristic!.setNotifyValue(true);
+  //
+  //           // Listen to the characteristic notifications
+  //           _characteristic!.value.listen((value) {
+  //
+  //             setState(() {
+  //               _value = value.toString();
+  //               notificationValue = value;
+  //
+  //               // CHecking Write->Notification command
+  //               hexList = intsToHexStrings(notificationValue);
+  //               List<String> hexList2 = hexList;
+  //               textResultFirmware = hexListToText(hexList2);
+  //               if(textResultFirmware[2] == 'ð'){
+  //                 functionForFirmware(textResultFirmware);
+  //               }
+  //
+  //               if(textResultFirmware[2] != 'ð'){
+  //                 functionForWifi(textResultFirmware);
+  //               }
+  //
+  //             });
+  //           });
+  //           print('Found characteristic ${characteristic.uuid}');
+  //         }
+  //       }
+  //     }
+  //   }
+  //   setState(() {
+  //     _device = widget.device;
+  //     bleConnectionAvailable = true;
+  //   });
+  // }
+
   Future<void> _connectToDevice() async {
+    // ...
+
+    // Request an increased MTU size (e.g., 512 bytes)
+    try {
+      await widget.device.requestMtu(512);
+      print('Requested MTU size: 512'); // You can log this for debugging
+    } catch (e) {
+      print('Error requesting MTU size: $e');
+    }
+
+    // Discover services and characteristics
     List<BluetoothService> services = await widget.device.discoverServices();
     for (BluetoothService service in services) {
       List<BluetoothCharacteristic> characteristics = await service.characteristics;
@@ -81,9 +144,9 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
           _characteristic_write = characteristic;
         }
 
-        if (characteristic.properties.notify){
+        if (characteristic.properties.notify) {
           if (characteristic.uuid.toString() ==
-              'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
+              'beb5483e-36e1-4688-b7f5-ea07361b26a8') {
             _characteristic = characteristic;
 
             // Enable notifications for the characteristic
@@ -91,7 +154,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
             // Listen to the characteristic notifications
             _characteristic!.value.listen((value) {
-
               setState(() {
                 _value = value.toString();
                 notificationValue = value;
@@ -100,18 +162,19 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 hexList = intsToHexStrings(notificationValue);
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
-                // print('WIFI');
-                // print(_value);
-                // print(textResultFirmware.length);
-                // print(textResultFirmware[19]);
-                if(textResultFirmware[2] == 'ð'){
+
+                print("BLER");
+                print(notificationValue);
+                print(hexList);
+                print('ACUU');
+                print(completeValue);
+                if (textResultFirmware[2] == 'ð') {
                   functionForFirmware(textResultFirmware);
                 }
 
-                if(textResultFirmware[2] != 'ð'){
+                if (textResultFirmware[2] != 'ð') {
                   functionForWifi(textResultFirmware);
                 }
-
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -119,6 +182,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
         }
       }
     }
+
     setState(() {
       _device = widget.device;
       bleConnectionAvailable = true;
@@ -238,14 +302,14 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     String pass = passController.text;
 
     // Validate SSID and Password lengths
-    if (ssid.isEmpty || ssid.length > 30) {
+    if (ssid.isEmpty || ssid.length > 40) {
       setState(() {
         command = 'Invalid SSID length';
       });
       return;
     }
 
-    if (pass.isEmpty || pass.length > 30) {
+    if (pass.isEmpty || pass.length > 40) {
       setState(() {
         command = 'Invalid Password length';
       });
@@ -409,11 +473,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                   children: [
                     TextField(
                       controller: ssidController,
-                      decoration: InputDecoration(labelText: 'SSID (1-20 characters)'),
+                      decoration: InputDecoration(labelText: 'SSID (1-40 characters)'),
                     ),
                     TextField(
                       controller: passController,
-                      decoration: InputDecoration(labelText: 'Password (1-20 characters)'),
+                      decoration: InputDecoration(labelText: 'Password (1-40 characters)'),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
@@ -561,8 +625,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
             // Center(
             //   child: ElevatedButton(
             //     onPressed: () {
-            //       // _sendData([0x02, 0x01, 0x50, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x77]);
-            //       _sendData([0x02, 0x01, 0xF0, 0x00, 0x01, 0xF4]);
+            //       _sendData([0x02, 0x01, 0x21, 0x00, 0x44, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8D]);
+            //       // _sendData([0x02, 0x01, 0xF0, 0x00, 0x01, 0xF4]);
             //     },
             //     style: ElevatedButton.styleFrom(
             //       primary: Colors.green, // Change button color based on state
