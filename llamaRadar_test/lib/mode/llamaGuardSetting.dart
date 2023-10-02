@@ -124,12 +124,9 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   // }
 
   Future<void> _connectToDevice() async {
-    // ...
-
-    // Request an increased MTU size (e.g., 512 bytes)
     try {
       await widget.device.requestMtu(512);
-      print('Requested MTU size: 512'); // You can log this for debugging
+      print('Requested MTU size: 512');
     } catch (e) {
       print('Error requesting MTU size: $e');
     }
@@ -163,11 +160,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
-                print("BLER");
-                print(notificationValue);
-                print(hexList);
-                print('ACUU');
-                print(completeValue);
                 if (textResultFirmware[2] == 'ð') {
                   functionForFirmware(textResultFirmware);
                 }
@@ -360,11 +352,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     // Update the full command string with CSK as the last element
     fullCommand += ',$cskHex';
 
-    // print('CSK');
-    // print(fullCommand);
-    // print("CHECKNN");
-    // print(calculateChecksum(command3));
-
     List<int> command2 = fullCommand.split(',').map((hex) {
       return int.parse(hex.startsWith('0x') ? hex.substring(2) : hex, radix: 16);
     }).toList();
@@ -415,17 +402,47 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     Text(
                       'Press to check current ssid and password',
                     ),
+                  // if (showWifissidpass)
+                  //   Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: [
+                  //       Text(
+                  //         'Current SSID: $currentSSID',
+                  //         // style: TextStyle(color: Colors.black), // Change color to black
+                  //       ),
+                  //       Text(
+                  //         'Current Password: $currentpass',
+                  //         // style: TextStyle(color: Colors.black), // Change color to black
+                  //       ),
+                  //     ],
+                  //   ),
                   if (showWifissidpass)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Current SSID: $currentSSID',
-                          // style: TextStyle(color: Colors.black), // Change color to black
+                          'Current SSID: ',
+                          style: TextStyle(
+                            color: Colors.black, // Change the color to your desired color
+                          ),
                         ),
                         Text(
-                          'Current Password: $currentpass',
-                          // style: TextStyle(color: Colors.black), // Change color to black
+                          '$currentSSID',
+                          style: TextStyle(
+                            color: Colors.blue, // Change the color to your desired color
+                          ),
+                        ),
+                        Text(
+                          'Current Password: ',
+                          style: TextStyle(
+                            color: Colors.black, // Change the color to your desired color
+                          ),
+                        ),
+                        Text(
+                          '$currentpass',
+                          style: TextStyle(
+                            color: Colors.blue, // Change the color to your desired color
+                          ),
                         ),
                       ],
                     ),
