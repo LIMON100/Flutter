@@ -366,6 +366,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     });
   }
 
+  bool showSuccessMessage = false;
+
   @override
   Widget build(BuildContext context) {
     final ledValuesProvider = Provider.of<LedValuesProvider>(context);
@@ -484,7 +486,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 });
               },
             ),
-
             if (showSetWifi)
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -501,7 +502,34 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: generateCommand,
+                      onPressed: () {
+                        if (bleConnectionAvailable) {
+                          generateCommand();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'SSID and password saved successfully'),
+                              duration: Duration(
+                                  seconds: 1), // Display for 1 second
+                            ),
+                          );
+                        }
+                        else {
+                          // Show a BLE connection error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('BLE connection error. Make sure BLE is connected.'),
+                              duration: Duration(seconds: 2), // Set the duration to 2 seconds
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                onPressed: () {
+                                  // Handle the action when the user dismisses the message
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      },
                       child: Text('SAVE'),
                     ),
                   ],
@@ -517,14 +545,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     Text(
                       'Press to check Firmware version',
                     ),
-                  // if (showVersionAndDate)
-                  //   Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       Text('Version: $textFirmwareVersion'),
-                  //       Text('Date: $textFirmwareDate'),
-                  //     ],
-                  //   )
                   if (showVersionAndDate)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
