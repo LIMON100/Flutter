@@ -199,8 +199,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     if (parts.length == 2) {
       textFirmwareVersion = parts[0].trim().substring(1);
       textFirmwareDate = parts[1].trim();
+      if (textFirmwareDate.isNotEmpty) {
+        textFirmwareDate = textFirmwareDate.substring(0, textFirmwareDate.length - 1);
+      }
       // print("Version: $textFirmwareVersion");
-      // print("Date: $textFirmwareDate");
+      print("Date: $textFirmwareDate");
     }
   }
 
@@ -514,14 +517,44 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     Text(
                       'Press to check Firmware version',
                     ),
+                  // if (showVersionAndDate)
+                  //   Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: [
+                  //       Text('Version: $textFirmwareVersion'),
+                  //       Text('Date: $textFirmwareDate'),
+                  //     ],
+                  //   )
                   if (showVersionAndDate)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Version: $textFirmwareVersion'),
-                        Text('Date: $textFirmwareDate'),
+                        Text(
+                          'Version: ',
+                          style: TextStyle(
+                            color: Colors.black, // Change the color to your desired color
+                          ),
+                        ),
+                        Text(
+                          '$textFirmwareVersion',
+                          style: TextStyle(
+                            color: Colors.blue, // Change the color to your desired color
+                          ),
+                        ),
+                        Text(
+                          'Date: ',
+                          style: TextStyle(
+                            color: Colors.black, // Change the color to your desired color
+                          ),
+                        ),
+                        Text(
+                          '$textFirmwareDate',
+                          style: TextStyle(
+                            color: Colors.blue, // Change the color to your desired color
+                          ),
+                        ),
                       ],
-                    )
+                    ),
                 ],
               ),
               onTap: () {
