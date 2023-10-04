@@ -458,7 +458,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                   _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
                   showWifissidpass = true;
                 } else {
-                  // Show a BLE connection error message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('BLE connection error. Make sure BLE is connected.'),
@@ -623,6 +622,18 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                           onPressed: () {
                             _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
                             Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Wait 5 seconds to start the Update.'),
+                                duration: Duration(seconds: 2), // Set the duration to 2 seconds
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  onPressed: () {
+                                    // Handle the action when the user dismisses the message
+                                  },
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ],
