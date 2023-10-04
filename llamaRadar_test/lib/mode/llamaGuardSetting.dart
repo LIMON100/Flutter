@@ -39,6 +39,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   String textResultFirmware = '';
   bool isNotificationReceived = false;
   bool bleConnectionAvailable = false;
+  bool isFirmwareUpdatePress = false;
+  bool isResetPress = false;
 
   bool showWifiSettings = false;
   String currentTailightMode = 'NO';
@@ -73,60 +75,10 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   String accumulatedValue = '';
   // BLE notification
-  // Future<void> _connectToDevice() async {
-  //   List<BluetoothService> services = await widget.device.discoverServices();
-  //   for (BluetoothService service in services) {
-  //     List<BluetoothCharacteristic> characteristics = await service.characteristics;
-  //     for (BluetoothCharacteristic characteristic in characteristics) {
-  //       if (characteristic.uuid.toString() ==
-  //           'beb5483e-36e1-4688-b7f5-ea07361b26a7') {
-  //         _characteristic_write = characteristic;
-  //       }
-  //
-  //       if (characteristic.properties.notify){
-  //         if (characteristic.uuid.toString() ==
-  //             'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
-  //           _characteristic = characteristic;
-  //
-  //           // Enable notifications for the characteristic
-  //           await _characteristic!.setNotifyValue(true);
-  //
-  //           // Listen to the characteristic notifications
-  //           _characteristic!.value.listen((value) {
-  //
-  //             setState(() {
-  //               _value = value.toString();
-  //               notificationValue = value;
-  //
-  //               // CHecking Write->Notification command
-  //               hexList = intsToHexStrings(notificationValue);
-  //               List<String> hexList2 = hexList;
-  //               textResultFirmware = hexListToText(hexList2);
-  //               if(textResultFirmware[2] == 'ð'){
-  //                 functionForFirmware(textResultFirmware);
-  //               }
-  //
-  //               if(textResultFirmware[2] != 'ð'){
-  //                 functionForWifi(textResultFirmware);
-  //               }
-  //
-  //             });
-  //           });
-  //           print('Found characteristic ${characteristic.uuid}');
-  //         }
-  //       }
-  //     }
-  //   }
-  //   setState(() {
-  //     _device = widget.device;
-  //     bleConnectionAvailable = true;
-  //   });
-  // }
-
   Future<void> _connectToDevice() async {
     try {
       await widget.device.requestMtu(512);
-      print('Requested MTU size: 512');
+      // print('Requested MTU size: 512');
     } catch (e) {
       print('Error requesting MTU size: $e');
     }
@@ -203,7 +155,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
         textFirmwareDate = textFirmwareDate.substring(0, textFirmwareDate.length - 1);
       }
       // print("Version: $textFirmwareVersion");
-      print("Date: $textFirmwareDate");
+      // print("Date: $textFirmwareDate");
     }
   }
 
@@ -226,7 +178,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   List<String> splitTextResultFirmware(String textResult) {
     List<String> delimiters = ["Sep ", "Oct ", "Nov ", "Dec "]; // Add more if needed
 
-    // Iterate through delimiters and try to split the textResult
     for (String delimiter in delimiters) {
       List<String> parts = textResult.split(delimiter);
       if (parts.length == 2) {
@@ -407,20 +358,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                     Text(
                       'Press to check current ssid and password',
                     ),
-                  // if (showWifissidpass)
-                  //   Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       Text(
-                  //         'Current SSID: $currentSSID',
-                  //         // style: TextStyle(color: Colors.black), // Change color to black
-                  //       ),
-                  //       Text(
-                  //         'Current Password: $currentpass',
-                  //         // style: TextStyle(color: Colors.black), // Change color to black
-                  //       ),
-                  //     ],
-                  //   ),
                   if (showWifissidpass)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -609,7 +546,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: Text("Confirmation"),
-                      content: Text("Please check the wifi SSID & Password is correct, if NOT then first set SSID & Password according to your wifi, then proceed next"),
+                      content: Text("PLEASE first check your wifi is CONNECTED, and check the wifi SSID & PASSWORD is correct, if NOT then first set SSID & Password according to your wifi, then proceed next"),
                       actions: <Widget>[
                         TextButton(
                           child: Text("NO"),
@@ -620,19 +557,30 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                         TextButton(
                           child: Text("YES"),
                           onPressed: () {
+                            isFirmwareUpdatePress = true;
                             _sendData([0x02, 0x01, 0xF2, 0x00, 0x01, 0xF6]);
                             Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Wait 5 seconds to start the Update.'),
-                                duration: Duration(seconds: 2), // Set the duration to 2 seconds
-                                action: SnackBarAction(
-                                  label: 'Dismiss',
-                                  onPressed: () {
-                                    // Handle the action when the user dismisses the message
-                                  },
-                                ),
-                              ),
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    "WARNING",
+                                    style: TextStyle(
+                                      color: Colors.red, // Set the text color to red
+                                    ),
+                                  ),
+                                  content: Text("PLEASE wait 5 seconds to START firmware update. You can see light blinking when updating firmware, So DONOT turn OFF wifi on that time, When FINISH the blinking will OFF."),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: Text("OK"),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Close the AlertDialog
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         ),
@@ -702,62 +650,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 );
               },
             ),
-            // Divider(),
-            // Center(
-            //   child: ElevatedButton(
-            //     onPressed: () {
-            //       _sendData([0x02, 0x01, 0x21, 0x00, 0x44, 0x77, 0x69, 0x66, 0x69, 0x08, 0x0A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x8D]);
-            //       // _sendData([0x02, 0x01, 0xF0, 0x00, 0x01, 0xF4]);
-            //     },
-            //     style: ElevatedButton.styleFrom(
-            //       primary: Colors.green, // Change button color based on state
-            //     ),
-            //     child: Text('TEST System'),
-            //   ),
-            // ),
-            // Divider(),
-            // Text("  System Info: $_value"),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Divider(),
-            //     ),
-            //     TextButton(
-            //       onPressed: () {
-            //         _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
-            //
-            //         Future.delayed(Duration(seconds: 2), () {
-            //           showDialog(
-            //             context: context,
-            //             builder: (BuildContext context) {
-            //               return AlertDialog(
-            //                 title: Text("Reset Successfully"),
-            //                 actions: <Widget>[
-            //                   TextButton(
-            //                     child: Text("OK"),
-            //                     onPressed: () {
-            //                       Navigator.of(context).pop(); // Close the dialog
-            //                     },
-            //                   ),
-            //                 ],
-            //               );
-            //             },
-            //           );
-            //         });
-            //       },
-            //       child: Text(
-            //         "Reset Device",
-            //         style: TextStyle(
-            //           fontSize: 18, // Adjust the font size as needed
-            //           color: Colors.black, // Change the text color to your desired color
-            //         ),
-            //       ),
-            //     ),
-            //     Expanded(
-            //       child: Divider(),
-            //     ),
-            //   ],
-            // ),
             Row(
               children: [
                 Expanded(
@@ -782,25 +674,27 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                               child: Text("YES"),
                               onPressed: () {
                                 _sendData([0x02, 0x01, 0x52, 0x00, 0x01, 0x56]);
-                                Navigator.of(context).pop(); // Close the confirmation dialog
-                                Future.delayed(Duration(seconds: 2), () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text("Reset Successfully"),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            child: Text("OK"),
-                                            onPressed: () {
-                                              Navigator.of(context).pop(); // Close the success dialog
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
+                                setState(() {
+                                  isResetPress = true;
                                 });
+                                Navigator.of(context).pop(); // Close the confirmation dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text("Reset Initiated"),
+                                      content: Text("The reset process has been initiated."),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: Text("OK"),
+                                          onPressed: () {
+                                            Navigator.of(context).pop(); // Close the AlertDialog
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
                             ),
                           ],
@@ -821,8 +715,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 ),
               ],
             ),
-
-
             SizedBox(height:20),
             Row(
               children: [
