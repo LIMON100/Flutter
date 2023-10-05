@@ -113,7 +113,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // For Lower android version
   void _startWifiScan(BuildContext context) async {
-    print("Inside startscan");
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -121,7 +120,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
 
         List<dynamic> networks = await FlutterIotWifi.list();
-        print(networks);
+        // print(networks);
 
         if (networks.isEmpty) {
           // Show a pop-up message when the networks list is empty
@@ -230,7 +229,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     for (BluetoothService service in services) {
       List<BluetoothCharacteristic> characteristics = await service.characteristics;
       for (BluetoothCharacteristic characteristic in characteristics) {
-        print("Check the properties");
+        // print("Check the properties");
 
         if (characteristic.uuid.toString() ==
             'beb5483e-36e1-4688-b7f5-ea07361b26a7') {
@@ -251,9 +250,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
-                print("VALUE");
                 // List<String> hexList = intsToHexStrings(value);
                 // List<String> hexList2 = hexList;
+                print("VALUE");
                 print(_value);
               });
             });
@@ -339,7 +338,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Test MPU with blinking
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
-      print("INSIDE TIMER CHECK");
       _leftBlinkTimer!.cancel();
       _leftBlinkTimer = null;
       setState(() {
@@ -347,8 +345,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
     }
     else {
-      // Timer is not running, start blinking
-      if (_value.length > 46) {
+      if (_value.length > 40) {
         int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
 
         if (valueAtIndex46 == 0) {
@@ -369,13 +366,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         });
       });
     }
+
     // Stop the blinking after the specified duration
     Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
       _leftBlinkTimer?.cancel();
       _leftBlinkTimer = null;
       // BLink OFF
-      _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
-      _isFirstData = true;
+      if(!_isFirstData){
+        _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+        _isFirstData = true;
+      }
       setState(() {
         _isLeftBlinking = false;
       });
@@ -416,20 +416,20 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       setState(() {
         _isRightBlinking = false;
       });
-    } else {
-      int blinkDurationMilliseconds = 10000; // Default to 5 seconds
-
-      if (_value.length > 46) {
+    }
+    else {
+      if (_value.length > 40) {
         int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
 
-        switch (valueAtIndex46) {
-          case 0:
-            blinkDurationMilliseconds = 20000; // 20 seconds
-            break;
-          case 1:
-          case 2:
-            blinkDurationMilliseconds = 3000; // 3 seconds
-            break;
+        if (valueAtIndex46 == 0) {
+          blinkDurationMilliseconds = 10000;
+        }
+        else if (valueAtIndex46 == 1 || valueAtIndex46 == 2) {
+          blinkDurationMilliseconds = 3000; // 3 seconds
+        }
+        else {
+          // Handle other cases here if needed
+          blinkDurationMilliseconds = 10000; // Default to 10 seconds
         }
       }
 
@@ -438,15 +438,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           _isRightBlinking = !_isRightBlinking;
         });
       });
-
-      // Stop the blinking after the specified duration
-      Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
-        _rightBlinkTimer?.cancel();
-        setState(() {
-          _isRightBlinking = false;
-        });
-      });
     }
+
+    // Stop the blinking after the specified duration
+    Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
+      _rightBlinkTimer?.cancel();
+      _rightBlinkTimer = null;
+      // BLink OFF
+      if(!_isFirstDataRight){
+        _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+        _isFirstDataRight = true;
+      }
+      setState(() {
+        _isRightBlinking = false;
+      });
+    });
   }
 
   //Blink with value
@@ -927,10 +933,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       turnOffTime *= 1000;
     }
 
-    print('Left LED: $leftLed');
-    print('Right LED: $rightLed');
-    print('ON Time: $turnOnTime');
-    print('OFF Time: $turnOffTime');
+    // print('Left LED: $leftLed');
+    // print('Right LED: $rightLed');
+    // print('ON Time: $turnOnTime');
+    // print('OFF Time: $turnOffTime');
 
     // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
     turnOnTime = turnOnTime.clamp(0, 65535);
@@ -1266,16 +1272,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(top: 1),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("_isLeftBlinking:: $_isLeftBlinking"),
-                          Text("_isFirstData:: $_isFirstData"),
-                        ],
-                      ),
-                    ),
+                    // Container(
+                    //   margin: EdgeInsets.only(top: 1),
+                    //   child: Column(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Text("_isLeftBlinking:: $_isLeftBlinking"),
+                    //       Text("_isFirstData:: $_isFirstData"),
+                    //     ],
+                    //   ),
+                    // ),
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
                     SizedBox(height: 30),
@@ -1286,7 +1292,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(width: 10),
+                              // SizedBox(width: 10),
                               // Column(
                               //   children: [
                               //     // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
@@ -1369,10 +1375,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               IconButton(
                                 icon: Icon(Icons.social_distance_rounded),
                                 onPressed: () {
-                                  _handleButtonPress();
-                                  // _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                                //  new Data
+                                   //  new Data
                                   _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
+                                  _handleButtonPress();
                                 },
                               ),
                               SizedBox(width: 2),
