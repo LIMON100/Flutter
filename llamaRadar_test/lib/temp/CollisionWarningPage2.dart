@@ -239,7 +239,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
         if (characteristic.properties.notify){
           if (characteristic.uuid.toString() ==
-              'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
+              'beb5483e-36e1-4688-b7f5-ea07361b26a8') {
             // _service = service;
             _characteristic = characteristic;
 
@@ -250,6 +250,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
+                print("VALUE");
+                // List<String> hexList = intsToHexStrings(value);
+                // List<String> hexList2 = hexList;
+                print(_value);
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -261,6 +265,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     setState(() {
       _device = widget.device;
     });
+  }
+
+  List<String> intsToHexStrings(List<int> intList) {
+    List<String> hexList = [];
+
+    for (int intValue in intList) {
+      String hexString = intValue.toRadixString(16).toUpperCase().padLeft(2, '0');
+      hexList.add(hexString);
+    }
+    return hexList;
   }
 
   // Disconnect BLE
@@ -297,6 +311,30 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _rightBlinkTimer;
 
 
+  // void _startLeftBlinking() {
+  //   if (_leftBlinkTimer != null) {
+  //     _leftBlinkTimer!.cancel();
+  //     _leftBlinkTimer = null;
+  //     setState(() {
+  //       _isLeftBlinking = false;
+  //     });
+  //   } else {
+  //     _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
+  //       setState(() {
+  //         _isLeftBlinking = !_isLeftBlinking;
+  //       });
+  //     });
+  //     // Stop the blinking after 3 seconds
+  //     Future.delayed(Duration(seconds: 30)).then((_) {
+  //       _leftBlinkTimer?.cancel();
+  //       setState(() {
+  //         _isLeftBlinking = false;
+  //       });
+  //     });
+  //   }
+  // }
+
+  // Test MPU with blinking
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
       _leftBlinkTimer!.cancel();
@@ -305,21 +343,67 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         _isLeftBlinking = false;
       });
     } else {
+      int blinkDurationMilliseconds = 10000; // Default to 5 seconds
+
+      if (_value.length > 46) {
+        int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
+
+        switch (valueAtIndex46) {
+          case 0:
+            blinkDurationMilliseconds = 20000; // 20 seconds
+            _isFirstData = false;
+            break;
+          case 1:
+          case 2:
+            blinkDurationMilliseconds = 3000; // 3 seconds
+            _isFirstData = false;
+            break;
+        }
+      }
+
       _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
         setState(() {
           _isLeftBlinking = !_isLeftBlinking;
         });
       });
-      // Stop the blinking after 3 seconds
-      Future.delayed(Duration(seconds: 30)).then((_) {
+
+      // Stop the blinking after the specified duration
+      Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
         _leftBlinkTimer?.cancel();
         setState(() {
           _isLeftBlinking = false;
+          _isFirstData = false;
         });
       });
     }
   }
 
+
+  // void _startRightBlinking() {
+  //   if (_rightBlinkTimer != null) {
+  //     _rightBlinkTimer!.cancel();
+  //     _rightBlinkTimer = null;
+  //     setState(() {
+  //       _isRightBlinking = false;
+  //     });
+  //   } else {
+  //     _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
+  //       setState(() {
+  //         _isRightBlinking = !_isRightBlinking;
+  //       });
+  //     });
+  //     // Stop the blinking after 3 seconds
+  //     Future.delayed(Duration(seconds: 30)).then((_) {
+  //       _rightBlinkTimer?.cancel();
+  //       setState(() {
+  //         _isRightBlinking = false;
+  //       });
+  //     });
+  //   }
+  // }
+
+
+  // Test MPU with blinking
   void _startRightBlinking() {
     if (_rightBlinkTimer != null) {
       _rightBlinkTimer!.cancel();
@@ -328,13 +412,30 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         _isRightBlinking = false;
       });
     } else {
+      int blinkDurationMilliseconds = 10000; // Default to 5 seconds
+
+      if (_value.length > 46) {
+        int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
+
+        switch (valueAtIndex46) {
+          case 0:
+            blinkDurationMilliseconds = 20000; // 20 seconds
+            break;
+          case 1:
+          case 2:
+            blinkDurationMilliseconds = 3000; // 3 seconds
+            break;
+        }
+      }
+
       _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
         setState(() {
           _isRightBlinking = !_isRightBlinking;
         });
       });
-      // Stop the blinking after 3 seconds
-      Future.delayed(Duration(seconds: 30)).then((_) {
+
+      // Stop the blinking after the specified duration
+      Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
         _rightBlinkTimer?.cancel();
         setState(() {
           _isRightBlinking = false;
@@ -413,7 +514,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     try {
       locationCode = int.parse(_value[28]);
     } catch (e) {
-      return 'Invalid Location Code';
+      return 'No Notification';
     }
 
     // Switch on the parsed integer
@@ -1082,13 +1183,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           onPressed: () {
                             if (!_isLeftBlinking) {
                               _startLeftBlinking();
-                              // Determine which data to send based on the state
                               if (_isFirstData) {
                                 _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
-                                _isFirstData = false; // Toggle the state for the next press
+                                _isFirstData = false;
                               } else {
                                 _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
-                                _isFirstData = true; // Toggle the state for the next press
+                                _isFirstData = true;
                               }
                             }
                           },
@@ -1110,20 +1210,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ),
 
                         SizedBox(width: 60),
-                        // IconButton(
-                        //   onPressed: () {
-                        //     _startRightBlinking();
-                        //     // _sendData([0x02, 0x01, 0x13, 0x00, 0x00, 0x16]);
-                        //   //  New Data
-                        //     _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
-                        //   },
-                        //   icon: Icon(
-                        //     Indicator.image2vector__1_,
-                        //     size: 48,
-                        //     color: _isRightBlinking ? Colors.orange : Colors.black,
-                        //   ),
-                        // ),
-
                         IconButton(
                           onPressed: () {
                             if (!_isRightBlinking) {
@@ -1179,8 +1265,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     //   child: Row(
                     //     mainAxisAlignment: MainAxisAlignment.center,
                     //     children: [
-                    //       // Text(_value[30]),
-                    //       Text(_value[30] + _value[31]),
+                    //       Text("INDICATOR:: "),
+                    //       Text(_value[46]),
+                    //       // Text(_value[30] + _value[31]),
                     //       // Text(_value[31]),
                     //       // Text(_value[32]),
                     //     ],
