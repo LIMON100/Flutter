@@ -250,10 +250,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
-                // List<String> hexList = intsToHexStrings(value);
-                // List<String> hexList2 = hexList;
-                print("VALUE");
-                print(_value);
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -311,31 +307,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _rightBlinkTimer;
 
 
-  // void _startLeftBlinking() {
-  //   if (_leftBlinkTimer != null) {
-  //     _leftBlinkTimer!.cancel();
-  //     _leftBlinkTimer = null;
-  //     setState(() {
-  //       _isLeftBlinking = false;
-  //     });
-  //   }
-  //   else {
-  //     _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-  //       setState(() {
-  //         _isLeftBlinking = !_isLeftBlinking;
-  //       });
-  //     });
-  //     // Stop the blinking after 3 seconds
-  //     Future.delayed(Duration(seconds: 30)).then((_) {
-  //       _leftBlinkTimer?.cancel();
-  //       setState(() {
-  //         _isLeftBlinking = false;
-  //       });
-  //     });
-  //   }
-  // }
 
-  // Test MPU with blinking
+
+  // MPU with blinking
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
       _leftBlinkTimer!.cancel();
@@ -382,33 +356,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
-
-
-  // void _startRightBlinking() {
-  //   if (_rightBlinkTimer != null) {
-  //     _rightBlinkTimer!.cancel();
-  //     _rightBlinkTimer = null;
-  //     setState(() {
-  //       _isRightBlinking = false;
-  //     });
-  //   } else {
-  //     _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
-  //       setState(() {
-  //         _isRightBlinking = !_isRightBlinking;
-  //       });
-  //     });
-  //     // Stop the blinking after 3 seconds
-  //     Future.delayed(Duration(seconds: 30)).then((_) {
-  //       _rightBlinkTimer?.cancel();
-  //       setState(() {
-  //         _isRightBlinking = false;
-  //       });
-  //     });
-  //   }
-  // }
-
-
-  // Test MPU with blinking
+  // MPU with blinking
   void _startRightBlinking() {
     if (_rightBlinkTimer != null) {
       _rightBlinkTimer!.cancel();
@@ -491,27 +439,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       _blinkCount = 0;
     });
   }
-
-  //Problem
-  // String _getLocation() {
-  //   if (_value.length < 29) {
-  //     return 'Notification Not Available';
-  //   }
-  //   switch (int.parse(_value[28])) {
-  //     case 1:
-  //       return 'Right Notification Warning';
-  //     case 2:
-  //       return 'Right Notification Danger';
-  //     case 3:
-  //       return 'Left Notification Warning';
-  //     case 4:
-  //       return 'Left Notification Danger';
-  //     case 5:
-  //       return 'Rear Notification Danger';
-  //     default:
-  //       return '';
-  //   }
-  // }
 
 
   String _getLocation() {
@@ -710,54 +637,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     await _videoPlayerController!.initialize();
   }
 
-  // Can't close the pop-up window, it will run 5 seconds and then close
-  // void showStreamPopup() {
-  //   if (_controller == null) {
-  //     return;
-  //   }
-  //   WidgetsBinding.instance!.addPostFrameCallback((_) {
-  //     showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (BuildContext context) {
-  //         return Dialog(
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Text('Rear Dashcam'),
-  //               SizedBox(height: 16),
-  //               Container(
-  //                 width: MediaQuery.of(context).size.width,
-  //                 height: MediaQuery.of(context).size.width * 9 / 16,
-  //                 child: VlcPlayer(
-  //                   controller: _controller!,
-  //                   aspectRatio: 16 / 9,
-  //                 ),
-  //               ),
-  //               SizedBox(height: 16),
-  //               ElevatedButton(
-  //                 onPressed: () {
-  //                   // Navigator.of(context).pop();
-  //                   // initializePlayer();
-  //                   // Navigator.pop(context);
-  //                   // Navigator.of(context).push(
-  //                   //   MaterialPageRoute(
-  //                   //       builder: (context) => CollisionWarningPage2(device: widget.device)),
-  //                   //   );
-  //                 },
-  //                 child: Text('Close'),
-  //               ),
-  //             ],
-  //           ),
-  //         );
-  //       },
-  //     );
-  //   });
-  //   Future.delayed(Duration(seconds: 5)).then((_) {
-  //     Navigator.of(context).pop();
-  //     initializePlayer();
-  //   });
-  // }
 
   // Can close pop-up window
   bool _isShowingPopup = false;
@@ -1447,37 +1326,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         buildCameraButton(),
                       ],
                     ),
-                    // Container(
-                    //   height: 280,
-                    //   width: 300,
-                    //   child: isCameraStreaming && _videoPlayerController != null
-                    //       ? Transform.rotate(
-                    //     angle: rotationAngle * 3.14159265359 / 180,
-                    //     // Apply rotation based on user choice
-                    //     child: VlcPlayer(
-                    //       controller: _videoPlayerController,
-                    //       aspectRatio: currentOrientation == Orientation.portrait
-                    //           ? 16 / 9
-                    //           : 9 / 16,
-                    //     ),
-                    //   )
-                    //       : Image.asset(
-                    //     'images/test_background3.jpg',
-                    //     fit: BoxFit.fitWidth,
-                    //   ),
-                    // ),
-                    // if (isCameraStreaming)
-                    //   Positioned(
-                    //     bottom: 16.0,
-                    //     right: 16.0,
-                    //     child: IconButton(
-                    //       color: Colors.red,
-                    //       icon: Icon(Icons.cameraswitch_outlined),
-                    //       // You can choose a different icon
-                    //       onPressed: changeOrientation,
-                    //       iconSize: 40.0, // Adjust the icon size as needed
-                    //     ),
-                    //   ),
                     SizedBox(width:50),
                     Container(
                       height: 280,
