@@ -454,10 +454,6 @@ class _HomeState extends State<Home> {
           print("Connect initiated: $value");
         });
       }
-      // Delay the pop to ensure the connection process is completed
-      // Future.delayed(const Duration(seconds: 3), () {
-      //   Navigator.of(context).pop(); // Close the dialog window
-      // });
     }
   }
 
@@ -774,35 +770,6 @@ class _HomeState extends State<Home> {
 
 
   // Recording part
-  // Widget buildRecordingButton() {
-  //   return Align(
-  //     alignment: Alignment.topCenter,
-  //     child: Container(
-  //       margin: EdgeInsets.only(top: 10),
-  //       child: CircleButton(
-  //         onPressed: () async {
-  //           setDateOfCam();
-  //           setTimeOfCam();
-  //           if (isRecording) {
-  //             // Stop record
-  //             stopRecordingCmd();
-  //           } else {
-  //             // Start Recording
-  //             changeToVideoMode();
-  //             setDateOfCam();
-  //             setTimeOfCam();
-  //             startRecordingCmd();
-  //           }
-  //           setState(() {
-  //             isRecording = !isRecording;
-  //           });
-  //         },
-  //         color: isRecording ? Colors.red : Color(0xFFa8caba),
-  //         text: isRecording ? 'Stop Recording' : 'Start Recording',
-  //       ),
-  //     ),
-  //   );
-  // }
   Widget buildRecordingButton() {
     return Align(
       alignment: Alignment.topCenter,
