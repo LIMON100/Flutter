@@ -73,6 +73,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _isFirstData = true;
   bool _isFirstDataRight = true;
   String _selectedOption = 'OFF';
+  int blinkDurationMilliseconds = 10000;
 
   @override
   void initState() {
@@ -318,7 +319,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //     setState(() {
   //       _isLeftBlinking = false;
   //     });
-  //   } else {
+  //   }
+  //   else {
   //     _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
   //       setState(() {
   //         _isLeftBlinking = !_isLeftBlinking;
@@ -337,27 +339,27 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Test MPU with blinking
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
+      print("INSIDE TIMER CHECK");
       _leftBlinkTimer!.cancel();
       _leftBlinkTimer = null;
       setState(() {
         _isLeftBlinking = false;
       });
-    } else {
-      int blinkDurationMilliseconds = 10000; // Default to 5 seconds
-
+    }
+    else {
+      // Timer is not running, start blinking
       if (_value.length > 46) {
         int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
 
-        switch (valueAtIndex46) {
-          case 0:
-            blinkDurationMilliseconds = 20000; // 20 seconds
-            _isFirstData = false;
-            break;
-          case 1:
-          case 2:
-            blinkDurationMilliseconds = 3000; // 3 seconds
-            _isFirstData = false;
-            break;
+        if (valueAtIndex46 == 0) {
+          blinkDurationMilliseconds = 10000;
+        }
+        else if (valueAtIndex46 == 1 || valueAtIndex46 == 2) {
+          blinkDurationMilliseconds = 3000; // 3 seconds
+        }
+        else {
+          // Handle other cases here if needed
+          blinkDurationMilliseconds = 10000; // Default to 10 seconds
         }
       }
 
@@ -366,17 +368,20 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           _isLeftBlinking = !_isLeftBlinking;
         });
       });
-
-      // Stop the blinking after the specified duration
-      Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
-        _leftBlinkTimer?.cancel();
-        setState(() {
-          _isLeftBlinking = false;
-          _isFirstData = false;
-        });
-      });
     }
+    // Stop the blinking after the specified duration
+    Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
+      _leftBlinkTimer?.cancel();
+      _leftBlinkTimer = null;
+      // BLink OFF
+      _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+      _isFirstData = true;
+      setState(() {
+        _isLeftBlinking = false;
+      });
+    });
   }
+
 
 
   // void _startRightBlinking() {
@@ -1186,7 +1191,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               if (_isFirstData) {
                                 _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
                                 _isFirstData = false;
-                              } else {
+                              }
+                              else {
                                 _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
                                 _isFirstData = true;
                               }
@@ -1260,19 +1266,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-                    // Container(
-                    //   margin: EdgeInsets.only(top: 1),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       Text("INDICATOR:: "),
-                    //       Text(_value[46]),
-                    //       // Text(_value[30] + _value[31]),
-                    //       // Text(_value[31]),
-                    //       // Text(_value[32]),
-                    //     ],
-                    //   ),
-                    // ),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("_isLeftBlinking:: $_isLeftBlinking"),
+                          Text("_isFirstData:: $_isFirstData"),
+                        ],
+                      ),
+                    ),
                     // Blink icon for tailight, camera and distance
                     //CAM+Tailight+Distance button
                     SizedBox(height: 30),
@@ -1284,13 +1287,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
-                                  Icon(Icons.square),
-                                  Text('Camera'),
-                                ],
-                              ),
+                              // Column(
+                              //   children: [
+                              //     // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
+                              //     Icon(Icons.square),
+                              //     Text('Camera'),
+                              //   ],
+                              // ),
                               SizedBox(width: 20),
                               Column(
                                 children: [
@@ -1352,16 +1355,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(width: 45),
-                              IconButton(
-                                icon: Icon(_cameraOn ? Icons.camera_alt : Icons
-                                    .camera_alt_outlined),
-                                onPressed: () {
-                                  setState(() {
-                                    _cameraOn = !_cameraOn;
-                                  });
-                                  // open camera if _cameraOn is true
-                                },
-                              ),
+                              // IconButton(
+                              //   icon: Icon(_cameraOn ? Icons.camera_alt : Icons
+                              //       .camera_alt_outlined),
+                              //   onPressed: () {
+                              //     setState(() {
+                              //       _cameraOn = !_cameraOn;
+                              //     });
+                              //     // open camera if _cameraOn is true
+                              //   },
+                              // ),
                               SizedBox(width: 1),
                               IconButton(
                                 icon: Icon(Icons.social_distance_rounded),
