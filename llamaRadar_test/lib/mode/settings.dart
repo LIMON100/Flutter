@@ -141,7 +141,6 @@ class _DashSettingsState extends State<DashSettings> {
     });
   }
 
-
   Future<void> camFront() async {
     final response = await http
         .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
@@ -243,6 +242,7 @@ class _DashSettingsState extends State<DashSettings> {
     }
   }
 
+
   void loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -282,7 +282,11 @@ class _DashSettingsState extends State<DashSettings> {
     setState(() {
       setval2 = newValue2;
       addBoolToSF('setval2',newValue2);
+
     });
+
+
+
   }
 
   onChangeFunction3(bool newValue3) {
@@ -504,9 +508,23 @@ class _DashSettingsState extends State<DashSettings> {
             buildOtherSettings("Change Camera ", setval4, onChangeFunction4),
             buildOtherSettings("G Sensor ", setval5, onChangeFunction5),
             buildOtherSettings("Exposure ", setval6, onChangeFunction6),
-            buildOtherSettings("System Reset ", setval7, onChangeFunction7),
-            //buildOtherSettings("Auto Recording ", setval8, onChangeFunction8),
+
             SizedBox(height: 10),
+            Divider(height: 20, thickness: 1),
+
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: const TextStyle(fontSize: 16),
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(left: 20.0),
+              ),
+              onPressed: () {
+                dashCamReset();
+              },
+              child: const Text('System Reset'),
+            ),
+            Divider(height: 20, thickness: 1),
+
             Center(
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(

@@ -42,20 +42,6 @@ class _BleScreenState extends State<BleScreen> {
   @override
   void initState() {
     super.initState();
-    // Previous
-    // widget.flutterBlue.connectedDevices
-    //     .asStream()
-    //     .listen((List<BluetoothDevice> devices) {
-    //   for (BluetoothDevice device in devices) {
-    //     _addDeviceTolist(device);
-    //   }
-    // });
-    // widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
-    //   for (ScanResult result in results) {
-    //     _addDeviceTolist(result.device);
-    //   }
-    // });
-
     //  New
     connectedDevicesSubscription =
         widget.flutterBlue.connectedDevices.asStream().listen((List<BluetoothDevice> devices) {

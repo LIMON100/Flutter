@@ -112,6 +112,9 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
+                // print("WOFO");
+                // print(textResultFirmware);
+
                 if (textResultFirmware[2] == 'ð') {
                   functionForFirmware(textResultFirmware);
                 }
@@ -161,15 +164,14 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
+    // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
     List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    // print("PARTS");
-    // print(parts.length);
     if (parts.length > 2) {
-      currentSSID = parts[4];
-      currentpass = parts[5];
+      currentSSID = parts[3];
+      currentpass = parts[4];
       currentpass = currentpass.substring(0, currentpass.length - 1);
-
-    } else {
+    }
+    else {
       print("Invalid format");
     }
   }
@@ -416,7 +418,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               title: Text('WiFi Settings'),
               subtitle: Text('Set SSID/Password'),
               onTap: () {
-                // _sendData([0x02,0x01,0x21,0x00,0x9,0x6c,0x69,0x6d,0x6f,0x6e,0x70,0x61,0x63,0x65,0x8,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x55]);
                 setState(() {
                   showSetWifi = !showSetWifi; // Toggle the flag
                 });
