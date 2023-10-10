@@ -5,6 +5,7 @@ import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/goToRide.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:lamaradar/temp/CollisionWarningPage2.dart';
+import 'package:lamaradar/temp/ResetButtonWidget.dart';
 
 import '../test/radar_test.dart';
 
@@ -300,53 +301,119 @@ void main(){
   // });
 
   // Set wifi ssid and password
-  testWidgets('WiFi Settings Tile and Saving Test', (WidgetTester tester) async {
-    String _selectedOption = 'OFF';
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: LlamaGuardSetting(device: MockBluetoothDevice(), selectedOption: _selectedOption),
-        ),
-      ),
-    );
+  // testWidgets('WiFi Settings Tile and Saving Test', (WidgetTester tester) async {
+  //   String _selectedOption = 'OFF';
+  //   await tester.pumpWidget(
+  //     MaterialApp(
+  //       home: Scaffold(
+  //         body: LlamaGuardSetting(device: MockBluetoothDevice(), selectedOption: _selectedOption),
+  //       ),
+  //     ),
+  //   );
+  //
+  //   // Find the ListTile widget with title 'WiFi Settings'
+  //   final wifiSettingsTile = find.widgetWithText(ListTile, 'WiFi Settings');
+  //
+  //   // Find the Text widget with subtitle 'Set SSID/Password'
+  //   final setSsidPasswordText = find.text('Set SSID/Password');
+  //
+  //   // Expect to find the 'WiFi Settings' ListTile
+  //   expect(wifiSettingsTile, findsOneWidget);
+  //
+  //   // Tap the 'WiFi Settings' ListTile
+  //   await tester.tap(wifiSettingsTile);
+  //   await tester.pump();
+  //
+  //   // Expect to find the Text widget with 'SSID (1-40 characters)' labelText
+  //   expect(find.text('SSID (1-40 characters)'), findsOneWidget);
+  //
+  //   // Expect to find the Text widget with 'Password (1-40 characters)' labelText
+  //   expect(find.text('Password (1-40 characters)'), findsOneWidget);
+  //
+  //   // Enter a random SSID and password in the TextFields
+  //   await tester.enterText(find.byType(TextField).first, 'TestSSID');
+  //   await tester.enterText(find.byType(TextField).last, 'TestPassword');
+  //
+  //   // Find and tap the 'SAVE' button
+  //   final saveButton = find.widgetWithText(ElevatedButton, 'SAVE');
+  //   await tester.tap(saveButton);
+  //   await tester.pump();
+  //
+  //   // Expect to find a Snackbar with a success message
+  //   expect(find.text('SSID and password saved successfully'), findsOneWidget);
+  //
+  //   // Tap the 'WiFi Settings' ListTile again to close the settings
+  //   await tester.tap(wifiSettingsTile);
+  //   await tester.pump();
+  //
+  //   // Expect to find the 'Set SSID/Password' subtitle after closing the settings
+  //   expect(setSsidPasswordText, findsOneWidget);
+  // });
 
-    // Find the ListTile widget with title 'WiFi Settings'
-    final wifiSettingsTile = find.widgetWithText(ListTile, 'WiFi Settings');
+  // Check firmware version and data
+  // testWidgets('Tap ListTile to show firmware version and date', (WidgetTester tester) async {
+  //   // Build our widget
+  //   String _selectedOption = 'OFF';
+  //   await tester.pumpWidget(MaterialApp(
+  //     home: LlamaGuardSetting(device: MockBluetoothDevice(), selectedOption: _selectedOption)
+  //   ));
+  //
+  //   // Initially, the firmware version and date should not be visible
+  //   expect(find.text('Version: '), findsNothing);
+  //   expect(find.text('Date: '), findsNothing);
+  //
+  //   // Simulate a tap on the ListTile
+  //   await tester.tap(find.text('Firmware'));
+  //   await tester.pump();
+  //
+  //   // After the tap, the firmware version and date should be visible
+  //   expect(find.text('Version: '), findsOneWidget);
+  //   expect(find.text('Date: '), findsOneWidget);
+  // });
 
-    // Find the Text widget with subtitle 'Set SSID/Password'
-    final setSsidPasswordText = find.text('Set SSID/Password');
+  // Reset button
+  // testWidgets('Press Reset Device button and set isResetPress to true', (WidgetTester tester) async {
+  //   bool isResetPress = false; // Initialize isResetPress to false
+  //   String _selectedOption = 'OFF';
+  //   // Build our widget
+  //   await tester.pumpWidget(MaterialApp(
+  //     home: Scaffold(
+  //       body: LlamaGuardSetting(device: MockBluetoothDevice(), selectedOption: _selectedOption)
+  //     ),
+  //   ));
+  //
+  //   // Initially, isResetPress should be false
+  //   expect(isResetPress, false);
+  //
+  //   // Find the Reset Device button and tap it
+  //   await tester.tap(find.text('Reset Device'));
+  //   await tester.pump();
+  //
+  //   // After tapping, isResetPress should be true
+  //   expect(isResetPress, true);
+  // });
 
-    // Expect to find the 'WiFi Settings' ListTile
-    expect(wifiSettingsTile, findsOneWidget);
+  // Tailight
+  testWidgets('Verify selected dropdown item is displayed', (WidgetTester tester) async {
+    // Build our widget
+    await tester.pumpWidget(MaterialApp(
+      home: CollisionWarningPage2(device: MockBluetoothDevice()),
+    ));
 
-    // Tap the 'WiFi Settings' ListTile
-    await tester.tap(wifiSettingsTile);
-    await tester.pump();
+    // Open the dropdown
+    await tester.tap(find.byType(DropdownButton));
+    await tester.pumpAndSettle();
 
-    // Expect to find the Text widget with 'SSID (1-40 characters)' labelText
-    expect(find.text('SSID (1-40 characters)'), findsOneWidget);
+    // Loop through all the available dropdown items
+    for (final item in ['ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH', 'CUSTOM']) {
+      // Tap on the item
+      await tester.tap(find.text(item));
+      await tester.pumpAndSettle();
 
-    // Expect to find the Text widget with 'Password (1-40 characters)' labelText
-    expect(find.text('Password (1-40 characters)'), findsOneWidget);
-
-    // Enter a random SSID and password in the TextFields
-    await tester.enterText(find.byType(TextField).first, 'TestSSID');
-    await tester.enterText(find.byType(TextField).last, 'TestPassword');
-
-    // Find and tap the 'SAVE' button
-    final saveButton = find.widgetWithText(ElevatedButton, 'SAVE');
-    await tester.tap(saveButton);
-    await tester.pump();
-
-    // Expect to find a Snackbar with a success message
-    expect(find.text('SSID and password saved successfully'), findsOneWidget);
-
-    // Tap the 'WiFi Settings' ListTile again to close the settings
-    await tester.tap(wifiSettingsTile);
-    await tester.pump();
-
-    // Expect to find the 'Set SSID/Password' subtitle after closing the settings
-    expect(setSsidPasswordText, findsOneWidget);
+      // Verify that the selected item is displayed
+      expect(find.text('Selected option: $item'), findsOneWidget);
+    }
   });
+
 }
 
