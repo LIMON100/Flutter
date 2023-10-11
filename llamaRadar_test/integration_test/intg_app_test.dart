@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gallery_saver/files.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:http/http.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/mockito.dart';
-import 'package:lamaradar/mode/LlamaDefenderPage.dart';
 import 'package:lamaradar/mode/dash_cam.dart';
 import 'package:lamaradar/main.dart' as app;
 import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
@@ -20,8 +16,8 @@ import 'package:lamaradar/mode/goToRide.dart' as rideapp;
 import 'package:lamaradar/temp/CollisionWarningPage2.dart';
 import 'package:lamaradar/mode/goToRide.dart';
 import 'package:lamaradar/sideBar.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:http/http.dart' as http;
+
 import '../test/radar_test.dart';
 
 
@@ -327,6 +323,39 @@ void main() {
   // });
 
   // STOP ride
+  // testWidgets('Test Stop ride', (WidgetTester tester) async {
+  //
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // final findButton = find.byKey(Key("PairDevice"));
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Delay for a short period to simulate the scan duration
+  //   await tester.pump(Duration(seconds: 2)); // Increase the duration if needed
+  //
+  //   // Verify that the list of available devices is shown
+  //   expect(find.byType(ListView), findsOneWidget);
+  //
+  //   // Delay to allow navigation to complete
+  //   await tester.pumpAndSettle();
+  //
+  //   final connectButton = find.text('Connect');
+  //   // Tap the "Connect" button
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //   await tester.pump(Duration(seconds: 5));
+  //
+  //   final stopButton = find.byType(TextButton);
+  //   await tester.tap(stopButton);
+  //   await tester.pumpAndSettle();
+  //   expect(BleScreen, findsOneWidget);
+  // });
 
   // CHECK WIFI LIST For Dashcam
   // testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
@@ -391,40 +420,107 @@ void main() {
   // });
 
   // Wifi connection for dashcam
-  testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
-    // Build the app
-    await tester.pumpWidget(
-      MaterialApp(
-        home: ConnectWifiForDashCam(),
-      ),
-    );
+  // testWidgets('Test ConnectWifiForDashCam', (WidgetTester tester) async {
+  //   // Build the app
+  //   await tester.pumpWidget(
+  //     MaterialApp(
+  //       home: ConnectWifiForDashCam(),
+  //     ),
+  //   );
+  //   await tester.pumpAndSettle();
+  //
+  //   // Find and tap the button to scan WiFi networks
+  //   final scanButton = find.byKey(Key('scanButton')); // Replace with your button's key
+  //   expect(scanButton, findsOneWidget);
+  //   await tester.tap(scanButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.pump(Duration(seconds: 10));
+  //   // Find and tap the WiFi network starting with "CARDV"
+  //   final wifiNetworkItem = find.byWidgetPredicate((widget) {
+  //     if (widget is ListTile && widget.title is Text) {
+  //       final text = (widget.title as Text).data;
+  //       return text != null && text.startsWith('CARDV');
+  //     }
+  //     return false;
+  //   });
+  //   // expect(wifiNetworkItem, findsOneWidget);
+  //   await tester.tap(wifiNetworkItem);
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.pump(Duration(seconds: 5));
+  //
+  //   final connectButton = find.text('Open Dashcam');
+  //   // expect(connectButton, findsOneWidget);
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // await tester.pump(Duration(seconds: ));
+  //   expect(DashCam, findsOneWidget);
+  // });
+
+
+  // TEST tailight mode
+  // testWidgets('Test Tailight', (WidgetTester tester) async {
+  //
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // final findButton = find.byKey(Key("PairDevice"));
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Delay for a short period to simulate the scan duration
+  //   await tester.pump(Duration(seconds: 2)); // Increase the duration if needed
+  //
+  //   // Verify that the list of available devices is shown
+  //   expect(find.byType(ListView), findsOneWidget);
+  //
+  //   // Delay to allow navigation to complete
+  //   await tester.pumpAndSettle();
+  //
+  //   final connectButton = find.text('Connect');
+  //   // Tap the "Connect" button
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //   await tester.pump(Duration(seconds: 5));
+  //   expect(find.text('Close') , findsOneWidget);
+  // });
+
+  //Check tailight mode
+  testWidgets('Select option in CollisionWarningPage2 and verify in LlamaGuardSetting', (WidgetTester tester) async {
+    // Build the app and navigate to CollisionWarningPage2
+    app.main();
+
+    // Delay for a short period to allow the app to render
+    await tester.pump(Duration(seconds: 2));
+
+    // final findButton = find.byKey(Key("PairDevice"));
+    final findButton = find.text('Pair Device to Start');
+
+    await tester.tap(findButton);
     await tester.pumpAndSettle();
 
-    // Find and tap the button to scan WiFi networks
-    final scanButton = find.byKey(Key('scanButton')); // Replace with your button's key
-    expect(scanButton, findsOneWidget);
-    await tester.tap(scanButton);
+    // await tester.pumpWidget(MaterialApp(
+    //   home: CollisionWarningPage2(device: MockBluetoothDevice()),
+    // ));
+    await tester.pump(Duration(seconds: 3));
+    // Verify that the default option ('OFF') is displayed in LlamaGuardSetting
+    expect(find.text('Current Mode: OFF'), findsOneWidget);
+
+    // Open the dropdown menu and select a different option
+    await tester.tap(find.byKey(Key("DROPDOWNBUTTON")));
     await tester.pumpAndSettle();
 
-    await tester.pump(Duration(seconds: 10));
-    // Find and tap the WiFi network starting with "CARDV"
-    final wifiNetworkItem = find.byWidgetPredicate((widget) {
-      if (widget is ListTile && widget.title is Text) {
-        final text = (widget.title as Text).data;
-        return text != null && text.startsWith('CARDV');
-      }
-      return false;
-    });
-    // expect(wifiNetworkItem, findsOneWidget);
-    await tester.tap(wifiNetworkItem);
+    await tester.tap(find.text('ON')); // Select 'ON' option, adjust this based on your UI
     await tester.pumpAndSettle();
 
-    await tester.pump(Duration(seconds: 5));
-
-    final connectButton = find.text('Open Dashcam');
-    // expect(connectButton, findsOneWidget);
-    await tester.tap(connectButton);
-    await tester.pumpAndSettle();
+    // Verify that the selected option ('ON') is displayed in LlamaGuardSetting
+    expect(find.text('Current Mode: ON'), findsOneWidget);
   });
 
 }
