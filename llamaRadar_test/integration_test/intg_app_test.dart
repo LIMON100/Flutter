@@ -4,6 +4,7 @@ import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:mockito/mockito.dart';
 import 'package:lamaradar/mode/dash_cam.dart';
 import 'package:lamaradar/main.dart' as app;
@@ -560,51 +561,110 @@ void main() {
   // });
 
   // Left indicator 10 second timer
-  testWidgets('Test _startLeftBlinking2 with different values', (WidgetTester tester) async {
+  // testWidgets('Test startLeftBlinking with different values', (WidgetTester tester) async {
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Delay for a short period to simulate the scan duration
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // Verify that the list of available devices is shown
+  //   // expect(find.byType(ListView), findsOneWidget);
+  //
+  //   final connectButton = find.text('Connect');
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //   await tester.pump(Duration(seconds: 5));
+  //
+  //   // Find the IconButton with the key "LEFTBLINK"
+  //   final button = find.byKey(Key("LEFTBLINK"));
+  //
+  //   // Initial conditions
+  //   expect(find.text("Blinking: false"), findsOneWidget);
+  //
+  //   // 1. Test when the value is 0 (should blink for 10 seconds)
+  //   await tester.tap(button);
+  //   await tester.pump();
+  //
+  //   // The button press should initiate blinking
+  //   expect(find.text("Blinking: true"), findsOneWidget);
+  //
+  //   await Future.delayed(Duration(seconds: 10)); // Wait for 10 seconds
+  //
+  //   // The button should now stop blinking automatically
+  //   expect(find.text("Blinking: false"), findsOneWidget);
+  //
+  //   // 2. Test when the value is 1 or 2 (should blink for 3 seconds)
+  //   await tester.tap(button);
+  //   await tester.pump();
+  //
+  //   // The button press should initiate blinking
+  //   expect(find.text("Blinking: true"), findsOneWidget);
+  //
+  //   await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds
+  //
+  //   // The button should now stop blinking automatically
+  //   expect(find.text("Blinking: false"), findsOneWidget);
+  // });
+
+  // check wifi ssid and password
+  testWidgets('Integration test for checking current Wi-Fi SSID and password', (WidgetTester tester) async {
+    bool isResetPress = false;
+    String _selectedOption = 'OFF';
+    // await tester.pumpWidget(MaterialApp(
+    //   home: Scaffold(
+    //     body: CollisionWarningPage2(device: MockBluetoothDevice())
+    //   ),
+    // ));
     app.main();
 
-    // Delay for a short period to allow the app to render
-    await tester.pump(Duration(seconds: 2));
-
-    // final findButton = find.byKey(Key("PairDevice"));
-    final findButton = find.text('Pair Device to Start');
+    final findButton = find.byKey(Key("PairDevice"));
 
     await tester.tap(findButton);
     await tester.pumpAndSettle();
 
+    // Delay for a short period to simulate the scan duration
     await tester.pump(Duration(seconds: 3));
 
-    // Find the IconButton by its key
-    final leftBlinkButton = find.byKey(Key("LEFTBLINK"));
+    // Verify that the list of available devices is shown
+    // expect(find.byType(ListView), findsOneWidget);
 
-    // Find the IconButton with the key "LEFTBLINK"
-    final button = find.byKey(Key("LEFTBLINK"));
+    final connectButton = find.text('Connect');
+    await tester.tap(connectButton);
+    await tester.pumpAndSettle();
 
     // Initial conditions
-    expect(find.text("Blinking: false"), findsOneWidget);
+    // expect(find.text('Press to check current ssid and password'), findsOneWidget);
+    // expect(find.text('Current SSID:'), findsNothing); // SSID should not be visible initially
+    // expect(find.text('Current Password:'), findsNothing); // Password should not be visible initially
 
-    // 1. Test when the value is 0 (should blink for 10 seconds)
-    await tester.tap(button);
+    final guardButton = find.byKey(Key("GUARDP"));
+    await tester.tap(guardButton);
     await tester.pump();
 
-    // The button press should initiate blinking
-    expect(find.text("Blinking: true"), findsOneWidget);
-
-    await Future.delayed(Duration(seconds: 10)); // Wait for 10 seconds
-
-    // The button should now stop blinking automatically
-    expect(find.text("Blinking: false"), findsOneWidget);
-
-    // 2. Test when the value is 1 or 2 (should blink for 3 seconds)
-    await tester.tap(button);
+    // Tap the ListTile with key "GETWIFI"
+    await tester.tap(find.byKey(Key("GETWIFI")));
     await tester.pump();
 
-    // The button press should initiate blinking
-    expect(find.text("Blinking: true"), findsOneWidget);
+    // Check if it shows current SSID and password
+    expect(find.text('Current SSID:'), findsOneWidget);
+    expect(find.text('Current Password:'), findsOneWidget);
 
-    await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds
+    await Future.delayed(Duration(seconds: 3));
 
-    // The button should now stop blinking automatically
-    expect(find.text("Blinking: false"), findsOneWidget);
+    // Replace these with the actual SSID and password you expect
+    String expectedSSID = 'Limonpacenet';
+    String expectedPassword = '121345678';
+
+    // Verify if the current SSID and password match the expected values
+    expect(find.text(expectedSSID), findsOneWidget);
+    expect(find.text(expectedPassword), findsOneWidget);
   });
 }
