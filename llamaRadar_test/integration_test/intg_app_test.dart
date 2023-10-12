@@ -560,51 +560,51 @@ void main() {
   // });
 
   // Left indicator 10 second timer
-  testWidgets('Test IconButton Blinking', (WidgetTester tester) async {
-
+  testWidgets('Test _startLeftBlinking2 with different values', (WidgetTester tester) async {
     app.main();
 
     // Delay for a short period to allow the app to render
     await tester.pump(Duration(seconds: 2));
 
-    final findButton = find.byKey(Key("PairDevice"));
+    // final findButton = find.byKey(Key("PairDevice"));
+    final findButton = find.text('Pair Device to Start');
 
     await tester.tap(findButton);
     await tester.pumpAndSettle();
 
-    // Delay for a short period to simulate the scan duration
     await tester.pump(Duration(seconds: 3));
 
-    // Verify that the list of available devices is shown
-    expect(find.byType(ListView), findsOneWidget);
+    // Find the IconButton by its key
+    final leftBlinkButton = find.byKey(Key("LEFTBLINK"));
 
-    // Delay to allow navigation to complete
-    await tester.pumpAndSettle();
+    // Find the IconButton with the key "LEFTBLINK"
+    final button = find.byKey(Key("LEFTBLINK"));
 
-    final connectButton = find.text('Connect');
-    // Tap the "Connect" button
-    await tester.tap(connectButton);
-    await tester.pumpAndSettle();
+    // Initial conditions
+    expect(find.text("Blinking: false"), findsOneWidget);
 
-    final rightButton = find.byKey(Key("LEFTBLINK"));
-    expect(rightButton, findsOneWidget);
+    // 1. Test when the value is 0 (should blink for 10 seconds)
+    await tester.tap(button);
+    await tester.pump();
 
-    // Initial conditions: icon should not be blinking
-    // expect(find.byIcon(Icons.indicator), findsOneWidget);
-    // expect(find.text('Stop'), findsNothing);
-    //
-    // // Trigger the button press
-    // await tester.tap(iconButton);
-    // await tester.pump();
-    //
-    // // Expect that the icon is blinking
-    // expect(find.byIcon(Icons.indicator), findsNothing);
-    //
-    // // Wait for 10 seconds (icon should be blinking during this time)
-    // await Future.delayed(Duration(seconds: 10));
-    //
-    // // Expect that the blinking has stopped
-    // expect(find.byIcon(Icons.indicator), findsOneWidget);
-    // expect(find.text('Stop'), findsOneWidget);
+    // The button press should initiate blinking
+    expect(find.text("Blinking: true"), findsOneWidget);
+
+    await Future.delayed(Duration(seconds: 10)); // Wait for 10 seconds
+
+    // The button should now stop blinking automatically
+    expect(find.text("Blinking: false"), findsOneWidget);
+
+    // 2. Test when the value is 1 or 2 (should blink for 3 seconds)
+    await tester.tap(button);
+    await tester.pump();
+
+    // The button press should initiate blinking
+    expect(find.text("Blinking: true"), findsOneWidget);
+
+    await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds
+
+    // The button should now stop blinking automatically
+    expect(find.text("Blinking: false"), findsOneWidget);
   });
 }
