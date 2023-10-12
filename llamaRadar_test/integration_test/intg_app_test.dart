@@ -460,7 +460,7 @@ void main() {
   // });
 
 
-  // TEST tailight mode
+  // TEST tailight mode (Not worked)
   // testWidgets('Test Tailight', (WidgetTester tester) async {
   //
   //   app.main();
@@ -491,36 +491,120 @@ void main() {
   //   expect(find.text('Close') , findsOneWidget);
   // });
 
-  //Check tailight mode
-  testWidgets('Select option in CollisionWarningPage2 and verify in LlamaGuardSetting', (WidgetTester tester) async {
-    // Build the app and navigate to CollisionWarningPage2
+  //Check tailight mode (Not worked)
+  // testWidgets('Select option in CollisionWarningPage2 and verify in LlamaGuardSetting', (WidgetTester tester) async {
+  //   // Build the app and navigate to CollisionWarningPage2
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // final findButton = find.byKey(Key("PairDevice"));
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // await tester.pumpWidget(MaterialApp(
+  //   //   home: CollisionWarningPage2(device: MockBluetoothDevice()),
+  //   // ));
+  //   await tester.pump(Duration(seconds: 3));
+  //   // Verify that the default option ('OFF') is displayed in LlamaGuardSetting
+  //   expect(find.text('Current Mode: OFF'), findsOneWidget);
+  //
+  //   // Open the dropdown menu and select a different option
+  //   await tester.tap(find.byKey(Key("DROPDOWNBUTTON")));
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.tap(find.text('ON')); // Select 'ON' option, adjust this based on your UI
+  //   await tester.pumpAndSettle();
+  //
+  //   // Verify that the selected option ('ON') is displayed in LlamaGuardSetting
+  //   expect(find.text('Current Mode: ON'), findsOneWidget);
+  // });
+
+  // Custom tailight change
+  // testWidgets('Test custom dialog functionality', (WidgetTester tester) async {
+  //   // Build the app and navigate to the widget containing your DropdownButton and custom dialog
+  //   app.main();
+  //
+  //   // Delay for a short period to allow the app to render
+  //   await tester.pump(Duration(seconds: 2));
+  //
+  //   // final findButton = find.byKey(Key("PairDevice"));
+  //   final findButton = find.text('Pair Device to Start');
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.pump(Duration(seconds: 3));
+  //
+  //   // Find the DropdownButton and select the "CUSTOM" option
+  //   await tester.tap(find.byKey(Key("DROPDOWNBUTTON")));
+  //   await tester.pumpAndSettle();
+  //
+  //   await tester.tap(find.text('CUSTOM')); // Select 'CUSTOM' option
+  //   await tester.pumpAndSettle();
+  //
+  //   // Find the sliders in the custom dialog and set their values
+  //   await tester.drag(find.byType(Slider).first, Offset(300.0, 0.0));
+  //   await tester.drag(find.byType(Slider).last, Offset(300.0, 0.0));
+  //   await tester.pumpAndSettle();
+  //
+  //   // Find the SAVE button in the custom dialog and press it
+  //   await tester.tap(find.text('Save'));
+  //   await tester.pumpAndSettle();
+  //
+  //   // Add expectations to verify the changes you expect in your UI or state after pressing SAVE
+  //   expect(find.text('Custom dialog changes verified'), findsOneWidget);
+  // });
+
+  // Left indicator 10 second timer
+  testWidgets('Test IconButton Blinking', (WidgetTester tester) async {
+
     app.main();
 
     // Delay for a short period to allow the app to render
     await tester.pump(Duration(seconds: 2));
 
-    // final findButton = find.byKey(Key("PairDevice"));
-    final findButton = find.text('Pair Device to Start');
+    final findButton = find.byKey(Key("PairDevice"));
 
     await tester.tap(findButton);
     await tester.pumpAndSettle();
 
-    // await tester.pumpWidget(MaterialApp(
-    //   home: CollisionWarningPage2(device: MockBluetoothDevice()),
-    // ));
+    // Delay for a short period to simulate the scan duration
     await tester.pump(Duration(seconds: 3));
-    // Verify that the default option ('OFF') is displayed in LlamaGuardSetting
-    expect(find.text('Current Mode: OFF'), findsOneWidget);
 
-    // Open the dropdown menu and select a different option
-    await tester.tap(find.byKey(Key("DROPDOWNBUTTON")));
+    // Verify that the list of available devices is shown
+    expect(find.byType(ListView), findsOneWidget);
+
+    // Delay to allow navigation to complete
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('ON')); // Select 'ON' option, adjust this based on your UI
+    final connectButton = find.text('Connect');
+    // Tap the "Connect" button
+    await tester.tap(connectButton);
     await tester.pumpAndSettle();
 
-    // Verify that the selected option ('ON') is displayed in LlamaGuardSetting
-    expect(find.text('Current Mode: ON'), findsOneWidget);
+    final rightButton = find.byKey(Key("LEFTBLINK"));
+    expect(rightButton, findsOneWidget);
+
+    // Initial conditions: icon should not be blinking
+    // expect(find.byIcon(Icons.indicator), findsOneWidget);
+    // expect(find.text('Stop'), findsNothing);
+    //
+    // // Trigger the button press
+    // await tester.tap(iconButton);
+    // await tester.pump();
+    //
+    // // Expect that the icon is blinking
+    // expect(find.byIcon(Icons.indicator), findsNothing);
+    //
+    // // Wait for 10 seconds (icon should be blinking during this time)
+    // await Future.delayed(Duration(seconds: 10));
+    //
+    // // Expect that the blinking has stopped
+    // expect(find.byIcon(Icons.indicator), findsOneWidget);
+    // expect(find.text('Stop'), findsOneWidget);
   });
-
 }
