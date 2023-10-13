@@ -250,6 +250,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
+                print("Value");
+                print(_value);
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -450,7 +452,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[28]);
+      locationCode = int.parse(_value[27]);
     } catch (e) {
       return 'No Notification';
     }
@@ -475,19 +477,63 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Left/Right/Rear icon
   int right_danger_counter = 0;
 
+  // Widget _getLeftIcon() {
+  //   double opacity = 1.0;
+  //   Color color = Colors.red;
+  //
+  //   if (_getLocation() == 'Left Notification Danger') {
+  //     color = Colors.red;
+  //     left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //     left_redPlayer.play();
+  //   }
+  //   else if (_getLocation() == 'Left Notification Warning') {
+  //     color = Colors.yellow;
+  //     left_greenPlayer.setAsset('assets/danger_beep.mp3');
+  //     left_greenPlayer.play();
+  //   }
+  //   else {
+  //     color = Colors.green;
+  //     left_greenPlayer.stop();
+  //     left_redPlayer.stop();
+  //   }
+  //
+  //   return AnimatedOpacity(
+  //     duration: Duration(milliseconds: 300),
+  //     opacity: opacity,
+  //     // child: Icon(Icons.arrow_back, color: color),
+  //     child: Container(
+  //       height: 48,
+  //       color: Colors.transparent,
+  //       child: Image.asset(
+  //         'assets/icons/left_warning_llama_rb.png',
+  //         color: color,
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
 
-    if (_getLocation() == 'Left Notification Danger') {
+    String location = _getLocation();
+
+    if (location == 'Left Notification Danger') {
       color = Colors.red;
       left_redPlayer.setAsset('assets/warning_beep.mp3');
       left_redPlayer.play();
+
+      Timer(Duration(milliseconds: 100), () {
+        left_redPlayer.stop();
+      });
     }
-    else if (_getLocation() == 'Left Notification Warning') {
+    else if (location == 'Left Notification Warning') {
       color = Colors.yellow;
       left_greenPlayer.setAsset('assets/danger_beep.mp3');
       left_greenPlayer.play();
+
+      Timer(Duration(milliseconds: 100), () {
+        left_greenPlayer.stop();
+      });
     }
     else {
       color = Colors.green;
@@ -510,6 +556,77 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
+
+  // Demo test lefIcon+getLocation
+  // Widget _getNotificationIconLeft() {
+  //   double opacity = 1.0;
+  //   Color color = Colors.red;
+  //   String notification = '';
+  //
+  //   if (_value == null || _value.isEmpty || _value.length < 29) {
+  //     notification = 'Notification Not Available';
+  //   }
+  //   else
+  //   {
+  //     int locationCode = 0;
+  //     try {
+  //       locationCode = int.parse(_value[27]);
+  //     }
+  //     catch (e) {
+  //       notification = 'No Notification';
+  //     }
+  //     switch (locationCode) {
+  //       // case 1:
+  //       //   notification = 'Right Notification Warning';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       // case 2:
+  //       //   notification = 'Right Notification Danger';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       case 1:
+  //         notification = 'Left Notification Danger';
+  //         color = Colors.red;
+  //         left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //         left_redPlayer.play();
+  //         break;
+  //       case 2:
+  //         notification = 'Left Notification Warning';
+  //         color = Colors.yellow;
+  //         left_greenPlayer.setAsset('assets/danger_beep.mp3');
+  //         left_greenPlayer.play();
+  //         break;
+  //       // case 5:
+  //       //   notification = 'Rear Notification Danger';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       default:
+  //         notification = '';
+  //         color = Colors.green;
+  //         left_greenPlayer.stop();
+  //         left_redPlayer.stop();
+  //     }
+  //   }
+  //   return AnimatedOpacity(
+  //     duration: Duration(milliseconds: 300),
+  //     opacity: opacity,
+  //     // child: Icon(Icons.arrow_back, color: color),
+  //     child: Container(
+  //       height: 48,
+  //       color: Colors.transparent,
+  //       child: Image.asset(
+  //         'assets/icons/left_warning_llama_rb.png',
+  //         color: color,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _getRightIcon() {
     double opacity = 1.0;
@@ -612,11 +729,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
 
-  void _handleButtonPress() {
-    if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
-      _startBlinking3();
-    }
-  }
+  // void _handleButtonPress() {
+  //   if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
+  //     _startBlinking3();
+  //   }
+  // }
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
@@ -1130,6 +1247,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _getLeftIcon(),
+                        // _getNotificationIconLeft(),
                         SizedBox(width: 15),
                         Text(
                           _getLocation(),
@@ -1156,8 +1274,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     //   child: Column(
                     //     mainAxisAlignment: MainAxisAlignment.center,
                     //     children: [
-                    //       Text("_isLeftBlinking:: $_isLeftBlinking"),
-                    //       Text("_isFirstData:: $_isFirstData"),
+                    //       Text("_isLeftBlinking:: "),
+                    //       Text(_value[27]),
+                    //       // Text("_isFirstData:: $_isFirstData"),
                     //     ],
                     //   ),
                     // ),
@@ -1256,7 +1375,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                 onPressed: () {
                                    //  new Data
                                   _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
-                                  _handleButtonPress();
+                                  // _handleButtonPress();
                                 },
                               ),
                               SizedBox(width: 2),
