@@ -18,7 +18,6 @@ import 'package:lamaradar/temp/CollisionWarningPage2.dart';
 import 'package:lamaradar/mode/goToRide.dart';
 import 'package:lamaradar/sideBar.dart';
 import 'package:http/http.dart' as http;
-
 import '../test/radar_test.dart';
 
 
@@ -615,56 +614,98 @@ void main() {
   // });
 
   // check wifi ssid and password
-  testWidgets('Integration test for checking current Wi-Fi SSID and password', (WidgetTester tester) async {
-    bool isResetPress = false;
+  // testWidgets('Integration test for checking current Wi-Fi SSID and password', (WidgetTester tester) async {
+  //   bool isResetPress = false;
+  //   String _selectedOption = 'OFF';
+  //   // await tester.pumpWidget(MaterialApp(
+  //   //   home: Scaffold(
+  //   //     body: CollisionWarningPage2(device: MockBluetoothDevice())
+  //   //   ),
+  //   // ));
+  //   app.main();
+  //
+  //   final findButton = find.byKey(Key("PairDevice"));
+  //
+  //   await tester.tap(findButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Delay for a short period to simulate the scan duration
+  //   await tester.pump(Duration(seconds: 3));
+  //
+  //   // Verify that the list of available devices is shown
+  //   // expect(find.byType(ListView), findsOneWidget);
+  //
+  //   final connectButton = find.text('Connect');
+  //   await tester.tap(connectButton);
+  //   await tester.pumpAndSettle();
+  //
+  //   // Initial conditions
+  //   // expect(find.text('Press to check current ssid and password'), findsOneWidget);
+  //   // expect(find.text('Current SSID:'), findsNothing); // SSID should not be visible initially
+  //   // expect(find.text('Current Password:'), findsNothing); // Password should not be visible initially
+  //
+  //   final guardButton = find.byKey(Key("GUARDP"));
+  //   await tester.tap(guardButton);
+  //   await tester.pump();
+  //
+  //   // Tap the ListTile with key "GETWIFI"
+  //   await tester.tap(find.byKey(Key("GETWIFI")));
+  //   await tester.pump();
+  //
+  //   // Check if it shows current SSID and password
+  //   expect(find.text('Current SSID:'), findsOneWidget);
+  //   expect(find.text('Current Password:'), findsOneWidget);
+  //
+  //   await Future.delayed(Duration(seconds: 3));
+  //
+  //   // Replace these with the actual SSID and password you expect
+  //   String expectedSSID = 'Limonpacenet';
+  //   String expectedPassword = '121345678';
+  //
+  //   // Verify if the current SSID and password match the expected values
+  //   expect(find.text(expectedSSID), findsOneWidget);
+  //   expect(find.text(expectedPassword), findsOneWidget);
+  // });
+
+  testWidgets('Generate WiFi Command', (WidgetTester tester) async {
+    // Define your test SSID and password
+    final testSSID = 'TestSSID';
+    final testPassword = 'TestPassword';
     String _selectedOption = 'OFF';
-    // await tester.pumpWidget(MaterialApp(
-    //   home: Scaffold(
-    //     body: CollisionWarningPage2(device: MockBluetoothDevice())
-    //   ),
-    // ));
-    app.main();
+    // Build your widget tree
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: LlamaGuardSetting(device: MockBluetoothDevice(), selectedOption: _selectedOption)
+      ),
+    ));
 
-    final findButton = find.byKey(Key("PairDevice"));
+    // Find and interact with the text fields
+    await tester.enterText(find.byKey(Key('SSIDTextField')), testSSID);
+    await tester.enterText(find.byKey(Key('PasswordTextField')), testPassword);
 
-    await tester.tap(findButton);
-    await tester.pumpAndSettle();
-
-    // Delay for a short period to simulate the scan duration
-    await tester.pump(Duration(seconds: 3));
-
-    // Verify that the list of available devices is shown
-    // expect(find.byType(ListView), findsOneWidget);
-
-    final connectButton = find.text('Connect');
-    await tester.tap(connectButton);
-    await tester.pumpAndSettle();
-
-    // Initial conditions
-    // expect(find.text('Press to check current ssid and password'), findsOneWidget);
-    // expect(find.text('Current SSID:'), findsNothing); // SSID should not be visible initially
-    // expect(find.text('Current Password:'), findsNothing); // Password should not be visible initially
-
-    final guardButton = find.byKey(Key("GUARDP"));
-    await tester.tap(guardButton);
+    // Tap the "SAVE" button
+    await tester.tap(find.text('SAVE'));
     await tester.pump();
 
-    // Tap the ListTile with key "GETWIFI"
-    await tester.tap(find.byKey(Key("GETWIFI")));
-    await tester.pump();
+    // Wait for the SnackBar
+    await tester.pump(const Duration(seconds: 1));
 
-    // Check if it shows current SSID and password
-    expect(find.text('Current SSID:'), findsOneWidget);
-    expect(find.text('Current Password:'), findsOneWidget);
+    // Find the generated command and checksum
+    final generatedCommand = find.text('GeneratedCommand').evaluate().single.widget as Text;
+    final checksum = find.text('Checksum').evaluate().single.widget as Text;
 
-    await Future.delayed(Duration(seconds: 3));
-
-    // Replace these with the actual SSID and password you expect
-    String expectedSSID = 'Limonpacenet';
-    String expectedPassword = '121345678';
-
-    // Verify if the current SSID and password match the expected values
-    expect(find.text(expectedSSID), findsOneWidget);
-    expect(find.text(expectedPassword), findsOneWidget);
+    // Validate the generated command
+    expect(
+      generatedCommand.data,
+      '0x02,0x01,0x21,0x00,0x${testSSID.length.toRadixString(16)},${getHexString(testSSID)},0x${testPassword.length.toRadixString(16)},${getHexString(testPassword)},${checksum.data}',
+    );
   });
+}
+
+String getHexString(String input) {
+  String hexString = '';
+  for (int i = 0; i < input.length; i++) {
+    hexString += '0x${input.codeUnitAt(i).toRadixString(16)},';
+  }
+  return hexString.substring(0, hexString.length - 1);
 }
