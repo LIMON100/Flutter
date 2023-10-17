@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:lamaradar/temp/ConnectionProvider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:lamaradar/provider/ConnectionProvider.dart';
 import 'package:provider/provider.dart';
 import '../mode/bleScreen.dart';
 import '../temp/glowing_button.dart';
@@ -26,7 +27,8 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
   bool isConnected = false;
   bool isConnectedFromEmptyList = false;
   final String ssid = ' ';
-  final password = '%%%%@@@@'; // %%%%@@@@ 12345678
+  final password = '12345678';
+  bool isLoading = false;
 
   Future<bool> _checkPermissions() async {
     if (Platform.isIOS || await Permission.location.request().isGranted) {
@@ -36,7 +38,6 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
   }
 
   void _scanWifiNetworks(BuildContext context, ConnectionProvider connectionProvider) async {
-    print("Inside _scanWifiNetworks");
     if (connectionProvider.isConnected) {
       FlutterIotWifi.disconnect().then((value) {
         setState(() {
@@ -44,11 +45,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
           connectionProvider.setConnected(false);
         });
         print("Disconnect initiated: $value");
-
-        // Start the Wi-Fi scan after disconnecting
-        // _startWifiScan(context);
       });
-    } else if (await _checkPermissions()) {
+    }
+    else if (await _checkPermissions()) {
       // Start the Wi-Fi scan directly
       _startWifiScan(context, connectionProvider);
     }
@@ -57,7 +56,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
 
   // For Lower android version
   void _startWifiScan(BuildContext context, ConnectionProvider connectionProvider) async {
-    print("Inside startscan");
+    setState(() {
+      isLoading = true;
+    });
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -68,6 +69,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
         print(networks);
 
         if (networks.isEmpty) {
+          setState(() {
+            isLoading = false;
+          });
           isConnectedFromEmptyList = true;
           // Show a pop-up message when the networks list is empty
           showDialog(
@@ -90,6 +94,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             },
           );
         } else {
+          setState(() {
+            isLoading = false;
+          });
           // Show the list of available WiFi networks
           showDialog(
             context: context,
@@ -116,7 +123,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             },
           );
         }
-      } else {
+      }
+      else
+      {
         print('Failed to scan Wi-Fi networks');
         await Future.delayed(Duration(seconds: 6)); // Adjust the delay as needed
         _startWifiScan(context, connectionProvider);
@@ -124,32 +133,12 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
     } catch (e) {
       print('Failed to scan Wi-Fi networks: $e');
     }
+    finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
-
-  // void _connect(BuildContext context, String ssid, ConnectionProvider connectionProvider) async {
-  //   if (!mounted) {
-  //     return;
-  //   }
-  //
-  //   if (await _checkPermissions()) {
-  //     if (connectionProvider.isConnected) {
-  //       FlutterIotWifi.disconnect().then((value) {
-  //         setState(() {
-  //           connectionProvider.setConnected(false);
-  //         });
-  //         print("Disconnect initiated: $value");
-  //       });
-  //     } else {
-  //       FlutterIotWifi.connect(ssid, password).then((value) {
-  //         setState(() {
-  //           connectionProvider.setConnected(true);
-  //         });
-  //         print("Connect initiated: $value");
-  //
-  //       });
-  //     }
-  //   }
-  // }
 
   bool dashCamGo = false;
   void _connect(BuildContext context, String ssid, ConnectionProvider connectionProvider) async {
@@ -279,38 +268,40 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
                   ),
                 ),
                 SizedBox(height: 180),
-                InkWell(
-                  onTap: () {
-                    // _connect(context);
-                    // _scanWifiNetworks(context);
-                    _scanWifiNetworks(context, connectionProvider);
-                  },
-                  child: Icon(
-                    Icons.wifi,
-                    color: connectionProvider.isConnected ? Colors.red : Colors.black,
-                    size: 50,
+                if(isLoading)
+                  Center(
+                    child: SpinKitWaveSpinner
+                      (
+                      color: Colors.black12,
+                      size: 200.0,
+                      curve: Curves.decelerate,
+                      waveColor: Colors.blueGrey,//const Color(0x68757575),
+                      trackColor: Colors.teal,//const Color(0x68757575),
+                    ),
+                  )
+                else
+                  InkWell(
+                    onTap: () {
+                      _scanWifiNetworks(context, connectionProvider);
+                    },
+                    child: Icon(
+                      Icons.wifi,
+                      color: connectionProvider.isConnected ? Colors.red : Colors.black,
+                      size: 50,
+                    ),
                   ),
-                ),
-                // Text(
-                //   isConnected ? 'Disconnect' : 'Connect WIFI',
-                //   style: TextStyle(
-                //     color: isConnected ? Colors.red : Colors.black,
-                //     fontSize: 20,
-                //   ),
-                // ),
-                Text(
-                  connectionProvider.isConnected
-                      ? 'Disconnect'
-                      : 'Connect WIFI',
-                  style: TextStyle(
-                    color: connectionProvider.isConnected
-                        ? Colors.red
-                        : Colors.black,
-                    fontSize: 20,
+                if(!isLoading)
+                  Text(
+                    connectionProvider.isConnected
+                        ? 'Disconnect'
+                        : 'Connect WIFI',
+                    style: TextStyle(
+                      color: connectionProvider.isConnected
+                          ? Colors.red
+                          : Colors.black,
+                      fontSize: 20,
+                    ),
                   ),
-                ),
-                // Text(connectionProvider.isConnected.toString()),
-                // Text("CHECK CONNECTION: $isConnectedFromEmptyList"),
                 SizedBox(height: 20),
                 if (connectionProvider.isConnected || isConnectedFromEmptyList)
                   GlowingButton2(
