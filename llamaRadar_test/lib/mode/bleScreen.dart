@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/sideBar.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
 import 'goToRide.dart';
@@ -139,12 +140,37 @@ class _BleScreenState extends State<BleScreen> {
         ),
       );
     }
+    // return ListView(
+    //   padding: const EdgeInsets.all(8),
+    //   children: <Widget>[
+    //     SizedBox(height: 15),
+    //     if (_isScanning)
+    //       CircularProgressIndicator()
+    //     else
+    //       Center(
+    //         child: GlowingButton2(
+    //           text: "Pair Device to Start",
+    //           onPressed: () {
+    //             _startScan();
+    //           },
+    //           color1: Color(0xFF517fa4),
+    //           color2: Colors.cyan,
+    //         ),
+    //       ),
+    //     ...containers,
+    //   ],
+    // );
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
         SizedBox(height: 15),
         if (_isScanning)
-          CircularProgressIndicator()
+          Center(
+            child: SpinKitSpinningLines(
+              color: Colors.blue,
+              size: 150.0,
+            ),
+          )
         else
           Center(
             child: GlowingButton2(
