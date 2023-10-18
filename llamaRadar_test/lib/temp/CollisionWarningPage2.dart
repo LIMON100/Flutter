@@ -1395,10 +1395,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
+                                    icon: _tailight
+                                        ? Image.asset("assets/icons/tailightIconnew_rb.png") // Display the image when _isTwilight is true
+                                        : Image.asset("assets/icons/tailightIconnew_rb.png"), // Display a different image when _isTwilight is false
                                     onPressed: () {},
-                                    padding: EdgeInsets.all(0), // Remove padding around the icon
+                                    padding: EdgeInsets.all(0), // Remove padding around the image
                                   ),
+                                  // IconButton(
+                                  //   icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
+                                  //   onPressed: () {},
+                                  //   padding: EdgeInsets.all(0), // Remove padding around the icon
+                                  // ),
                                   DropdownButton<String>(
                                     value: _selectedOption, // Set the selected option
                                     onChanged: (String? value) {
