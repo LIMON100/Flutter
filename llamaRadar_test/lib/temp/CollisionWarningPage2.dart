@@ -250,8 +250,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
-                print("Value");
-                print(_value);
+                // print("Value");
+                // print(_value);
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -452,7 +452,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[27]);
+      locationCode = int.parse(_value[28]);
     } catch (e) {
       return 'No Notification';
     }
@@ -511,6 +511,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //     ),
   //   );
   // }
+
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
@@ -519,19 +520,19 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (location == 'Left Notification Danger') {
       color = Colors.red;
-      left_redPlayer.setAsset('assets/warning_beep.mp3');
+      left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
 
-      Timer(Duration(milliseconds: 100), () {
+      Timer(Duration(milliseconds: 300), () {
         left_redPlayer.stop();
       });
     }
     else if (location == 'Left Notification Warning') {
       color = Colors.yellow;
-      left_greenPlayer.setAsset('assets/danger_beep.mp3');
+      left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
 
-      Timer(Duration(milliseconds: 100), () {
+      Timer(Duration(milliseconds: 300), () {
         left_greenPlayer.stop();
       });
     }
@@ -634,15 +635,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (_getLocation() == 'Right Notification Danger') {
       color = Colors.red;
-      right_redPlayer.setAsset('assets/warning_beep.mp3');
+      right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
+
+      Timer(Duration(milliseconds: 200), () {
+        right_redPlayer.stop();
+      });
     }
     else if (_getLocation() == 'Right Notification Warning') {
       color = Colors.yellow;
-      right_greenPlayer.setAsset('assets/danger_beep.mp3');
+      right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
-    } else {
-      // opacity = 0.0;
+
+      Timer(Duration(milliseconds: 300), () {
+        right_greenPlayer.stop();
+      });
+    }
+    else {
       color = Colors.green;
       right_redPlayer.stop();
       right_greenPlayer.stop();
@@ -670,7 +679,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (_getLocation() == 'Rear Notification Danger') {
       color = Colors.red;
-      rear_redPlayer.setAsset('assets/warning_beep.mp3');
+      rear_redPlayer.setAsset('assets/danger3.mp3');
       rear_redPlayer.play();
       if (right_danger_counter >= 5 && !isRearCamOpen) {
         if (popupState.isPopupWindowEnabled) {
@@ -679,6 +688,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
+      Timer(Duration(milliseconds: 200), () {
+        rear_redPlayer.stop();
+      });
     }
     else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
