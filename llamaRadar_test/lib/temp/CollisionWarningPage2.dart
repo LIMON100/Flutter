@@ -452,7 +452,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[28]);
+      locationCode = int.parse(_value[27]);
     } catch (e) {
       return 'No Notification';
     }
@@ -523,7 +523,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
 
-      Timer(Duration(milliseconds: 300), () {
+      Timer(Duration(milliseconds: 500), () {
         left_redPlayer.stop();
       });
     }
@@ -532,7 +532,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
 
-      Timer(Duration(milliseconds: 300), () {
+      Timer(Duration(milliseconds: 500), () {
         left_greenPlayer.stop();
       });
     }
@@ -638,7 +638,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
 
-      Timer(Duration(milliseconds: 200), () {
+      Timer(Duration(milliseconds: 500), () {
         right_redPlayer.stop();
       });
     }
@@ -647,7 +647,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
 
-      Timer(Duration(milliseconds: 300), () {
+      Timer(Duration(milliseconds: 500), () {
         right_greenPlayer.stop();
       });
     }
@@ -688,7 +688,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-      Timer(Duration(milliseconds: 200), () {
+      Timer(Duration(milliseconds: 500), () {
         rear_redPlayer.stop();
       });
     }
@@ -1299,73 +1299,73 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       margin: EdgeInsets.only(top: 2),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // SizedBox(width: 10),
-                              // Column(
-                              //   children: [
-                              //     // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
-                              //     Icon(Icons.square),
-                              //     Text('Camera'),
-                              //   ],
-                              // ),
-                              SizedBox(width: 20),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon1 ? Colors.red : Colors
-                                        .black,
-                                  ),
-                                  Text(
-                                    '30M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon1 ? Colors.red : Colors
-                                          .black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon2 ? Colors.red : Colors
-                                        .black,
-                                  ),
-                                  Text(
-                                    '60M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon2 ? Colors.red : Colors
-                                          .black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon3 ? Colors.red : Colors
-                                        .black,
-                                  ),
-                                  Text(
-                                    '90M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon3 ? Colors.red : Colors
-                                          .black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.center,
+                          //   children: [
+                          //     // SizedBox(width: 10),
+                          //     // Column(
+                          //     //   children: [
+                          //     //     // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
+                          //     //     Icon(Icons.square),
+                          //     //     Text('Camera'),
+                          //     //   ],
+                          //     // ),
+                          //     SizedBox(width: 20),
+                          //     Column(
+                          //       children: [
+                          //         Icon(
+                          //           Icons.square,
+                          //           size: 40,
+                          //           color: _isBlinkingIcon1 ? Colors.red : Colors
+                          //               .black,
+                          //         ),
+                          //         Text(
+                          //           '30M',
+                          //           style: TextStyle(
+                          //             color: _isBlinkingIcon1 ? Colors.red : Colors
+                          //                 .black,
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //     SizedBox(width: 10),
+                          //     Column(
+                          //       children: [
+                          //         Icon(
+                          //           Icons.square,
+                          //           size: 40,
+                          //           color: _isBlinkingIcon2 ? Colors.red : Colors
+                          //               .black,
+                          //         ),
+                          //         Text(
+                          //           '60M',
+                          //           style: TextStyle(
+                          //             color: _isBlinkingIcon2 ? Colors.red : Colors
+                          //                 .black,
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //     SizedBox(width: 10),
+                          //     Column(
+                          //       children: [
+                          //         Icon(
+                          //           Icons.square,
+                          //           size: 40,
+                          //           color: _isBlinkingIcon3 ? Colors.red : Colors
+                          //               .black,
+                          //         ),
+                          //         Text(
+                          //           '90M',
+                          //           style: TextStyle(
+                          //             color: _isBlinkingIcon3 ? Colors.red : Colors
+                          //                 .black,
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ],
+                          // ),
                           SizedBox(height: 1),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1381,21 +1381,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               //     // open camera if _cameraOn is true
                               //   },
                               // ),
-                              SizedBox(width: 1),
-                              IconButton(
-                                icon: Icon(Icons.social_distance_rounded),
-                                onPressed: () {
-                                   //  new Data
-                                  _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
-                                  // _handleButtonPress();
-                                },
-                              ),
+                              // SizedBox(width: 1),
+                              // IconButton(
+                              //   icon: Icon(Icons.social_distance_rounded),
+                              //   onPressed: () {
+                              //      //  new Data
+                              //     _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
+                              //     // _handleButtonPress();
+                              //   },
+                              // ),
                               SizedBox(width: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: Icon(_tailight ? Icons.lightbulb : Icons.lightbulb_outline),
+                                    icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
                                     onPressed: () {},
                                     padding: EdgeInsets.all(0), // Remove padding around the icon
                                   ),
