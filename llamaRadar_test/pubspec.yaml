@@ -126,6 +126,10 @@ flutter:
   assets:
     - assets/warning_beep.mp3
     - assets/danger_beep.mp3
+    - assets/warning2.mp3
+    - assets/warning3.wav
+    - assets/danger2.mp3
+    - assets/danger3.mp3
     - images/llamalogo_no_txt.jpg
     - images/new_lama.jpg
     - images/test.jpg
