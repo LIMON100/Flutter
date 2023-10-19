@@ -523,7 +523,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
 
-      Timer(Duration(milliseconds: 500), () {
+      Timer(Duration(milliseconds: 600), () {
         left_redPlayer.stop();
       });
     }
@@ -532,7 +532,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
 
-      Timer(Duration(milliseconds: 500), () {
+      Timer(Duration(milliseconds: 400), () {
         left_greenPlayer.stop();
       });
     }
@@ -638,7 +638,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
 
-      Timer(Duration(milliseconds: 500), () {
+      Timer(Duration(milliseconds: 600), () {
         right_redPlayer.stop();
       });
     }
@@ -647,7 +647,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
 
-      Timer(Duration(milliseconds: 500), () {
+      Timer(Duration(milliseconds: 400), () {
         right_greenPlayer.stop();
       });
     }
@@ -688,7 +688,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-      Timer(Duration(milliseconds: 500), () {
+      Timer(Duration(milliseconds: 600), () {
         rear_redPlayer.stop();
       });
     }
@@ -1381,15 +1381,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               //     // open camera if _cameraOn is true
                               //   },
                               // ),
-                              // SizedBox(width: 1),
-                              // IconButton(
-                              //   icon: Icon(Icons.social_distance_rounded),
-                              //   onPressed: () {
-                              //      //  new Data
-                              //     _sendData([0x02, 0x01, 0x32, 0x00, 0x01, 0x36]);
-                              //     // _handleButtonPress();
-                              //   },
-                              // ),
+                              SizedBox(width: 1),
+                              IconButton(
+                                icon: Icon(Icons.social_distance_rounded),
+                                onPressed: () {
+                                   //  new Data
+                                  _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                  // _handleButtonPress();
+                                },
+                              ),
                               SizedBox(width: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1531,16 +1531,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(width: 120),
-                          Container(
-                            color: Colors.transparent,
-                            child: Image.asset(
-                              'images/llama_img_web3_rb.png',
-                              height: 100,
-                              width: 130,
-                            ),
-                          ),
-                          SizedBox(width: 16),
+                          SizedBox(width: 235),
+                          // Container(
+                          //   color: Colors.transparent,
+                          //   child: Image.asset(
+                          //     'images/llama_img_web3_rb.png',
+                          //     height: 100,
+                          //     width: 130,
+                          //   ),
+                          // ),
+                          // SizedBox(width: 16),
                           FloatingActionButton(
                             onPressed: () {
                               _sendData([0x02, 0x01, 0x53, 0x00, 0x01, 0x57]);
@@ -1554,6 +1554,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 15),
                   ],
                 ),
               ),
