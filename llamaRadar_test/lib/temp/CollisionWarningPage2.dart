@@ -75,6 +75,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   String _selectedOption = 'OFF';
   int blinkDurationMilliseconds = 10000;
   double _sliderValue = 0.0;
+  int _selectedValue = 0;
+  final sliderLabels = [0, 30, 60, 90];
 
   @override
   void initState() {
@@ -1149,7 +1151,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final ledValuesProvider = Provider.of<LedValuesProvider>(context);
@@ -1367,7 +1368,51 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           //     ),
                           //   ],
                           // ),
-                          SizedBox(height: 1),
+
+                          // Slider for distance mode
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Row(
+                                children:[
+                                  SizedBox(width: 20,),
+                                  Text(0.toString(),
+                                  style: TextStyle(fontSize: 18,
+                                    fontWeight: FontWeight.bold,),),
+                                  Expanded(
+                                    child: RotatedBox(
+                                    quarterTurns: 0,
+                                    child: Slider(
+                                      value: _sliderValue,
+                                      min: 0,
+                                      max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                      divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                      activeColor: Colors.deepPurple,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _sliderValue = value;
+                                          _selectedValue = (_sliderValue * 30).round();
+                                        });
+                                      },
+                                      onChangeEnd: (value) {
+                                        int selectedValue = (_sliderValue * 30).round();
+                                        print("VALUEC");
+                                        print(selectedValue ~/ 30);
+                                        _sendData([0x02, 0x01, 0x33, 0x00, selectedValue ~/ 30, 0x37]);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              Text(90.toString(),
+                                style: TextStyle(fontSize: 18,
+                                  fontWeight: FontWeight.bold,),),
+                              SizedBox(width: 20,),
+                              ],
+                              ),
+                              Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1382,36 +1427,18 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               //     // open camera if _cameraOn is true
                               //   },
                               // ),
-                              SizedBox(width: 1),
-                              RotatedBox(
-                                quarterTurns: 3, // Rotates the slider 90 degrees counterclockwise to make it vertical
-                                child: Slider(
-                                  value: _sliderValue,
-                                  min: 0,
-                                  max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                  divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _sliderValue = value;
-                                    });
-                                  },
-                                  onChangeEnd: (value) {
-                                    int selectedValue = (value * 30).round(); // Convert to 0, 30, 60, 90
-                                    _sendData([0x02, 0x01, 0x33, 0x00, selectedValue ~/ 30, 0x37]);
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: 2),
+
+                              SizedBox(width: 10),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  IconButton(
-                                    icon: _tailight
-                                        ? Image.asset("assets/icons/tailightIconnew_rb.png") // Display the image when _isTwilight is true
-                                        : Image.asset("assets/icons/tailightIconnew_rb.png"), // Display a different image when _isTwilight is false
-                                    onPressed: () {},
-                                    padding: EdgeInsets.all(0), // Remove padding around the image
-                                  ),
+                                  // IconButton(
+                                  //   icon: _tailight
+                                  //       ? Image.asset("assets/icons/tailightIconnew_rb.png") // Display the image when _isTwilight is true
+                                  //       : Image.asset("assets/icons/tailightIconnew_rb.png"), // Display a different image when _isTwilight is false
+                                  //   onPressed: () {},
+                                  //   padding: EdgeInsets.all(0), // Remove padding around the image
+                                  // ),
                                   // IconButton(
                                   //   icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
                                   //   onPressed: () {},
