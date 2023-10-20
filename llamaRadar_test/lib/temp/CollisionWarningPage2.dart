@@ -1283,182 +1283,87 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-                    // Container(
-                    //   margin: EdgeInsets.only(top: 1),
-                    //   child: Column(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       Text("_isLeftBlinking:: "),
-                    //       Text(_value[27]),
-                    //       // Text("_isFirstData:: $_isFirstData"),
-                    //     ],
-                    //   ),
-                    // ),
-                    // Blink icon for tailight, camera and distance
-                    //CAM+Tailight+Distance button
-                    SizedBox(height: 30),
+                    // Test without column
                     Container(
                       margin: EdgeInsets.only(top: 2),
                       child: Column(
-                        children: [
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.center,
-                          //   children: [
-                          //     // SizedBox(width: 10),
-                          //     // Column(
-                          //     //   children: [
-                          //     //     // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
-                          //     //     Icon(Icons.square),
-                          //     //     Text('Camera'),
-                          //     //   ],
-                          //     // ),
-                          //     SizedBox(width: 20),
-                          //     Column(
-                          //       children: [
-                          //         Icon(
-                          //           Icons.square,
-                          //           size: 40,
-                          //           color: _isBlinkingIcon1 ? Colors.red : Colors
-                          //               .black,
-                          //         ),
-                          //         Text(
-                          //           '30M',
-                          //           style: TextStyle(
-                          //             color: _isBlinkingIcon1 ? Colors.red : Colors
-                          //                 .black,
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     ),
-                          //     SizedBox(width: 10),
-                          //     Column(
-                          //       children: [
-                          //         Icon(
-                          //           Icons.square,
-                          //           size: 40,
-                          //           color: _isBlinkingIcon2 ? Colors.red : Colors
-                          //               .black,
-                          //         ),
-                          //         Text(
-                          //           '60M',
-                          //           style: TextStyle(
-                          //             color: _isBlinkingIcon2 ? Colors.red : Colors
-                          //                 .black,
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     ),
-                          //     SizedBox(width: 10),
-                          //     Column(
-                          //       children: [
-                          //         Icon(
-                          //           Icons.square,
-                          //           size: 40,
-                          //           color: _isBlinkingIcon3 ? Colors.red : Colors
-                          //               .black,
-                          //         ),
-                          //         Text(
-                          //           '90M',
-                          //           style: TextStyle(
-                          //             color: _isBlinkingIcon3 ? Colors.red : Colors
-                          //                 .black,
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     ),
-                          //   ],
-                          // ),
-
-                          // Slider for distance mode
-                        Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            // mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              SizedBox(width: 20),
-                              Text('0', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              Expanded(
-                                child: SliderTheme(
-                                  data: SliderThemeData(
-                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
-                                    overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
-                                    trackHeight: 12.0, // Adjust the track height
+                              SizedBox(width: 15),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      RotatedBox(
+                                        quarterTurns: 3,
+                                        child: SliderTheme(
+                                          data: SliderThemeData(
+                                            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
+                                            overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
+                                            trackHeight: 12.0, // Adjust the track height
+                                          ),
+                                          child: Slider(
+                                            value: _sliderValue,
+                                            min: 0,
+                                            max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                            divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                            activeColor: Colors.deepPurple,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _sliderValue = value;
+                                                _selectedValue = (_sliderValue * 30).round();
+                                              });
+                                            },
+                                            onChangeEnd: (value) {
+                                              int selectedValue = (_sliderValue * 30).round();
+                                              if (selectedValue == 30) {
+                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
+                                              } else if (selectedValue == 60) {
+                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                              } else if (selectedValue == 90) {
+                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 0),
+                                      Column(
+                                        children: <Widget>[
+                                          SizedBox(height: 20),
+                                          Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                          SizedBox(height: 20),
+                                          Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                          SizedBox(height: 10),
+                                          SizedBox(height: 20),
+                                          Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                          SizedBox(height: 60),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  child: Slider(
-                                    value: _sliderValue,
-                                    min: 0,
-                                    max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                    divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                    activeColor: Colors.deepPurple,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _sliderValue = value;
-                                        _selectedValue = (_sliderValue * 30).round();
-                                      });
-                                    },
-                                    onChangeEnd: (value) {
-                                      int selectedValue = (_sliderValue * 30).round();
-                                      if(selectedValue == 30){
-                                        print("UNDER 30");
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                      }
-                                      else if(selectedValue == 60){
-                                        print("UNDER 60");
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                      }
-                                      else if(selectedValue == 90){
-                                        print("UNDER 90");
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
-                                      }
-                                    },
-                                  ),
-                                ),
+                                  Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ],
                               ),
-                              Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              SizedBox(width: 20,),
-                            ],
-                          ),
-                        ],
-                      ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 45),
-                              // IconButton(
-                              //   icon: Icon(_cameraOn ? Icons.camera_alt : Icons
-                              //       .camera_alt_outlined),
-                              //   onPressed: () {
-                              //     setState(() {
-                              //       _cameraOn = !_cameraOn;
-                              //     });
-                              //     // open camera if _cameraOn is true
-                              //   },
-                              // ),
-
-                              SizedBox(width: 10),
+                              SizedBox(width: 0),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // IconButton(
-                                  //   icon: _tailight
-                                  //       ? Image.asset("assets/icons/tailightIconnew_rb.png") // Display the image when _isTwilight is true
-                                  //       : Image.asset("assets/icons/tailightIconnew_rb.png"), // Display a different image when _isTwilight is false
-                                  //   onPressed: () {},
-                                  //   padding: EdgeInsets.all(0), // Remove padding around the image
-                                  // ),
-                                  // IconButton(
-                                  //   icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
-                                  //   onPressed: () {},
-                                  //   padding: EdgeInsets.all(0), // Remove padding around the icon
-                                  // ),
+                                  IconButton(
+                                    icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
+                                    onPressed: () {},
+                                    padding: EdgeInsets.all(0),
+                                  ),
                                   DropdownButton<String>(
-                                    value: _selectedOption, // Set the selected option
+                                    value: _selectedOption,
                                     onChanged: (String? value) {
                                       setState(() {
-                                        _selectedOption = value!; // Update the selected option
+                                        _selectedOption = value!;
                                         switch (value) {
                                           case 'OFF':
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
@@ -1467,7 +1372,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
                                             break;
                                           case 'FLASHING':
-                                          // Send the command for FLASHING
                                             _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
                                             break;
                                           case 'PULSE':
