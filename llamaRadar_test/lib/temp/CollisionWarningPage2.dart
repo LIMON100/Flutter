@@ -1370,48 +1370,58 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           // ),
 
                           // Slider for distance mode
-                          Column(
+                        Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              Row(
-                                children:[
-                                  SizedBox(width: 20,),
-                                  Text(0.toString(),
-                                  style: TextStyle(fontSize: 18,
-                                    fontWeight: FontWeight.bold,),),
-                                  Expanded(
-                                    child: RotatedBox(
-                                    quarterTurns: 0,
-                                    child: Slider(
-                                      value: _sliderValue,
-                                      min: 0,
-                                      max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                      divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                      activeColor: Colors.deepPurple,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _sliderValue = value;
-                                          _selectedValue = (_sliderValue * 30).round();
-                                        });
-                                      },
-                                      onChangeEnd: (value) {
-                                        int selectedValue = (_sliderValue * 30).round();
-                                        print("VALUEC");
-                                        print(selectedValue ~/ 30);
-                                        _sendData([0x02, 0x01, 0x33, 0x00, selectedValue ~/ 30, 0x37]);
-                                      },
-                                    ),
+                              SizedBox(width: 20),
+                              Text('0', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Expanded(
+                                child: SliderTheme(
+                                  data: SliderThemeData(
+                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
+                                    overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
+                                    trackHeight: 12.0, // Adjust the track height
+                                  ),
+                                  child: Slider(
+                                    value: _sliderValue,
+                                    min: 0,
+                                    max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                    divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                    activeColor: Colors.deepPurple,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _sliderValue = value;
+                                        _selectedValue = (_sliderValue * 30).round();
+                                      });
+                                    },
+                                    onChangeEnd: (value) {
+                                      int selectedValue = (_sliderValue * 30).round();
+                                      if(selectedValue == 30){
+                                        print("UNDER 30");
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
+                                      }
+                                      else if(selectedValue == 60){
+                                        print("UNDER 60");
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                      }
+                                      else if(selectedValue == 90){
+                                        print("UNDER 90");
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                      }
+                                    },
                                   ),
                                 ),
-                              Text(90.toString(),
-                                style: TextStyle(fontSize: 18,
-                                  fontWeight: FontWeight.bold,),),
-                              SizedBox(width: 20,),
-                              ],
                               ),
-                              Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              SizedBox(width: 20,),
                             ],
                           ),
+                        ],
+                      ),
                           SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
