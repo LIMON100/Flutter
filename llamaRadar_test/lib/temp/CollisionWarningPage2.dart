@@ -74,6 +74,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool _isFirstDataRight = true;
   String _selectedOption = 'OFF';
   int blinkDurationMilliseconds = 10000;
+  double _sliderValue = 0.0;
 
   @override
   void initState() {
@@ -1382,13 +1383,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                               //   },
                               // ),
                               SizedBox(width: 1),
-                              IconButton(
-                                icon: Icon(Icons.social_distance_rounded),
-                                onPressed: () {
-                                   //  new Data
-                                  _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                  // _handleButtonPress();
-                                },
+                              RotatedBox(
+                                quarterTurns: 3, // Rotates the slider 90 degrees counterclockwise to make it vertical
+                                child: Slider(
+                                  value: _sliderValue,
+                                  min: 0,
+                                  max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                  divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _sliderValue = value;
+                                    });
+                                  },
+                                  onChangeEnd: (value) {
+                                    int selectedValue = (value * 30).round(); // Convert to 0, 30, 60, 90
+                                    _sendData([0x02, 0x01, 0x33, 0x00, selectedValue ~/ 30, 0x37]);
+                                  },
+                                ),
                               ),
                               SizedBox(width: 2),
                               Row(
