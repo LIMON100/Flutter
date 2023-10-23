@@ -1355,9 +1355,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
                     // Open rear up cam
                     Container(
-                      margin: EdgeInsets.only(top: 10),
+                      // margin: EdgeInsets.only(top: 10),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
                         children: [
                           SizedBox(width: 75),
                           buildCameraButton(),
@@ -1368,64 +1368,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     // Camera and distance mode
                     Row(
                       children: [
-                        Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              RotatedBox(
-                                quarterTurns: 3,
-                                child: SliderTheme(
-                                  data: SliderThemeData(
-                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
-                                    overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
-                                    trackHeight: 12.0, // Adjust the track height
-                                  ),
-                                  child: Slider(
-                                    value: _sliderValue,
-                                    min: 0,
-                                    max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                    divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                    activeColor: Colors.deepPurple,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _sliderValue = value;
-                                        _selectedValue = (_sliderValue * 30).round();
-                                      });
-                                    },
-                                    onChangeEnd: (value) {
-                                      int selectedValue = (_sliderValue * 30).round();
-                                      if (selectedValue == 30) {
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                      } else if (selectedValue == 60) {
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                      } else if (selectedValue == 90) {
-                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 0),
-                              Column(
-                                children: <Widget>[
-                                  SizedBox(height: 20),
-                                  Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 20),
-                                  Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 10),
-                                  SizedBox(height: 20),
-                                  Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 60),
-                                ],
-                              ),
-                            ],
-                          ),
-                          // Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      SizedBox(width:20),
                       Container(
                         height: 280,
                         width: 300,
@@ -1461,6 +1403,63 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           ),
                         ),
                       ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                RotatedBox(
+                                  quarterTurns: 3,
+                                  child: SliderTheme(
+                                    data: SliderThemeData(
+                                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
+                                      overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
+                                      trackHeight: 12.0, // Adjust the track height
+                                    ),
+                                    child: Slider(
+                                      value: _sliderValue,
+                                      min: 0,
+                                      max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                      divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                      activeColor: Colors.deepPurple,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _sliderValue = value;
+                                          _selectedValue = (_sliderValue * 30).round();
+                                        });
+                                      },
+                                      onChangeEnd: (value) {
+                                        int selectedValue = (_sliderValue * 30).round();
+                                        if (selectedValue == 30) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
+                                        } else if (selectedValue == 60) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                        } else if (selectedValue == 90) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Column(
+                                  children: <Widget>[
+                                    SizedBox(height: 20),
+                                    Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 20),
+                                    Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    SizedBox(height: 20),
+                                    Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 60),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        SizedBox(width:20),
                       ],
                     ),
                     // Stop ride
