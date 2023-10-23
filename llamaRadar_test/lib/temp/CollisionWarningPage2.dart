@@ -1359,8 +1359,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
                         children: [
-                          SizedBox(width: 75),
+                          SizedBox(width: 70),
                           buildCameraButton(),
+                          SizedBox(width: 75),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 20),
+                              Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -1456,7 +1465,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                 ),
                               ],
                             ),
-                            // Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                         SizedBox(width:20),
