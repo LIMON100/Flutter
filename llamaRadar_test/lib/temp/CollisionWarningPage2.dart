@@ -902,6 +902,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30.0),
             ),
+            padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
           ),
           child: Text(
             isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
@@ -915,6 +916,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       ),
     );
   }
+
 
   bool isCustomSelected = false;
 
@@ -1292,65 +1294,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           Row(
                             // mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              SizedBox(width: 15),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      RotatedBox(
-                                        quarterTurns: 3,
-                                        child: SliderTheme(
-                                          data: SliderThemeData(
-                                            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
-                                            overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
-                                            trackHeight: 12.0, // Adjust the track height
-                                          ),
-                                          child: Slider(
-                                            value: _sliderValue,
-                                            min: 0,
-                                            max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                            divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                            activeColor: Colors.deepPurple,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                _sliderValue = value;
-                                                _selectedValue = (_sliderValue * 30).round();
-                                              });
-                                            },
-                                            onChangeEnd: (value) {
-                                              int selectedValue = (_sliderValue * 30).round();
-                                              if (selectedValue == 30) {
-                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                              } else if (selectedValue == 60) {
-                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                              } else if (selectedValue == 90) {
-                                                _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 0),
-                                      Column(
-                                        children: <Widget>[
-                                          SizedBox(height: 20),
-                                          Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                          SizedBox(height: 20),
-                                          Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                          SizedBox(height: 10),
-                                          SizedBox(height: 20),
-                                          Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                          SizedBox(height: 60),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              SizedBox(width: 0),
+                              SizedBox(width: 100),
+                              // SizedBox(width: 0),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -1409,50 +1354,115 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       ),
                     ),
                     // Open rear up cam
-                    SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        buildCameraButton(),
-                      ],
-                    ),
-                    SizedBox(width:50),
                     Container(
-                      height: 280,
-                      width: 300,
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            isCameraStreaming && _videoPlayerController != null
-                                ? Transform.rotate(
-                              angle: rotationAngle * 3.14159265359 / 180,
-                              child: VlcPlayer(
-                                controller: _videoPlayerController,
-                                aspectRatio: currentOrientation == Orientation.portrait
-                                    ? 16 / 9
-                                    : 9 / 16,
-                              ),
-                            )
-                                : Image.asset(
-                              'images/test_background3.jpg',
-                              fit: BoxFit.fitWidth,
-                            ),
-                            if (isCameraStreaming)
-                              Positioned(
-                                bottom: 16.0,
-                                right: 16.0,
-                                child: IconButton(
-                                  color: Colors.red,
-                                  icon: Icon(Icons.cameraswitch_outlined),
-                                  onPressed: changeOrientation,
-                                  iconSize: 40.0,
-                                ),
-                              ),
-                          ],
-                        ),
+                      margin: EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 75),
+                          buildCameraButton(),
+                        ],
                       ),
                     ),
 
+                    // Camera and distance mode
+                    Row(
+                      children: [
+                        Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              RotatedBox(
+                                quarterTurns: 3,
+                                child: SliderTheme(
+                                  data: SliderThemeData(
+                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
+                                    overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
+                                    trackHeight: 12.0, // Adjust the track height
+                                  ),
+                                  child: Slider(
+                                    value: _sliderValue,
+                                    min: 0,
+                                    max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                    divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                    activeColor: Colors.deepPurple,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _sliderValue = value;
+                                        _selectedValue = (_sliderValue * 30).round();
+                                      });
+                                    },
+                                    onChangeEnd: (value) {
+                                      int selectedValue = (_sliderValue * 30).round();
+                                      if (selectedValue == 30) {
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
+                                      } else if (selectedValue == 60) {
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                      } else if (selectedValue == 90) {
+                                        _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 0),
+                              Column(
+                                children: <Widget>[
+                                  SizedBox(height: 20),
+                                  Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 20),
+                                  Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 10),
+                                  SizedBox(height: 20),
+                                  Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 60),
+                                ],
+                              ),
+                            ],
+                          ),
+                          // Text('Distance Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      SizedBox(width:20),
+                      Container(
+                        height: 280,
+                        width: 300,
+                        child: Center(
+                          child: Stack(
+                            children: [
+                              isCameraStreaming && _videoPlayerController != null
+                                  ? Transform.rotate(
+                                angle: rotationAngle * 3.14159265359 / 180,
+                                child: VlcPlayer(
+                                  controller: _videoPlayerController,
+                                  aspectRatio: currentOrientation == Orientation.portrait
+                                      ? 16 / 9
+                                      : 9 / 16,
+                                ),
+                              )
+                                  : Image.asset(
+                                'images/test_background3.jpg',
+                                fit: BoxFit.fitWidth,
+                              ),
+                              if (isCameraStreaming)
+                                Positioned(
+                                  bottom: 16.0,
+                                  right: 16.0,
+                                  child: IconButton(
+                                    color: Colors.red,
+                                    icon: Icon(Icons.cameraswitch_outlined),
+                                    onPressed: changeOrientation,
+                                    iconSize: 40.0,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ],
+                    ),
                     // Stop ride
                     SizedBox(height: 30),
                     Row(
