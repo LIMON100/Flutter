@@ -1362,16 +1362,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           SizedBox(width: 70),
                           buildCameraButton(),
                           SizedBox(width: 75),
-                          Flexible(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 20),
-                                Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
+                          // Flexible(
+                          //   child: Column(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       SizedBox(height: 20),
+                          //       Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
+                          //       Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                          //     ],
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -1421,6 +1421,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         Flexible(
                         child:Column(
                           children: [
+                            Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
@@ -1448,10 +1450,48 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                         int selectedValue = (_sliderValue * 30).round();
                                         if (selectedValue == 30) {
                                           _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                        } else if (selectedValue == 60) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        else if (selectedValue == 60) {
                                           _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                        } else if (selectedValue == 90) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        else if (selectedValue == 90) {
                                           _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
                                         }
                                       },
                                     ),
