@@ -112,13 +112,20 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
-                RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-                if (regex.hasMatch(textResultFirmware)) {
+                // RegExp regex = RegExp(r'^.{1,15}\..*\..*');
+                // if (regex.hasMatch(textResultFirmware)) {
+                //   functionForFirmware(textResultFirmware);
+                // }
+                // if(showWifissidpass){
+                //   functionForWifi(textResultFirmware);
+                // }
+
+                if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
                   functionForFirmware(textResultFirmware);
-                }
-                if(showWifissidpass){
+                } else {
                   functionForWifi(textResultFirmware);
                 }
+
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -143,6 +150,17 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return hexList;
   }
 
+  // Find dot
+  bool hasAtLeastTwoDotsInFirst10Characters(String text) {
+    if (text.length >= 10) {
+      String first10Chars = text.substring(0, 10);
+      int dotCount = first10Chars.split('.').length - 1;
+
+      return dotCount >= 2;
+    }
+    return false;
+  }
+
   // Firmware version
   void functionForFirmware(textResultFirmware) {
 
@@ -163,14 +181,18 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   void functionForWifi(textResultFirmware) {
     print("INSIDE_WIFI");
     // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    if (parts.length > 2) {
-      currentSSID = parts[3];
-      currentpass = parts[4];
-      currentpass = currentpass.substring(0, currentpass.length - 1);
+    RegExp regex = RegExp(r'^.{1,15}\..*\..*');
+    if (regex.hasMatch(textResultFirmware)) {
+      print("NOTHING");
     }
     else {
-      print("Invalid format");
+      List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(
+          ']', '').split(' ');
+      if (parts.length > 2) {
+        currentSSID = parts[3];
+        currentpass = parts[4];
+        currentpass = currentpass.substring(0, currentpass.length - 1);
+      }
     }
   }
 
