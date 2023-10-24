@@ -121,8 +121,13 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 // }
 
                 if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
+                  print("CHECK_DOT");
+                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
                   functionForFirmware(textResultFirmware);
-                } else {
+                }
+                if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware) != 2) {
+                  print("CHECK_DOT_WIFI");
+                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
                   functionForWifi(textResultFirmware);
                 }
 
@@ -155,6 +160,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     if (text.length >= 10) {
       String first10Chars = text.substring(0, 10);
       int dotCount = first10Chars.split('.').length - 1;
+      print("DOTCOUNT");
+      print(dotCount);
 
       return dotCount >= 2;
     }
@@ -198,7 +205,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   // HEX convert
   List<String> splitTextResultFirmware(String textResult) {
-    List<String> delimiters = ["Sep ", "Oct ", "Nov ", "Dec "]; // Add more if needed
+    List<String> delimiters = ["Jan ", "Feb ", "Mar ", "Apr ", "May ", "Jun ", "Jul ", "Aug ", "Sep ", "Oct ", "Nov ", "Dec "]; // Add more if needed
 
     for (String delimiter in delimiters) {
       List<String> parts = textResult.split(delimiter);
