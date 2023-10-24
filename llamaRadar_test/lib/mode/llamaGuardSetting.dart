@@ -112,14 +112,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
-                // print("WOFO");
-                // print(textResultFirmware);
-
-                if (textResultFirmware[2] == 'ð') {
+                RegExp regex = RegExp(r'^.{1,15}\..*\..*');
+                if (regex.hasMatch(textResultFirmware)) {
                   functionForFirmware(textResultFirmware);
                 }
-
-                if (textResultFirmware[2] != 'ð') {
+                if(showWifissidpass){
                   functionForWifi(textResultFirmware);
                 }
               });
@@ -152,18 +149,19 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     List<String> parts = splitTextResultFirmware(textResultFirmware);
 
     if (parts.length == 2) {
-      textFirmwareVersion = parts[0].trim().substring(1);
+      textFirmwareVersion = parts[0];
       textFirmwareDate = parts[1].trim();
       if (textFirmwareDate.isNotEmpty) {
         textFirmwareDate = textFirmwareDate.substring(0, textFirmwareDate.length - 1);
       }
-      // print("Version: $textFirmwareVersion");
-      // print("Date: $textFirmwareDate");
+      print("Version: $textFirmwareVersion");
+      print("Date: $textFirmwareDate");
     }
   }
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
+    print("INSIDE_WIFI");
     // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
     List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
     if (parts.length > 2) {
@@ -396,7 +394,8 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 if (bleConnectionAvailable) {
                   _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
                   showWifissidpass = true;
-                } else {
+                }
+                else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('BLE connection error. Make sure BLE is connected.'),
