@@ -44,8 +44,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   bool showWifiSettings = false;
   String currentTailightMode = 'NO';
-  String currentSsid = 'NO';
-  String currentPassword = 'NO';
 
   double leftLedValue = 50.0;
   double rightLedValue = 50.0;
@@ -116,14 +114,10 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
                   functionForFirmware(textResultFirmware);
                 }
-                //if(!hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
-                int newdot = hasAtLeastTwoDotsInFirst10Characters2(textResultFirmware);
-                if(newdot<2){
+
+                if (!hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
                   functionForWifi(textResultFirmware);
                 }
-                // if(hasAtLeastTwoDotsInFirst10Characters2(textResultFirmware)) {
-                //   functionForWifi(textResultFirmware);
-                // }
 
               });
             });
@@ -160,36 +154,41 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return false;
   }
 
+  // bool hasAtLeastTwoDotsInFirst10Characters2(String text) {
+  //   int dtc = 0;
+  //   if (text.length >= 10) {
+  //     String first10Chars = text.substring(0, 10);
+  //     dtc = first10Chars.split('.').length - 1;
+  //
+  //     if(dtc>=2){
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
   int hasAtLeastTwoDotsInFirst10Characters2(String text) {
     int dtc = 0;
     if (text.length >= 10) {
       String first10Chars = text.substring(0, 10);
       dtc = first10Chars.split('.').length - 1;
     }
-
     return dtc;
   }
 
   // Firmware version
   void functionForFirmware(String textResultFirmware2) {
-    print("INSIDE_FW");
-
     List<String> parts = splitTextResultFirmware(textResultFirmware2);
-
     if (parts.length == 2) {
       textFirmwareVersion = parts[0];
       textFirmwareDate = parts[1].trim();
       if (textFirmwareDate.isNotEmpty) {
         textFirmwareDate = textFirmwareDate.substring(0, textFirmwareDate.length - 1);
       }
-      print("Version: $textFirmwareVersion");
-      print("Date: $textFirmwareDate");
     }
   }
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
-    print("INSIDE_WIFI");
     String text = textResultFirmware;
     // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
     RegExp regex = RegExp(r'^.{1,15}\..*\..*');
