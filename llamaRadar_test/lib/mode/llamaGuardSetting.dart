@@ -65,6 +65,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   bool showWifissidpass = false;
   bool showSetWifi = false;
   String completeValue = '';
+  int dotCount = 0;
 
   @override
   void initState() {
@@ -119,15 +120,11 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 // if(showWifissidpass){
                 //   functionForWifi(textResultFirmware);
                 // }
-
+                hasAtLeastTwoDotsInFirst10Characters(textResultFirmware);
                 if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
-                  print("CHECK_DOT");
-                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
                   functionForFirmware(textResultFirmware);
                 }
-                if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware) != 2) {
-                  print("CHECK_DOT_WIFI");
-                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
+                if(dotCount < 2) {
                   functionForWifi(textResultFirmware);
                 }
 
@@ -159,9 +156,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   bool hasAtLeastTwoDotsInFirst10Characters(String text) {
     if (text.length >= 10) {
       String first10Chars = text.substring(0, 10);
-      int dotCount = first10Chars.split('.').length - 1;
-      print("DOTCOUNT");
-      print(dotCount);
+      dotCount = first10Chars.split('.').length - 1;
 
       return dotCount >= 2;
     }
@@ -187,13 +182,14 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
     print("INSIDE_WIFI");
+    String text = textResultFirmware;
     // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
     RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-    if (regex.hasMatch(textResultFirmware)) {
+    if (regex.hasMatch(text)) {
       print("NOTHING");
     }
     else {
-      List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(
+      List<String> parts = text.replaceAll('[', '').replaceAll(
           ']', '').split(' ');
       if (parts.length > 2) {
         currentSSID = parts[3];
