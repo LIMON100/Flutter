@@ -5,6 +5,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
+import 'package:lamaradar/mode/llamaGuardSetting.dart';
+import 'package:lamaradar/provider/LedValuesProvider.dart';
+import 'package:lamaradar/provider/PopupWindowProvider.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -15,6 +18,9 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:provider/provider.dart';
+import 'package:lamaradar/provider/LedValuesProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -44,11 +50,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
 
   // for popup dashcam windows
-  VlcPlayerController? _controller;
+  // VlcPlayerController? _controller;
   bool isCameraStreaming = false;
+  late VlcPlayerController _videoPlayerController;
 
   // Wifi connection
-  final String ssid = "CARDV";
+  final String ssid = ' ';
   final String password = "12345678";
   List<String> availableNetworks = [];
 
@@ -63,7 +70,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool isConnected = false;
   List<dynamic> wifiNetworks = [];
   bool isRearCamOpen = false;
-
+  bool _isFirstData = true;
+  bool _isFirstDataRight = true;
+  String _selectedOption = 'OFF';
+  int blinkDurationMilliseconds = 10000;
+  double _sliderValue = 0.0;
+  int _selectedValue = 0;
+  final sliderLabels = [0, 30, 60, 90];
 
   @override
   void initState() {
@@ -72,10 +85,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
+    _loadRotationAngle();
     initializePlayer();
   }
-
-  // check wifi connected or not
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -102,51 +114,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  // void _startWifiScan(BuildContext context) async {
-  //   try {
-  //     bool? isSuccess = await FlutterIotWifi.scan();
-  //     if (isSuccess!) {
-  //       // Wait for the scan process to complete
-  //       await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
-  //
-  //       List<dynamic> networks = await FlutterIotWifi.list();
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return Dialog(
-  //             child: Container(
-  //               width: 300, // Adjust the width as needed
-  //               child: ListView.builder(
-  //                 shrinkWrap: true,
-  //                 itemCount: networks.length,
-  //                 itemBuilder: (context, index) {
-  //                   final wifiNetwork = networks[index];
-  //                   return ListTile(
-  //                     title: Text(wifiNetwork.toString()),
-  //                     onTap: () {
-  //                       _connect(context, wifiNetwork.toString());
-  //                       Navigator.of(context).pop(); // Close the dialog after selection
-  //                     },
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     } else {
-  //       print('Failed to scan Wi-Fi networks');
-  //       await Future.delayed(Duration(seconds: 10)); // Adjust the delay as needed
-  //       _startWifiScan(context);
-  //     }
-  //   } catch (e) {
-  //     print('Failed to scan Wi-Fi networks: $e');
-  //   }
-  // }
-
   // For Lower android version
   void _startWifiScan(BuildContext context) async {
-    print("Inside startscan");
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -154,7 +123,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         await Future.delayed(Duration(seconds: 2)); // Adjust the delay as needed
 
         List<dynamic> networks = await FlutterIotWifi.list();
-        print(networks);
+        // print(networks);
 
         if (networks.isEmpty) {
           // Show a pop-up message when the networks list is empty
@@ -263,7 +232,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     for (BluetoothService service in services) {
       List<BluetoothCharacteristic> characteristics = await service.characteristics;
       for (BluetoothCharacteristic characteristic in characteristics) {
-        print("Check the properties");
+        // print("Check the properties");
 
         if (characteristic.uuid.toString() ==
             'beb5483e-36e1-4688-b7f5-ea07361b26a7') {
@@ -273,7 +242,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
         if (characteristic.properties.notify){
           if (characteristic.uuid.toString() ==
-              'beb5483e-36e1-4688-b7f5-ea07361b26a8') { // Replace with the characteristic UUID for your device
+              'beb5483e-36e1-4688-b7f5-ea07361b26a8') {
             // _service = service;
             _characteristic = characteristic;
 
@@ -284,6 +253,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             _characteristic!.value.listen((value) {
               setState(() {
                 _value = value.toString();
+                // print("Value");
+                // print(_value);
               });
             });
             print('Found characteristic ${characteristic.uuid}');
@@ -295,6 +266,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     setState(() {
       _device = widget.device;
     });
+  }
+
+  List<String> intsToHexStrings(List<int> intList) {
+    List<String> hexList = [];
+
+    for (int intValue in intList) {
+      String hexString = intValue.toRadixString(16).toUpperCase().padLeft(2, '0');
+      hexList.add(hexString);
+    }
+    return hexList;
   }
 
   // Disconnect BLE
@@ -316,9 +297,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Send data part
   Future<void> _sendData(List<int> dataToSend) async {
     if (_characteristic_write != null) {
-      // List<int> byteData = utf8.encode(dataToSend);
       await _characteristic_write!.write(dataToSend);
-      // Wait for the response from the BLE device
       final response = await _characteristic_write!.value.first;
     }
   }
@@ -333,6 +312,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Timer? _rightBlinkTimer;
 
 
+
+
+  // MPU with blinking
   void _startLeftBlinking() {
     if (_leftBlinkTimer != null) {
       _leftBlinkTimer!.cancel();
@@ -340,22 +322,46 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       setState(() {
         _isLeftBlinking = false;
       });
-    } else {
+    }
+    else {
+      if (_value.length > 40) {
+        int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
+
+        if (valueAtIndex46 == 0) {
+          blinkDurationMilliseconds = 10000;
+        }
+        else if (valueAtIndex46 == 1 || valueAtIndex46 == 2) {
+          blinkDurationMilliseconds = 3000; // 3 seconds
+        }
+        else {
+          // Handle other cases here if needed
+          blinkDurationMilliseconds = 10000; // Default to 10 seconds
+        }
+      }
+
       _leftBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
         setState(() {
           _isLeftBlinking = !_isLeftBlinking;
         });
       });
-      // Stop the blinking after 3 seconds
-      Future.delayed(Duration(seconds: 30)).then((_) {
-        _leftBlinkTimer?.cancel();
-        setState(() {
-          _isLeftBlinking = false;
-        });
-      });
     }
+
+    // Stop the blinking after the specified duration
+    Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
+      _leftBlinkTimer?.cancel();
+      _leftBlinkTimer = null;
+      // BLink OFF
+      if(!_isFirstData){
+        _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+        _isFirstData = true;
+      }
+      setState(() {
+        _isLeftBlinking = false;
+      });
+    });
   }
 
+  // MPU with blinking
   void _startRightBlinking() {
     if (_rightBlinkTimer != null) {
       _rightBlinkTimer!.cancel();
@@ -363,20 +369,43 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       setState(() {
         _isRightBlinking = false;
       });
-    } else {
+    }
+    else {
+      if (_value.length > 40) {
+        int? valueAtIndex46 = int.tryParse(_value[46] ?? '');
+
+        if (valueAtIndex46 == 0) {
+          blinkDurationMilliseconds = 10000;
+        }
+        else if (valueAtIndex46 == 1 || valueAtIndex46 == 2) {
+          blinkDurationMilliseconds = 3000; // 3 seconds
+        }
+        else {
+          // Handle other cases here if needed
+          blinkDurationMilliseconds = 10000; // Default to 10 seconds
+        }
+      }
+
       _rightBlinkTimer = Timer.periodic(Duration(milliseconds: 500), (_) {
         setState(() {
           _isRightBlinking = !_isRightBlinking;
         });
       });
-      // Stop the blinking after 3 seconds
-      Future.delayed(Duration(seconds: 30)).then((_) {
-        _rightBlinkTimer?.cancel();
-        setState(() {
-          _isRightBlinking = false;
-        });
-      });
     }
+
+    // Stop the blinking after the specified duration
+    Future.delayed(Duration(milliseconds: blinkDurationMilliseconds)).then((_) {
+      _rightBlinkTimer?.cancel();
+      _rightBlinkTimer = null;
+      // BLink OFF
+      if(!_isFirstDataRight){
+        _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+        _isFirstDataRight = true;
+      }
+      setState(() {
+        _isRightBlinking = false;
+      });
+    });
   }
 
   //Blink with value
@@ -416,11 +445,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
+
   String _getLocation() {
-    if (_value.length < 29) {
+    // Check if _value is null or empty
+    if (_value == null || _value.isEmpty || _value.length < 29) {
       return 'Notification Not Available';
     }
-    switch (int.parse(_value[28])) {
+
+    // Extract the character at index 28 and parse it as an integer
+    int locationCode;
+    try {
+      locationCode = int.parse(_value[27]);
+    } catch (e) {
+      return 'No Notification';
+    }
+
+    // Switch on the parsed integer
+    switch (locationCode) {
       case 1:
         return 'Right Notification Warning';
       case 2:
@@ -436,68 +477,69 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }
   }
 
-  // String _getLocation() {
-  //   if (_value.length > 33) {
-  //     return 'Notification Not Available';
-  //   }
-  //   switch (_value[28]) {
-  //     case "1":
-  //       return 'Right Notification Warning';
-  //     case "2":
-  //       return 'Right Notification Danger';
-  //     case "3":
-  //       return 'Left Notification Warning';
-  //     case "4":
-  //       return 'Left Notification Danger';
-  //     case "5":
-  //       return 'Rear Notification Danger';
-  //     default:
-  //       return '';
-  //   }
-  // }
+  // Left/Right/Rear icon
+  int right_danger_counter = 0;
 
-  //TEST MULTIPLE NOTIFICATION
-  // String _getLocation() {
-  //   if (_value.length < 33) {
-  //     return 'Notification Not Available';
-  //   }
-  //   switch (_value[30] + _value[31]) {
-  //     case "33":
-  //       return 'Left Notification Warning';
-  //     case "34":
-  //       return 'Right Notification Warning';
-  //     case "36":
-  //       return 'Rear Notification Warning';
-  //     case "40":
-  //       return 'Front Notification Warning';
+  // Widget _getLeftIcon() {
+  //   double opacity = 1.0;
+  //   Color color = Colors.red;
   //
-  //     case "65":
-  //       return 'left Notification Danger';
-  //     case "66":
-  //       return 'Right Notification Danger';
-  //     case "68":
-  //       return 'Rear Notification Danger';
-  //     case "72":
-  //       return 'Front Notification Danger';
-  //
-  //     default:
-  //       return 'Safe';
+  //   if (_getLocation() == 'Left Notification Danger') {
+  //     color = Colors.red;
+  //     left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //     left_redPlayer.play();
   //   }
+  //   else if (_getLocation() == 'Left Notification Warning') {
+  //     color = Colors.yellow;
+  //     left_greenPlayer.setAsset('assets/danger_beep.mp3');
+  //     left_greenPlayer.play();
+  //   }
+  //   else {
+  //     color = Colors.green;
+  //     left_greenPlayer.stop();
+  //     left_redPlayer.stop();
+  //   }
+  //
+  //   return AnimatedOpacity(
+  //     duration: Duration(milliseconds: 300),
+  //     opacity: opacity,
+  //     // child: Icon(Icons.arrow_back, color: color),
+  //     child: Container(
+  //       height: 48,
+  //       color: Colors.transparent,
+  //       child: Image.asset(
+  //         'assets/icons/left_warning_llama_rb.png',
+  //         color: color,
+  //       ),
+  //     ),
+  //   );
   // }
 
   Widget _getLeftIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
 
-    if (_getLocation() == 'Left Notification Danger') {
+    String location = _getLocation();
+
+    if (location == 'Left Notification Danger') {
       color = Colors.red;
-      left_redPlayer.setAsset('assets/warning_beep.mp3');
+      left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
-    } else if (_getLocation() == 'Left Notification Warning') {
+
+      Timer(Duration(milliseconds: 600), () {
+        left_redPlayer.stop();
+      });
+    }
+    else if (location == 'Left Notification Warning') {
       color = Colors.yellow;
-      left_greenPlayer.setAsset('assets/danger_beep.mp3');
+      left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
-    } else {
+
+      Timer(Duration(milliseconds: 400), () {
+        left_greenPlayer.stop();
+      });
+    }
+    else {
       color = Colors.green;
       left_greenPlayer.stop();
       left_redPlayer.stop();
@@ -518,7 +560,77 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     );
   }
 
-  int right_danger_counter = 0;
+
+  // Demo test lefIcon+getLocation
+  // Widget _getNotificationIconLeft() {
+  //   double opacity = 1.0;
+  //   Color color = Colors.red;
+  //   String notification = '';
+  //
+  //   if (_value == null || _value.isEmpty || _value.length < 29) {
+  //     notification = 'Notification Not Available';
+  //   }
+  //   else
+  //   {
+  //     int locationCode = 0;
+  //     try {
+  //       locationCode = int.parse(_value[27]);
+  //     }
+  //     catch (e) {
+  //       notification = 'No Notification';
+  //     }
+  //     switch (locationCode) {
+  //       // case 1:
+  //       //   notification = 'Right Notification Warning';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       // case 2:
+  //       //   notification = 'Right Notification Danger';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       case 1:
+  //         notification = 'Left Notification Danger';
+  //         color = Colors.red;
+  //         left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //         left_redPlayer.play();
+  //         break;
+  //       case 2:
+  //         notification = 'Left Notification Warning';
+  //         color = Colors.yellow;
+  //         left_greenPlayer.setAsset('assets/danger_beep.mp3');
+  //         left_greenPlayer.play();
+  //         break;
+  //       // case 5:
+  //       //   notification = 'Rear Notification Danger';
+  //       //   color = Colors.red;
+  //       //   left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //       //   left_redPlayer.play();
+  //       //   break;
+  //       default:
+  //         notification = '';
+  //         color = Colors.green;
+  //         left_greenPlayer.stop();
+  //         left_redPlayer.stop();
+  //     }
+  //   }
+  //   return AnimatedOpacity(
+  //     duration: Duration(milliseconds: 300),
+  //     opacity: opacity,
+  //     // child: Icon(Icons.arrow_back, color: color),
+  //     child: Container(
+  //       height: 48,
+  //       color: Colors.transparent,
+  //       child: Image.asset(
+  //         'assets/icons/left_warning_llama_rb.png',
+  //         color: color,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _getRightIcon() {
     double opacity = 1.0;
@@ -526,23 +638,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
     if (_getLocation() == 'Right Notification Danger') {
       color = Colors.red;
-      right_redPlayer.setAsset('assets/warning_beep.mp3');
+      right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
 
-      if (right_danger_counter >= 3 && !isRearCamOpen) {
-        showStreamPopup();
-        right_danger_counter = 0;
-      }
-      right_danger_counter = right_danger_counter + 1;
-      print("POPUP COUNTER");
-      print(right_danger_counter);
+      Timer(Duration(milliseconds: 600), () {
+        right_redPlayer.stop();
+      });
     }
     else if (_getLocation() == 'Right Notification Warning') {
       color = Colors.yellow;
-      right_greenPlayer.setAsset('assets/danger_beep.mp3');
+      right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
-    } else {
-      // opacity = 0.0;
+
+      Timer(Duration(milliseconds: 400), () {
+        right_greenPlayer.stop();
+      });
+    }
+    else {
       color = Colors.green;
       right_redPlayer.stop();
       right_greenPlayer.stop();
@@ -566,19 +678,27 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Widget _getRearIcon() {
     double opacity = 1.0;
     Color color = Colors.red;
+    final popupState = Provider.of<PopupWindowProvider>(context, listen: false);
 
     if (_getLocation() == 'Rear Notification Danger') {
       color = Colors.red;
-      rear_redPlayer.setAsset('assets/warning_beep.mp3');
+      rear_redPlayer.setAsset('assets/danger3.mp3');
       rear_redPlayer.play();
-      if (right_danger_counter >= 2 && !isRearCamOpen) {
-        // showStreamPopup();
+      if (right_danger_counter >= 5 && !isRearCamOpen) {
+        if (popupState.isPopupWindowEnabled) {
+          showStreamPopup();
+        }
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
-    } else if (_getLocation() == 'Rear Notification Warning') {
+      Timer(Duration(milliseconds: 600), () {
+        rear_redPlayer.stop();
+      });
+    }
+    else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
-    } else {
+    }
+    else {
       color = Colors.green;
       rear_redPlayer.stop();
       rear_greenPlayer.stop();
@@ -624,80 +744,36 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
 
-  void _handleButtonPress() {
-    if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
-      _startBlinking3();
-    }
-  }
+  // void _handleButtonPress() {
+  //   if (int.tryParse(_value[15]) == 3 || int.tryParse(_value[15]) == 6 || int.tryParse(_value[15]) == 9) {
+  //     _startBlinking3();
+  //   }
+  // }
 
   // Open pop-up window for dashcam rear warning
   Future<void> initializePlayer() async {
-    _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+    _videoPlayerController = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
+          // VlcRtpOptions.rtpOverRtsp(true), // New method try and test
           VlcAdvancedOptions.networkCaching(0),
-        ]),),
+          VlcAdvancedOptions.clockJitter(0),
+          VlcAdvancedOptions.fileCaching(0),
+          VlcAdvancedOptions.liveCaching(0),
+        ]),
+      ),
     );
-
-    await _controller!.initialize();
+    await _videoPlayerController!.initialize();
   }
 
-  // Can't close the pop-up window, it will run 5 seconds and then close
-  // void showStreamPopup() {
-  //   if (_controller == null) {
-  //     return;
-  //   }
-  //   WidgetsBinding.instance!.addPostFrameCallback((_) {
-  //     showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (BuildContext context) {
-  //         return Dialog(
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Text('Rear Dashcam'),
-  //               SizedBox(height: 16),
-  //               Container(
-  //                 width: MediaQuery.of(context).size.width,
-  //                 height: MediaQuery.of(context).size.width * 9 / 16,
-  //                 child: VlcPlayer(
-  //                   controller: _controller!,
-  //                   aspectRatio: 16 / 9,
-  //                 ),
-  //               ),
-  //               SizedBox(height: 16),
-  //               ElevatedButton(
-  //                 onPressed: () {
-  //                   // Navigator.of(context).pop();
-  //                   // initializePlayer();
-  //                   // Navigator.pop(context);
-  //                   // Navigator.of(context).push(
-  //                   //   MaterialPageRoute(
-  //                   //       builder: (context) => CollisionWarningPage2(device: widget.device)),
-  //                   //   );
-  //                 },
-  //                 child: Text('Close'),
-  //               ),
-  //             ],
-  //           ),
-  //         );
-  //       },
-  //     );
-  //   });
-  //   Future.delayed(Duration(seconds: 5)).then((_) {
-  //     Navigator.of(context).pop();
-  //     initializePlayer();
-  //   });
-  // }
 
   // Can close pop-up window
   bool _isShowingPopup = false;
   void showStreamPopup() {
-    if (_controller == null) {
+    if (_videoPlayerController == null) {
       return;
     }
 
@@ -727,7 +803,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       .size
                       .width * 9 / 16,
                   child: VlcPlayer(
-                    controller: _controller!,
+                    controller: _videoPlayerController!,
                     aspectRatio: 16 / 9,
                   ),
                 ),
@@ -748,25 +824,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     initializePlayer();
   }
 
-  // Dispose function
-  @override
-  void dispose() {
-    _leftBlinkTimer?.cancel();
-    _rightBlinkTimer?.cancel();
-    right_redPlayer.dispose();
-    right_greenPlayer.dispose();
-    rear_greenPlayer.dispose();
-    rear_redPlayer.dispose();
-    left_greenPlayer.dispose();
-    left_redPlayer.dispose();
-    _stopBlinking();
-    super.dispose();
-    _controller?.dispose();
-  }
-
   // camera open
-  late VlcPlayerController _videoPlayerController;
-
   void toggleCameraStreaming() {
     if (isCameraStreaming) {
       _videoPlayerController.stop();
@@ -775,12 +833,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       Connectivity().onConnectivityChanged.listen((connectivity) {
         if (connectivity == ConnectivityResult.wifi) {
           _videoPlayerController = VlcPlayerController.network(
-            'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+            'rtsp://192.168.1.254/xxxx.mp4',
             hwAcc: HwAcc.disabled,
             autoPlay: true,
             options: VlcPlayerOptions(
               advanced: VlcAdvancedOptions([
-                VlcAdvancedOptions.networkCaching(10),
+                VlcAdvancedOptions.networkCaching(0),
+                VlcAdvancedOptions.clockJitter(0),
+                VlcAdvancedOptions.fileCaching(0),
+                VlcAdvancedOptions.liveCaching(0),
               ]),),
           );
           _videoPlayerController.initialize().then((_) {
@@ -790,12 +851,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
 
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(10),
+            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(0),
+            VlcAdvancedOptions.liveCaching(0),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -809,6 +873,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     });
   }
 
+  // Dispose function
+  @override
+  void dispose() {
+    _leftBlinkTimer?.cancel();
+    _rightBlinkTimer?.cancel();
+    right_redPlayer.dispose();
+    right_greenPlayer.dispose();
+    rear_greenPlayer.dispose();
+    rear_redPlayer.dispose();
+    left_greenPlayer.dispose();
+    left_redPlayer.dispose();
+    _stopBlinking();
+    _videoPlayerController.dispose();
+    super.dispose();
+  }
 
 
   Widget buildCameraButton() {
@@ -823,6 +902,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30.0),
             ),
+            padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
           ),
           child: Text(
             isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
@@ -838,11 +918,248 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
 
+  bool isCustomSelected = false;
+
+  List<int> calculateChecksum(List<int> data) {
+    int csk = 0;
+    for (int value in data) {
+      csk += value;
+    }
+    int cskResult = csk % 256;
+    data.add(cskResult); // Add the checksum to the end of the list
+    return data;
+  }
+
+  // _send2data for multiple input
+  void _sendData2(LedValuesProvider ledValuesProvider, bool isMilliseconds) {
+    int leftLed = ledValuesProvider.leftLedValue.round();
+    int rightLed = ledValuesProvider.rightLedValue.round();
+    int turnOnTime = ledValuesProvider.turnOnTime.round();
+    int turnOffTime = ledValuesProvider.turnOffTime.round();
+
+    // Multiply by 60 if isMilliseconds is true
+    if (isMilliseconds) {
+      turnOnTime *= 1;
+      turnOffTime *= 1;
+    } else {
+      turnOnTime *= 10000;
+      turnOffTime *= 1000;
+    }
+
+    // print('Left LED: $leftLed');
+    // print('Right LED: $rightLed');
+    // print('ON Time: $turnOnTime');
+    // print('OFF Time: $turnOffTime');
+
+    // Ensure that turnOnTime and turnOffTime are within the expected range (0-65535)
+    turnOnTime = turnOnTime.clamp(0, 65535);
+    turnOffTime = turnOffTime.clamp(0, 65535);
+
+    String onTimeHex = turnOnTime.toRadixString(16).toUpperCase();
+    String offTimeHex = turnOffTime.toRadixString(16).toUpperCase();
+
+    onTimeHex = onTimeHex.padLeft(4, '0');
+    offTimeHex = offTimeHex.padLeft(4, '0');
+
+    String on1 = onTimeHex.substring(0, 2);
+    String on2 = onTimeHex.substring(2);
+
+    String off1 = offTimeHex.substring(0, 2);
+    String off2 = offTimeHex.substring(2);
+
+    print([
+      '0x02, 0x01, 0x12, 0x00',
+      int.parse(on1, radix: 16),
+      int.parse(on2, radix: 16),
+      int.parse(off1, radix: 16),
+      int.parse(off2, radix: 16),
+      rightLed,
+      leftLed,
+      '0x01',
+      '0x64',
+    ]);
+
+    List<int> data = [0x02, 0x01, 0x12, 0x00, int.parse(on1, radix: 16), int.parse(on2, radix: 16), int.parse(off1, radix: 16), int.parse(off2, radix: 16), rightLed, leftLed, 0x01];
+    List<int> dataWithChecksum = calculateChecksum(data);
+    print("Data with Checksum: ${dataWithChecksum.map((e) => "0x${e.toRadixString(16).toUpperCase()}").join(", ")}");
+    _sendData(data);
+  }
+
+
+  bool isMilliseconds = false;
+  bool isSwitched = false;
+  double timeOnValue = 0.0;
+  double timeOffValue = 0.0;
+  double maxTimeOnValueSeconds = 6.0;
+  double maxTimeOffValueSeconds = 60.0;
+  double maxTimeOnValueMilliseconds = 1000.0;
+  double maxTimeOffValueMilliseconds = 1000.0;
+  static const String rotationAngleKey = 'rotation_angle';
+
+  // Change camera orientation
+  Orientation currentOrientation = Orientation.portrait;
+  double rotationAngle = 0.0;
+
+  void _loadRotationAngle() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() {
+        rotationAngle = prefs.getDouble(rotationAngleKey) ?? 0.0;
+      });
+    } catch (e) {
+      print("Error loading rotation angle: $e");
+    }
+  }
+
+  void _saveRotationAngle(double angle) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setDouble(rotationAngleKey, angle);
+    } catch (e) {
+      print("Error saving rotation angle: $e");
+    }
+  }
+
+  void changeOrientation() {
+    setState(() {
+      rotationAngle += 90.0; // Rotate by 90 degrees
+      if (rotationAngle >= 360.0) {
+        rotationAngle = 0.0;
+      }
+      _saveRotationAngle(rotationAngle); // Save the new angle
+    });
+  }
+
+
+  // Custom tailight dialog
+  void _showCustomDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final ledValuesProvider = Provider.of<LedValuesProvider>(context);
+        return Center(
+          child: Container(
+            width: 400, // Set the desired width of the dialog
+            child: AlertDialog(
+              title: Center( // Center-align the title
+                child: Text('Custom Options'),
+              ),
+              content: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min, // Minimize the dialog size
+                    children: [
+                      Text('Left LED Brightness: ${ledValuesProvider.leftLedValue.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.leftLedValue,
+                        min: 0,
+                        max: 100,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateLeftLedValue(newValue);
+                          });
+                        },
+                      ),
+                      Text('Right LED Brightness: ${ledValuesProvider.rightLedValue.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.rightLedValue,
+                        min: 0,
+                        max: 100,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateRightLedValue(newValue);
+                          });
+                        },
+                      ),
+                      // Set Timer
+                      Text('Time On: ${ledValuesProvider.turnOnTime.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.turnOnTime,
+                        min: 0,
+                        // max: isMilliseconds ? 1000 : 6,
+                        max: isMilliseconds ? maxTimeOnValueMilliseconds : maxTimeOnValueSeconds,
+                        onChanged: (newValue) {
+                          setState(() {
+                            ledValuesProvider.updateTurnOnTime(newValue);
+                          });
+                        },
+                      ),
+                      Text('Time Off: ${ledValuesProvider.turnOffTime.toInt()}'),
+                      Slider(
+                        value: ledValuesProvider.turnOffTime,
+                        min: 0,
+                        max: isMilliseconds ? maxTimeOffValueMilliseconds : maxTimeOffValueSeconds,
+                        onChanged: (newValue) {
+                          setState(() {
+                            // ledValuesProvider.updateTurnOffTime(isMilliseconds ? newValue : newValue / 1000);
+                            ledValuesProvider.updateTurnOffTime(newValue);
+                          });
+                        },
+                      ),
+                      // Time change slider
+                      SizedBox(width: 16), //
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('sec'),
+                          Switch(
+                            value: isMilliseconds,
+                            onChanged: (value) {
+                              setState(() {
+                                isMilliseconds = value;
+                                if (isMilliseconds) {
+                                  ledValuesProvider.turnOnTime = 0.0;
+                                  ledValuesProvider.turnOffTime = 0.0;
+                                } else {
+                                  ledValuesProvider.turnOnTime = 0.0;
+                                  ledValuesProvider.turnOffTime = 0.0;
+                                }
+                              });
+                            },
+                          ),
+                          Text('ms'),
+                        ],
+                      ),
+
+                      SizedBox(width: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              // Reset the LED values to their defaults
+                              ledValuesProvider.resetLedValues();
+                            },
+                            child: Text('Reset'),
+                          ),
+                          SizedBox(width: 16), // Add spacing between buttons
+                          ElevatedButton(
+                            onPressed: () {
+                              _sendData2(ledValuesProvider, isMilliseconds); // Pass the ledValuesProvider
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ledValuesProvider = Provider.of<LedValuesProvider>(context);
     Color screenColor = Theme.of(context).backgroundColor;
     return OrientationBuilder(
       builder: (context, orientation) {
+        currentOrientation = orientation;
         return Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -857,6 +1174,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
               centerTitle: true,
               foregroundColor: Colors.black,
               title: const Text('Ride Info'),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device, selectedOption: _selectedOption)),
+                    );
+                  },
+                ),
+              ],
               flexibleSpace: Container(
                 decoration: BoxDecoration(
                   // color: Color(0xFF6497d3),
@@ -876,9 +1204,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            _startLeftBlinking();
-                            _sendData([0x02, 0x01, 0xA, 0x01, 0xE]);
-
+                            if (!_isLeftBlinking) {
+                              _startLeftBlinking();
+                              if (_isFirstData) {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
+                                _isFirstData = false;
+                              }
+                              else {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                _isFirstData = true;
+                              }
+                            }
                           },
                           icon: Icon(
                             Indicator.image2vector,
@@ -900,8 +1236,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         SizedBox(width: 60),
                         IconButton(
                           onPressed: () {
-                            _startRightBlinking();
-                            _sendData([0x02, 0x01, 0xA, 0x02, 0xF]);
+                            if (!_isRightBlinking) {
+                              _startRightBlinking();
+                              // Determine which data to send based on the state
+                              if (_isFirstDataRight) {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
+                                _isFirstDataRight = false; // Toggle the state for the next press
+                              } else {
+                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                _isFirstDataRight = true; // Toggle the state for the next press
+                              }
+                            }
                           },
                           icon: Icon(
                             Indicator.image2vector__1_,
@@ -918,6 +1263,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _getLeftIcon(),
+                        // _getNotificationIconLeft(),
                         SizedBox(width: 15),
                         Text(
                           _getLocation(),
@@ -939,167 +1285,236 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
-                    // Container(
-                    //   margin: EdgeInsets.only(top: 1),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       // Text(_value[30]),
-                    //       Text(_value[30] + _value[31]),
-                    //       // Text(_value[31]),
-                    //       // Text(_value[32]),
-                    //     ],
-                    //   ),
-                    // ),
-                    // Blink icon for tailight, camera and distance
-                    //CAM+Tailight+Distance button
-                    SizedBox(height: 30),
+                    // Test without column
                     Container(
                       margin: EdgeInsets.only(top: 2),
                       child: Column(
-                        children: [
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 10),
-                              Column(
+                            // mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(width: 100),
+                              // SizedBox(width: 0),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // ElevatedButton(onPressed: (){}, child: Text("Rear Cam")),
-                                  Icon(Icons.square),
-                                  Text('Camera'),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon1 ? Colors.red : Colors
-                                        .black,
+                                  IconButton(
+                                    icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
+                                    onPressed: () {},
+                                    padding: EdgeInsets.all(0),
                                   ),
-                                  Text(
-                                    '30M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon1 ? Colors.red : Colors
-                                          .black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon2 ? Colors.red : Colors
-                                        .black,
-                                  ),
-                                  Text(
-                                    '60M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon2 ? Colors.red : Colors
-                                          .black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Column(
-                                children: [
-                                  Icon(
-                                    Icons.square,
-                                    size: 40,
-                                    color: _isBlinkingIcon3 ? Colors.red : Colors
-                                        .black,
-                                  ),
-                                  Text(
-                                    '90M',
-                                    style: TextStyle(
-                                      color: _isBlinkingIcon3 ? Colors.red : Colors
-                                          .black,
-                                    ),
+                                  DropdownButton<String>(
+                                    value: _selectedOption,
+                                    onChanged: (String? value) {
+                                      setState(() {
+                                        _selectedOption = value!;
+                                        switch (value) {
+                                          case 'OFF':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                            break;
+                                          case 'ON':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
+                                            break;
+                                          case 'FLASHING':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
+                                            break;
+                                          case 'PULSE':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x03, 0x19]);
+                                            break;
+                                          case 'PELOTON':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x04, 0x19]);
+                                            break;
+                                          case 'QUICKLY_FLASH':
+                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
+                                            break;
+                                          case 'CUSTOM':
+                                            isCustomSelected = true;
+                                            _showCustomDialog();
+                                            break;
+                                          default:
+                                            isCustomSelected = false;
+                                            break;
+                                        }
+                                      });
+                                    },
+                                    items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH', 'CUSTOM']
+                                        .map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
                                   ),
                                 ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 1),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: Icon(_cameraOn ? Icons.camera_alt : Icons
-                                    .camera_alt_outlined),
-                                onPressed: () {
-                                  setState(() {
-                                    _cameraOn = !_cameraOn;
-                                    _sendData([0x02, 0x01, 0xB, 0x01, 0xF]);
-                                  });
-                                  // open camera if _cameraOn is true
-                                },
-                              ),
-                              SizedBox(width: 20),
-                              IconButton(
-                                icon: Icon(Icons.social_distance_rounded),
-                                onPressed: () {
-                                  _handleButtonPress();
-                                  _sendData([0x02, 0x01, 0xC, 0x01, 0x10]);
-                                },
-                              ),
-                              SizedBox(width: 20),
-                              IconButton(
-                                icon: Icon(_tailight ? Icons.lightbulb : Icons
-                                    .lightbulb_outline),
-                                onPressed: () {
-                                  setState(() {
-                                    _tailight = !_tailight;
-                                    // _sendData([0x02, 0x01, 0xD, 0x01, 0x11]);
-                                    //New data
-                                    // _sendData([0x02, 0x01, 0x45, 0x00, 0x01, 0x49]);
-                                    _sendData([0x02, 0x01, 0x41, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x61]);
-                                  });
-                                },
                               ),
                             ],
                           ),
                         ],
                       ),
                     ),
-
                     // Open rear up cam
-                    SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        buildCameraButton(),
-                        // SizedBox(width: 10),
-                        // Dashcam
-                      ],
-                    ),
                     Container(
-                      height: 200,
-                      width: 300,
-                      child: isCameraStreaming && _videoPlayerController != null
-                      //     ? VlcPlayer(
-                      //   controller: _videoPlayerController,
-                      //   aspectRatio: 16 / 9,
-                      //   placeholder: Center(child: CircularProgressIndicator()),
-                      // )
-                          ? Transform.rotate(
-                        angle: 3.14159,
-                        alignment: Alignment.center,
-                        child: VlcPlayer(
-                          controller: _videoPlayerController,
-                          aspectRatio: 16 / 9,
-                          placeholder: Center(child: CircularProgressIndicator()),
-                        ),
-                      )
-                          : Image.asset(
-                        'images/test_background3.jpg',
-                        fit: BoxFit.fitWidth,
+                      // margin: EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
+                        children: [
+                          SizedBox(width: 70),
+                          buildCameraButton(),
+                          SizedBox(width: 75),
+                          // Flexible(
+                          //   child: Column(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       SizedBox(height: 20),
+                          //       Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
+                          //       Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                          //     ],
+                          //   ),
+                          // ),
+                        ],
                       ),
+                    ),
+
+                    // Camera and distance mode
+                    Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Flexible(
+                          flex: 3,
+                          child: Container(
+                            height: 280,
+                            width: 300,
+                            child: Center(
+                              child: Stack(
+                                children: [
+                                  isCameraStreaming && _videoPlayerController != null
+                                      ? Transform.rotate(
+                                    angle: rotationAngle * 3.14159265359 / 180,
+                                    child: VlcPlayer(
+                                      controller: _videoPlayerController,
+                                      aspectRatio: currentOrientation == Orientation.portrait
+                                          ? 16 / 9
+                                          : 9 / 16,
+                                    ),
+                                  )
+                                      : Image.asset(
+                                    'images/test_background3.jpg',
+                                    fit: BoxFit.fitWidth,
+                                  ),
+                                  if (isCameraStreaming)
+                                    Positioned(
+                                      bottom: 16.0,
+                                      right: 16.0,
+                                      child: IconButton(
+                                        color: Colors.red,
+                                        icon: Icon(Icons.cameraswitch_outlined),
+                                        onPressed: changeOrientation,
+                                        iconSize: 40.0,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                        child:Column(
+                          children: [
+                            Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                RotatedBox(
+                                  quarterTurns: 3,
+                                  child: SliderTheme(
+                                    data: SliderThemeData(
+                                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
+                                      overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
+                                      trackHeight: 12.0, // Adjust the track height
+                                    ),
+                                    child: Slider(
+                                      value: _sliderValue,
+                                      min: 0,
+                                      max: 3, // Represents 0, 30, 60, 90 (3 steps)
+                                      divisions: 3, // Number of divisions (0, 30, 60, 90)
+                                      activeColor: Colors.deepPurple,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _sliderValue = value;
+                                          _selectedValue = (_sliderValue * 30).round();
+                                        });
+                                      },
+                                      onChangeEnd: (value) {
+                                        int selectedValue = (_sliderValue * 30).round();
+                                        if (selectedValue == 30) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        else if (selectedValue == 60) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        else if (selectedValue == 90) {
+                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Column(
+                                  children: <Widget>[
+                                    SizedBox(height: 20),
+                                    Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 20),
+                                    Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    SizedBox(height: 20),
+                                    Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 60),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        ),
+                      ],
                     ),
                     // Stop ride
                     SizedBox(height: 30),
@@ -1120,7 +1535,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                           color1: Color(0xFF517fa4),
                           color2: Colors.cyan,
                         ),
-
                       ],
                     ),
 
@@ -1131,18 +1545,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(width: 120),
-                          Container(
-                            color: Colors.transparent,
-                            child: Image.asset(
-                              'images/llama_img_web3_rb.png',
-                              height: 100,
-                              width: 130,
-                            ),
-                          ),
-                          SizedBox(width: 16),
+                          SizedBox(width: 235),
                           FloatingActionButton(
                             onPressed: () {
+                              _sendData([0x02, 0x01, 0x53, 0x00, 0x01, 0x57]);
                               setState(() {
                                 _powerOn = !_powerOn;
                               });
@@ -1153,6 +1559,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 15),
                   ],
                 ),
               ),

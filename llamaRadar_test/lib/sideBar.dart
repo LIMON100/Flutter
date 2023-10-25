@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lamaradar/custom_icon_icons.dart';
-import 'package:lamaradar/mode/dash_cam.dart';
-import 'package:lamaradar/temp/test_dash_cam.dart';
-import 'package:lamaradar/temp/testdashcam2.dart';
-import 'db_icons.dart';
+import 'package:lamaradar/icons/custom_icon_icons.dart';
+import 'package:lamaradar/icons/db_icons.dart';
 import 'package:camera/camera.dart';
-import 'package:lamaradar/mode/LlamaDefenderPage.dart';
+import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
+
+import 'mode/llamaGuardSetting.dart';
 
 class SideBar extends StatelessWidget {
 
@@ -43,36 +42,6 @@ class SideBar extends StatelessWidget {
                 final fontSize = constraints.maxWidth * 0.06;
                 return ListTile(
                   leading: Icon(
-                    Icons.wifi_protected_setup,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'Llama Defender',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const LlamaDefender(),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
                     CustomIcon.webcam,
                     color: Colors.black,
                     size: constraints.maxWidth * 0.07,
@@ -91,64 +60,9 @@ class SideBar extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const DashCam(),
+                        builder: (context) => const ConnectWifiForDashCam(), //ConnectWifiForDashCam
                       ),
                     );
-                  },
-                );
-              },
-            ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
-                    Icons.history,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'Ride History',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-
-                  },
-                );
-              },
-            ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
-                    DBIcons.logo,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'Settings',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-                    // Navigator.pop(context);
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //       builder: (context) => const TestDashCam2(), //AccessPointWidget()
-                    //   ),
-                    // );
                   },
                 );
               },

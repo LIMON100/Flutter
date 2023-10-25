@@ -3,6 +3,9 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:lamaradar/provider/ConnectionProvider.dart';
+import 'package:provider/provider.dart';
 import '../mode/bleScreen.dart';
 import '../temp/glowing_button.dart';
 import 'package:http/http.dart' as http;
@@ -23,8 +26,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
 
   bool isConnected = false;
   bool isConnectedFromEmptyList = false;
-  final String ssid = 'CARDV';
+  final String ssid = ' ';
   final password = '12345678';
+  bool isLoading = false;
 
   Future<bool> _checkPermissions() async {
     if (Platform.isIOS || await Permission.location.request().isGranted) {
@@ -33,76 +37,28 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
     return false;
   }
 
-  void _scanWifiNetworks(BuildContext context) async {
-    print("Inside _scanWifiNetworks");
-    if (isConnected) {
+  void _scanWifiNetworks(BuildContext context, ConnectionProvider connectionProvider) async {
+    if (connectionProvider.isConnected) {
       FlutterIotWifi.disconnect().then((value) {
         setState(() {
-          isConnected = false;
+          // isConnected = false;
+          connectionProvider.setConnected(false);
         });
         print("Disconnect initiated: $value");
-
-        // Start the Wi-Fi scan after disconnecting
-        // _startWifiScan(context);
       });
-    } else if (await _checkPermissions()) {
+    }
+    else if (await _checkPermissions()) {
       // Start the Wi-Fi scan directly
-      _startWifiScan(context);
+      _startWifiScan(context, connectionProvider);
     }
   }
 
-  // void _startWifiScan(BuildContext context) async {
-  //   print("Inside startscan");
-  //   try {
-  //     bool? isSuccess = await FlutterIotWifi.scan();
-  //     if (isSuccess!) {
-  //       // Wait for the scan process to complete
-  //       await Future.delayed(
-  //           Duration(seconds: 2)); // Adjust the delay as needed
-  //
-  //       List<dynamic> networks = await FlutterIotWifi.list();
-  //       print(networks);
-  //       showDialog(
-  //         context:
-  //         context, // Use a parent context instead of the current context
-  //         builder: (BuildContext dialogContext) {
-  //           // Use a different variable for the dialog context
-  //           return Dialog(
-  //             child: Container(
-  //               width: 300, // Adjust the width as needed
-  //               child: ListView.builder(
-  //                 shrinkWrap: true,
-  //                 itemCount: networks.length,
-  //                 itemBuilder: (context, index) {
-  //                   final wifiNetwork = networks[index];
-  //                   return ListTile(
-  //                     title: Text(wifiNetwork.toString()),
-  //                     onTap: () {
-  //                       _connect(context, wifiNetwork.toString());
-  //                       Navigator.of(dialogContext)
-  //                           .pop(); // Close the dialog after selection using the dialog context
-  //                     },
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     } else {
-  //       print('Failed to scan Wi-Fi networks');
-  //       await Future.delayed(
-  //           Duration(seconds: 6)); // Adjust the delay as needed
-  //       _startWifiScan(context);
-  //     }
-  //   } catch (e) {
-  //     print('Failed to scan Wi-Fi networks: $e');
-  //   }
-  // }
 
   // For Lower android version
-  void _startWifiScan(BuildContext context) async {
-    print("Inside startscan");
+  void _startWifiScan(BuildContext context, ConnectionProvider connectionProvider) async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       bool? isSuccess = await FlutterIotWifi.scan();
       if (isSuccess!) {
@@ -113,6 +69,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
         print(networks);
 
         if (networks.isEmpty) {
+          setState(() {
+            isLoading = false;
+          });
           isConnectedFromEmptyList = true;
           // Show a pop-up message when the networks list is empty
           showDialog(
@@ -135,6 +94,9 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             },
           );
         } else {
+          setState(() {
+            isLoading = false;
+          });
           // Show the list of available WiFi networks
           showDialog(
             context: context,
@@ -150,7 +112,7 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
                       return ListTile(
                         title: Text(wifiNetwork.toString()),
                         onTap: () {
-                          _connect(context, wifiNetwork.toString());
+                          _connect(context, wifiNetwork.toString(), connectionProvider);
                           Navigator.of(dialogContext).pop(); // Close the dialog after selection
                         },
                       );
@@ -161,41 +123,56 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             },
           );
         }
-      } else {
+      }
+      else
+      {
         print('Failed to scan Wi-Fi networks');
         await Future.delayed(Duration(seconds: 6)); // Adjust the delay as needed
-        _startWifiScan(context);
+        _startWifiScan(context, connectionProvider);
       }
     } catch (e) {
       print('Failed to scan Wi-Fi networks: $e');
     }
+    finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
-  void _connect(BuildContext context, String ssid) async {
+  bool dashCamGo = false;
+  void _connect(BuildContext context, String ssid, ConnectionProvider connectionProvider) async {
     if (!mounted) {
-      // Widget is no longer active, do not proceed
       return;
     }
 
     if (await _checkPermissions()) {
-      if (isConnected) {
-        FlutterIotWifi.disconnect().then((value) {
-          setState(() {
-            isConnected = false;
-          });
-          print("Disconnect initiated: $value");
-        });
-      } else {
-        FlutterIotWifi.connect(ssid, password).then((value) {
-          setState(() {
-            isConnected = true;
-          });
-          print("Connect initiated: $value");
-
-        });
+      try {
+        if (connectionProvider.isConnected) {
+          final disconnectResult = await FlutterIotWifi.disconnect();
+          print("Disconnect initiated: $disconnectResult");
+          if (disconnectResult != null) {
+            setState(() {
+              connectionProvider.setConnected(false);
+            });
+          }
+        } else {
+          final connectResult = await FlutterIotWifi.connect(ssid, password);
+          print("Connect initiated: $connectResult");
+          if (connectResult != null) {
+            setState(() {
+              connectionProvider.setConnected(true);
+            });
+          }
+        }
+      } catch (e) {
+        print("Error occurred: $e");
+        // Handle the error as needed
       }
     }
   }
+
+
 
   // Page Builder for images
   final List<String> imageList = [
@@ -235,6 +212,7 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
 
   @override
   Widget build(BuildContext context) {
+    final connectionProvider = Provider.of<ConnectionProvider>(context);
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -290,26 +268,42 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
                   ),
                 ),
                 SizedBox(height: 180),
-                InkWell(
-                  onTap: () {
-                    // _connect(context);
-                    _scanWifiNetworks(context);
-                  },
-                  child: Icon(
-                    Icons.wifi,
-                    color: isConnected ? Colors.red : Colors.black,
-                    size: 50,
+                if(isLoading)
+                  Center(
+                    child: SpinKitWaveSpinner
+                      (
+                      color: Colors.black12,
+                      size: 200.0,
+                      curve: Curves.decelerate,
+                      waveColor: Colors.blueGrey,//const Color(0x68757575),
+                      trackColor: Colors.teal,//const Color(0x68757575),
+                    ),
+                  )
+                else
+                  InkWell(
+                    onTap: () {
+                      _scanWifiNetworks(context, connectionProvider);
+                    },
+                    child: Icon(
+                      Icons.wifi,
+                      color: connectionProvider.isConnected ? Colors.red : Colors.black,
+                      size: 50,
+                    ),
                   ),
-                ),
-                Text(
-                  isConnected ? 'Disconnect' : 'Connect WIFI',
-                  style: TextStyle(
-                    color: isConnected ? Colors.red : Colors.black,
-                    fontSize: 20,
+                if(!isLoading)
+                  Text(
+                    connectionProvider.isConnected
+                        ? 'Disconnect'
+                        : 'Connect WIFI',
+                    style: TextStyle(
+                      color: connectionProvider.isConnected
+                          ? Colors.red
+                          : Colors.black,
+                      fontSize: 20,
+                    ),
                   ),
-                ),
                 SizedBox(height: 20),
-                if (isConnected || isConnectedFromEmptyList) //for ozgun
+                if (connectionProvider.isConnected || isConnectedFromEmptyList)
                   GlowingButton2(
                     text: "Open Dashcam",
                     onPressed: () {

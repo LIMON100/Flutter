@@ -21,6 +21,7 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CircleButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -93,12 +94,15 @@ class _DashCamState extends State<DashCam> {
   void initState() {
     super.initState();
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+      'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
         advanced: VlcAdvancedOptions([
           VlcAdvancedOptions.networkCaching(0),
+          VlcAdvancedOptions.clockJitter(0),
+          VlcAdvancedOptions.fileCaching(0),
+          VlcAdvancedOptions.liveCaching(0),
         ]),),
     );
     getFilesFromCamera();
@@ -158,12 +162,15 @@ class _DashCamState extends State<DashCam> {
       _videoPlayerController.dispose();
     } else {
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4?network-caching=0?clock-jitter=0?clock-synchro=0',
+        'rtsp://192.168.1.254/xxxx.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
           advanced: VlcAdvancedOptions([
             VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(0),
+            VlcAdvancedOptions.liveCaching(0),
           ]),),
       );
       _videoPlayerController.initialize().then((_) {
@@ -240,13 +247,14 @@ class _DashCamState extends State<DashCam> {
               images: images,
               videos: videos,
             ),
-            About(),
+            // About(),
           ],
         ),
         bottomNavigationBar: CurvedNavigationBar(
           height: 50,
           backgroundColor: Colors.indigoAccent,
-          color: Colors.indigo.shade200,
+          // color: Colors.indigo.shade200,
+          color: Colors.blueGrey.shade200,
           animationDuration: Duration(milliseconds: 300),
           // currentIndex: _currentIndex,
           onTap: (index) {
@@ -264,11 +272,6 @@ class _DashCamState extends State<DashCam> {
               Icons.image,
               color:
               _currentIndex == 1 ? Colors.white : Colors.blueGrey.shade700,
-            ),
-            Icon(
-              Icons.history,
-              color:
-              _currentIndex == 2 ? Colors.white : Colors.blueGrey.shade700,
             ),
           ],
         ),
@@ -302,7 +305,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //WIFI
-  final String ssid = 'CARDV';
+  final String ssid = ' ';
   final password = '12345678';
   bool isConnected = false;
   bool isCameraStreaming = false;
@@ -313,8 +316,6 @@ class _HomeState extends State<Home> {
   //IP Address
   final String ipAddress = '192.168.1.254';
 
-  //files
-
   final String url = 'http://192.168.1.254';
   bool isFront = false;
   bool isSensor = false;
@@ -324,16 +325,17 @@ class _HomeState extends State<Home> {
   bool isRecording = false;
   Color buttonColor = Colors.deepPurpleAccent;
   String buttonText = 'Start Recording';
+  static const String rotationAngleKey = 'rotation_angle';
 
   // Rtsp Streaming
   @override
   void initState() {
     super.initState();
-    flipMovieMirror();
     isCameraStreaming = widget.isCameraStreaming; // Initialize state from widget
     images = widget.images;
     videos = widget.videos;
     initializePlayer();
+    _loadRotationAngle();
     movieQualitySet();
   }
 
@@ -452,10 +454,6 @@ class _HomeState extends State<Home> {
           print("Connect initiated: $value");
         });
       }
-      // Delay the pop to ensure the connection process is completed
-      // Future.delayed(const Duration(seconds: 3), () {
-      //   Navigator.of(context).pop(); // Close the dialog window
-      // });
     }
   }
 
@@ -518,29 +516,6 @@ class _HomeState extends State<Home> {
 
       if (response.statusCode == 200) {
         print('Changed to Video Mode');
-      } else {
-        print(
-            'Error occured while changing to video mode: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> dashFileList() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=3015';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        String xmlString = response.body;
-        var document = xml.XmlDocument.parse(xmlString);
-        var files = document.findAllElements('NAME');
-        for (var file in files) {
-          print(file.text);
-        }
-
       } else {
         print(
             'Error occured while changing to video mode: ${response.statusCode}');
@@ -619,11 +594,31 @@ class _HomeState extends State<Home> {
       if (response.statusCode == 200) {
         print('Image captured');
         await getFilesFromCamera();
+        // Add snakbar message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('                  Image captured successfully.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
 
       } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('             Image cannot capture due to network.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
         print('Error occured: ${response.statusCode}');
+        // Add snakbar message
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('             Image cannot capture due to network.'),
+          duration: Duration(seconds: 2), // Adjust the duration as needed
+        ),
+      );
       print('Error: $e');
     }
   }
@@ -670,7 +665,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-// 2 -3
+  // 2 -3
   Future<void> camFront() async {
     final response = await http
         .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=3028&par=2'));
@@ -720,8 +715,8 @@ class _HomeState extends State<Home> {
       print('G sensor Error: ${response.statusCode}');
     }
   }
-  // retrieving files
 
+  // retrieving files
   List<String> fileList = [];
 
   Future<void> fetchFiles() async {
@@ -735,98 +730,174 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // Open/Close camera streaming
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
-        child: CircleButton(
-          onPressed: () {
-            setDateOfCam();
-            widget.toggleCameraStreaming();
-            setState(() {
-              // Update the local variable instead
-              isCameraStreaming = !isCameraStreaming;
-            });
-          },
-          color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
-          text: isCameraStreaming ? 'Stop Camera' : 'Open Camera',
+        child: Column(
+          children: [
+            IconButton(
+              onPressed: () {
+                setDateOfCam();
+                widget.toggleCameraStreaming();
+                setState(() {
+                  // Update the local variable instead
+                  isCameraStreaming = !isCameraStreaming;
+                });
+              },
+              icon: Icon(
+                Icons.camera,
+                size: 45, // Adjust the icon size as needed
+              ),
+              color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+            ),
+            SizedBox(height: 15),
+            SizedBox(width: 15),
+            Text(
+              isCameraStreaming ? '  Close Camera' : '  Open Camera',
+              style: TextStyle(
+                color: isCameraStreaming ? Colors.red : Color(0xFFa8caba),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
 
   // Recording part
   Widget buildRecordingButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
-        margin: EdgeInsets.only(top: 10),
-        child: CircleButton(
-          onPressed: () async {
-            setDateOfCam();
-            setTimeOfCam();
-            if (isRecording) {
-              // Stop record
-              stopRecordingCmd();
-            } else {
-              // Start Recording
-              changeToVideoMode();
-              setDateOfCam();
-              setTimeOfCam();
-              startRecordingCmd();
-            }
-            setState(() {
-              isRecording = !isRecording;
-            });
-          },
-          color: isRecording ? Colors.red : Color(0xFFa8caba),
-          text: isRecording ? 'Stop Recording' : 'Start Recording',
+        margin: EdgeInsets.only(top: 1),
+        child: Column(
+          children: [
+            IconButton(
+              onPressed: () async {
+                setDateOfCam();
+                setTimeOfCam();
+                if (isRecording) {
+                  // Stop record
+                  stopRecordingCmd();
+                } else {
+                  // Start Recording
+                  changeToVideoMode();
+                  setDateOfCam();
+                  setTimeOfCam();
+                  startRecordingCmd();
+                }
+                setState(() {
+                  isRecording = !isRecording;
+                });
+              },
+              icon: Icon(
+                isRecording ? Icons.stop : Icons.videocam,
+                size: 40,
+              ),
+              color: isRecording ? Colors.red : Color(0xFFa8caba),
+            ),
+            SizedBox(height: 8),
+            Text(
+              isRecording ? 'Stop Recording' : 'Start Recording',
+              style: TextStyle(
+                color: isRecording ? Colors.red : Color(0xFFa8caba),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  // Change camera orientation
+  Orientation currentOrientation = Orientation.portrait;
+  double rotationAngle = 0.0;
+
+  void _loadRotationAngle() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() {
+        rotationAngle = prefs.getDouble(rotationAngleKey) ?? 0.0;
+      });
+    } catch (e) {
+      print("Error loading rotation angle: $e");
+    }
+  }
+
+  void _saveRotationAngle(double angle) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setDouble(rotationAngleKey, angle);
+    } catch (e) {
+      print("Error saving rotation angle: $e");
+    }
+  }
+
+  void changeOrientation() {
+    setState(() {
+      rotationAngle += 90.0; // Rotate by 90 degrees
+      if (rotationAngle >= 360.0) {
+        rotationAngle = 0.0;
+      }
+      _saveRotationAngle(rotationAngle); // Save the new angle
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
+      body: OrientationBuilder(
+          builder: (context, orientation)
+    {
+      currentOrientation = orientation;
+      return Stack(
         children: [
           SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Container(
-                  height: 400,
-                  width: 400,
-                  // child: isCameraStreaming && _controller != null
-                  child: isCameraStreaming && widget.videoPlayerController != null
-                  //     ? VlcPlayer(
-                  //   controller: widget.videoPlayerController,
-                  //   aspectRatio: 16 / 9,
-                  //   placeholder: Center(child: CircularProgressIndicator()),
-                  // )
-                  //     ? Transform.rotate(
-                  //   angle: 3.14159,
-                  //   alignment: Alignment.center,
-                  //   //transform: Matrix4.rotationY(1*2*3.14159),
-                  //   child: VlcPlayer(
-                  //     controller: widget.videoPlayerController,
-                  //     aspectRatio: 16 / 9,
-                  //     placeholder: Center(child: CircularProgressIndicator()),
-                  //   ),
-                  // )
-                      ? VlcPlayer(
-                    controller: widget.videoPlayerController,
-                    aspectRatio: 16 / 9,
-                    placeholder: Center(child: CircularProgressIndicator()),
-
-                  )
-                      : Image.asset(
-                    'images/test_background3.jpg',
-                    fit: BoxFit.fitWidth,
-                  ),
+                Stack(
+                  children: [
+                    Container(
+                      height: 360,
+                      width: 400,
+                      child: isCameraStreaming &&
+                          widget.videoPlayerController != null
+                          ? Transform.rotate(
+                        angle: rotationAngle * 3.14159265359 / 180,
+                        // Apply rotation based on user choice
+                        child: VlcPlayer(
+                          controller: widget.videoPlayerController,
+                          aspectRatio: currentOrientation == Orientation.portrait
+                                ? 16 / 9
+                                : 9 / 16,
+                        ),
+                      )
+                          : Image.asset(
+                        'images/test_background3.jpg',
+                        fit: BoxFit.fitWidth,
+                      ),
+                    ),
+                    if (isCameraStreaming)
+                      Positioned(
+                        bottom: 16.0,
+                        right: 16.0,
+                        child: IconButton(
+                          color: Colors.red,
+                          icon: Icon(Icons.cameraswitch_outlined),
+                          // You can choose a different icon
+                          onPressed: changeOrientation,
+                          iconSize: 48.0, // Adjust the icon size as needed
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(height: 54),
                 SingleChildScrollView(
@@ -842,23 +913,39 @@ class _HomeState extends State<Home> {
                         SizedBox(height: 5),
                         Center(
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment
-                                .center, // Align buttons in the center
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               buildRecordingButton(),
-                              SizedBox(width: 15),
+                              SizedBox(width: 40),
                               Align(
                                 alignment: Alignment.center,
-                                child: CircleButton(
-                                  onPressed: () {
-                                    setDateOfCam();
-                                    setTimeOfCam();
-                                    changeToPhotoMode();
-                                    takePicture();
-                                    changeToVideoMode();
-                                  },
-                                  color: Color(0xFFa8caba),
-                                  text: 'Capture',
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        setDateOfCam();
+                                        setTimeOfCam();
+                                        changeToPhotoMode();
+                                        takePicture();
+                                        changeToVideoMode();
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Color(0xFFa8caba),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   Capture',
+                                      style: TextStyle(
+                                        color: Color(0xFFa8caba),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -866,14 +953,6 @@ class _HomeState extends State<Home> {
                         ),
 
                         SizedBox(height: 5),
-                        // CircleButton(
-                        //   onPressed: () {
-                        //     flipMovieMirror();
-                        //   },
-                        //   color: Color(0xFFa8caba),
-                        //   text: 'FlipTest',
-                        // ),
-
                       ],
                     ),
                   ),
@@ -883,21 +962,13 @@ class _HomeState extends State<Home> {
             ),
           ),
         ],
-      ),
+      );
+      }
+    ),
     );
   }
 }
 
-Future<void> flipMovieMirror() async {
-  final response = await http
-      .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2023&par=4'));
-  if (response.statusCode == 200) {
-    print(response.body);
-    print('Movie Flipped');
-  } else {
-    print('Flip Error: ${response.statusCode}');
-  }
-}
 
 Future<void> movieQualitySet() async {
   final response = await http
@@ -954,7 +1025,7 @@ class _FilesState extends State<Files> {
   void initState() {
     super.initState();
     movieQualitySet();
-    flipMovieMirror();
+    // flipMovieMirror();
     // Fetch files from the camera on page load
     images = widget.images;
     videos = widget.videos;
@@ -965,9 +1036,6 @@ class _FilesState extends State<Files> {
     });
     getFilesFromCamera();
   }
-
-  // Connectivity class to check connection
-
 
   // Open File
 
@@ -1119,31 +1187,6 @@ class _FilesState extends State<Files> {
     }
   }
 
-  // Delete all files
-  // Future<void> deleteAllFiles() async {
-  //   final url = Uri.parse('http://192.168.1.254/?custom=1&cmd=4004');
-  //
-  //   try {
-  //     if (current == 0) {
-  //       // Delete all files
-  //       final response = await http.get(url);
-  //       if (response.statusCode == 200) {
-  //         print('All files deleted successfully');
-  //         await getFilesFromCamera();
-  //       } else {
-  //         print('Failed to delete all files. Status code: ${response.statusCode}');
-  //       }
-  //     } else if (current == 1) {
-  //       // Delete only videos
-  //       // Add your logic to delete video files here
-  //     } else if (current == 2) {
-  //       // Delete only images
-  //       // Add your logic to delete image files here
-  //     }
-  //   } catch (e) {
-  //     print('Failed to delete files: $e');
-  //   }
-  // }
   Future<void> deleteAllFiles() async {
     try {
       if (current == 0) {
@@ -1201,39 +1244,6 @@ class _FilesState extends State<Files> {
     }
   }
 
-
-
-  // Download Files to gallery
-  // void downloadFile(String url) async {
-  //   if (url.endsWith('.JPG')) {
-  //     url = 'http://192.168.1.254/CARDV/photo/$url';
-  //   } else {
-  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
-  //   }
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     if (response.statusCode == 200) {
-  //       final bytes = response.bodyBytes;
-  //       final fileName = url.split('/').last;
-  //       final directory = await getTemporaryDirectory();
-  //       final filePath = '${directory.path}/$fileName';
-  //       final file = File(filePath);
-  //       await file.writeAsBytes(bytes);
-  //
-  //       // Save the file to the gallery
-  //       await GallerySaver.saveImage(filePath);
-  //       print('File saved to gallery');
-  //
-  //       // Delete the temporary file
-  //       await file.delete();
-  //     } else {
-  //       print('Error downloading file: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error downloading file: $e');
-  //   }
-  // }
-
   // Download files
   bool _isDownloading = false;
   double _progress = 0.0;
@@ -1274,7 +1284,6 @@ class _FilesState extends State<Files> {
         fileStream.add(bytes);
         receivedBytes += bytes.length;
         print("Progress in receivebytes");
-        print(receivedBytes);
         setState(() {
           _progress = receivedBytes.toDouble() / totalBytes;
         });
@@ -1312,84 +1321,6 @@ class _FilesState extends State<Files> {
       });
     }
   }
-
-  // void _downloadFile(String url, int index) async {
-  //   if (url.endsWith('.JPG')) {
-  //     url = 'http://192.168.1.254/CARDV/photo/$url';
-  //   } else {
-  //     url = 'http://192.168.1.254/CARDV/Movie/$url';
-  //   }
-  //
-  //   setState(() {
-  //     _isDownloading = true;
-  //     _progress = 0.0;
-  //     _downloadIndex = index;
-  //   });
-  //
-  //   try {
-  //     final response = await http.get(Uri.parse(url),
-  //         headers: {'Accept-Encoding': 'identity'});
-  //
-  //     if (response.statusCode == 200) {
-  //       final totalBytes = response.contentLength?.toDouble() ?? 0.0;
-  //       final fileName = url.split('/').last;
-  //       final directory = await getTemporaryDirectory();
-  //       final filePath = '${directory.path}/$fileName';
-  //       final file = File(filePath);
-  //       num? receivedBytes = 0;
-  //
-  //       final bytes = response.bodyBytes;
-  //
-  //       final completer = Completer<void>();
-  //
-  //       final fileStream = file.openWrite();
-  //
-  //       fileStream.addStream(
-  //         Stream.fromIterable(bytes).map((chunk) {
-  //           receivedBytes = receivedBytes! + chunk.bitLength;
-  //           setState(() {
-  //             _progress = receivedBytes!.toDouble() / totalBytes;
-  //           });
-  //           print("Check chunk");
-  //           print(chunk);
-  //           return [chunk];
-  //         }),
-  //       ).whenComplete(() {
-  //         fileStream.close();
-  //         completer.complete(); // Notify that download is complete
-  //       });
-  //
-  //       if (url.endsWith('.JPG')) {
-  //         await GallerySaver.saveImage(filePath);
-  //       } else {
-  //         await GallerySaver.saveVideo(filePath);
-  //       }
-  //
-  //       print('File saved to gallery: $fileName');
-  //
-  //       setState(() {
-  //         _isDownloading = false;
-  //       });
-  //
-  //       Fluttertoast.showToast(
-  //         msg: 'Download complete',
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //     } else {
-  //       print('Error downloading file: ${response.statusCode}');
-  //       setState(() {
-  //         _isDownloading = false;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Error downloading file: $e');
-  //     setState(() {
-  //       _isDownloading = false;
-  //     });
-  //   }
-  // }
-
 
   @override
   void dispose() {
@@ -1486,72 +1417,7 @@ class _FilesState extends State<Files> {
                 },
               ),
             ),
-            // Expanded(
-            //   child: SingleChildScrollView(
-            //     child: Container(
-            //       margin: const EdgeInsets.only(top: 30),
-            //       width: double.infinity,
-            //       child: Column(
-            //         mainAxisAlignment: MainAxisAlignment.center,
-            //         children: [
-            //           if (displayItems.isEmpty)
-            //             Icon(
-            //               icons[current],
-            //               size: 200,
-            //               color: Colors.deepPurple,
-            //             ),
-            //           if (displayItems.isEmpty) const SizedBox(height: 10),
-            //           if (displayItems.isEmpty)
-            //             Text(
-            //               items[current],
-            //               style: GoogleFonts.laila(
-            //                 fontWeight: FontWeight.w500,
-            //                 fontSize: 30,
-            //                 color: Colors.deepPurple,
-            //               ),
-            //             ),
-            //           SizedBox(height: 20),
-            //           if (displayItems.isNotEmpty)
-            //           // WITH ICON
-            //             ListView.builder(
-            //               shrinkWrap: true,
-            //               physics: NeverScrollableScrollPhysics(),
-            //               itemCount: displayItems.length,
-            //               itemBuilder: (context, index) {
-            //                 final bool isImage = displayItems[index].name.endsWith('.JPG');
-            //                 final bool isVideo = displayItems[index].name.endsWith('.MP4');
-            //
-            //                 IconData iconData;
-            //                 if (isImage) {
-            //                   iconData = Icons.photo;
-            //                 } else if (isVideo) {
-            //                   iconData = Icons.videocam;
-            //                 } else {
-            //                   // Handle other file types if needed
-            //                   iconData = Icons.insert_drive_file;
-            //                 }
-            //
-            //                 return ListTile(
-            //                   leading: Icon(iconData),
-            //                   title: Text(displayItems[index].name),
-            //                   subtitle: Text(displayItems[index].time),
-            //                   trailing: IconButton(
-            //                     icon: Icon(Icons.delete),
-            //                     onPressed: () {
-            //                       deleteFile(displayItems[index].name.toString());
-            //                     },
-            //                   ),
-            //                   onTap: () {
-            //                     openImageOrPlayVideo(displayItems[index].name);
-            //                   },
-            //                 );
-            //               },
-            //             ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
+
             Expanded(
               child: SingleChildScrollView(
                 child: Container(
@@ -1657,7 +1523,6 @@ class _FilesState extends State<Files> {
                                 },
                               );
                             }
-
                           },
                         ),
                     ],
@@ -1667,21 +1532,6 @@ class _FilesState extends State<Files> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-
-class About extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // backgroundColor: Colors.deepPurple.shade100,
-      backgroundColor: Colors.transparent,
-      body: Container(
-        alignment: Alignment.center,
-        child: Text("About"),
       ),
     );
   }

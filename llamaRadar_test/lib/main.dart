@@ -1,84 +1,67 @@
+import 'package:lamaradar/provider/ConnectionProvider.dart';
+import 'package:lamaradar/provider/LedValuesProvider.dart';
+import 'package:lamaradar/provider/BluetoothStateProvider.dart';
+import 'package:lamaradar/provider/PopupWindowProvider.dart';
+import 'package:provider/provider.dart';
+
 import 'SideBar.dart';
 import 'package:flutter/material.dart';
-import 'package:lamaradar/temp//CollisionWarningPage3.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:page_transition/page_transition.dart';
 
-class WifiPage extends StatefulWidget {
-  @override
-  _WifiPageState createState() => _WifiPageState();
+
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LedValuesProvider>(
+          create: (_) => LedValuesProvider(),
+        ),
+        ChangeNotifierProvider<ConnectionProvider>(
+          create: (_) => ConnectionProvider(),
+        ),
+        ChangeNotifierProvider<BluetoothStateProvider>(
+          create: (_) => BluetoothStateProvider(),
+        ),
+        ChangeNotifierProvider<PopupWindowProvider>(
+          create: (_) => PopupWindowProvider(),
+        ),
+      ],
+      child: SplashScreen(),
+    ),
+  );
 }
 
-class _WifiPageState extends State<WifiPage> {
-  final List<String> _wifiNames = ['Llama Defender(BLE)', 'Display(BLE)', 'Llama DashCam(wifi)'];
-  String _selectedWifi = '';
 
-  void _connectToWifi(String wifiName) {
-    setState(() {
-      _selectedWifi = wifiName;
-    });
-  }
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: SideBar(),
-      appBar: AppBar(
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        title: const Text('LLama'),
-        flexibleSpace: Container(
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AnimatedSplashScreen(
+        splash: Container(
           decoration: BoxDecoration(
-            // color: Color(0xFF6497d3),
-            color: Color(0xFF2580B3),
+            color: Colors.transparent,
+            image: DecorationImage(
+              image: AssetImage('assets/images/app_background_rb.png'),
+              fit: BoxFit.fitHeight,
+
+            ),
           ),
         ),
-      ),
-      body: Column(
-        children: [
-          SizedBox(height: 60),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _wifiNames.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_wifiNames[index]),
-                  trailing: _selectedWifi == _wifiNames[index]
-                      ? Icon(Icons.check_circle, color: Colors.green)
-                      : ElevatedButton(
-                    onPressed: () {
-                      _connectToWifi(_wifiNames[index]);
-                    },
-                    child: Text('Connect'),
-                  ),
-                );
-              },
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.all(45.0),
-            child: ElevatedButton(
-              onPressed: () {},
-              child: Text('Pair Device to Start'),
-            ),
-          ),
-          SizedBox(height: 5),
-          Container(
-            margin: EdgeInsets.all(30.0),
-            child: ElevatedButton(
-              onPressed: () {
-
-              },
-              child: Text('Go to Ride'),
-            ),
-          ),
-        ],
+        backgroundColor: Colors.blueGrey,
+        nextScreen: MyApp(),
+        splashIconSize: 510,
+        duration: 3000,
+        splashTransition: SplashTransition.fadeTransition,
+        pageTransitionType: PageTransitionType.leftToRightWithFade,
+        animationDuration: const Duration(seconds: 1),
       ),
     );
   }
-}
-
-void main() {
-  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -90,4 +73,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

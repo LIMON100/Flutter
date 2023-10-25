@@ -1,17 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:lamaradar/temp/CollisionWarningPage3.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
-import 'package:lamaradar/temp/BLEDevicePage.dart';
 import 'package:lamaradar/temp/CollisionWarningPage2.dart';
-
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
-import 'package:permission_handler/permission_handler.dart';
+class CircleButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Color color;
+  final String text;
+
+  const CircleButton({
+    required this.onPressed,
+    required this.color,
+    this.text = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center, // Added textAlign property
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class GoToRide extends StatefulWidget {
   final BluetoothDevice device;
@@ -74,14 +105,6 @@ class _GoToRideState extends State<GoToRide> {
           ],
         ),
         backgroundColor: Colors.transparent,
-<<<<<<< HEAD
-        body: Padding(
-          padding: EdgeInsets.only(top: 500.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Center(
-=======
         body: Column(
           children: [
             Expanded(
@@ -95,29 +118,22 @@ class _GoToRideState extends State<GoToRide> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 100.0),
+              padding: const EdgeInsets.only(bottom: 350.0),
               child: Align(
                 alignment: Alignment.bottomCenter,
->>>>>>> test
-                child: GlowingButton2(
-                  text: "Turn on wifi & Go to ride",
+                child: CircleButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => CollisionWarningPage2(device: widget.device)),
                     );
                   },
-                  color1: Color(0xFF517fa4),
-                  color2: Colors.cyan,
+                  color:  Color(0xFFa8caba),
+                  text: 'Turn on wifi & Go to ride',
                 ),
               ),
-<<<<<<< HEAD
-            ],
-          ),
-=======
             ),
           ],
->>>>>>> test
         ),
       ),
     );

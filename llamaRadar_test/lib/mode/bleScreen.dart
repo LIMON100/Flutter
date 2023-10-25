@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/sideBar.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
 import 'goToRide.dart';
@@ -28,6 +29,9 @@ class _BleScreenState extends State<BleScreen> {
   bool _isScanning = false;
   String? _scanError;
 
+  StreamSubscription<List<BluetoothDevice>>? connectedDevicesSubscription;
+  StreamSubscription<List<ScanResult>>? scanResultsSubscription;
+
   _addDeviceTolist(final BluetoothDevice device) {
     if (!widget.devicesList.contains(device)) {
       setState(() {
@@ -39,14 +43,15 @@ class _BleScreenState extends State<BleScreen> {
   @override
   void initState() {
     super.initState();
-    widget.flutterBlue.connectedDevices
-        .asStream()
-        .listen((List<BluetoothDevice> devices) {
-      for (BluetoothDevice device in devices) {
-        _addDeviceTolist(device);
-      }
-    });
-    widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
+    //  New
+    connectedDevicesSubscription =
+        widget.flutterBlue.connectedDevices.asStream().listen((List<BluetoothDevice> devices) {
+          for (BluetoothDevice device in devices) {
+            _addDeviceTolist(device);
+          }
+        });
+
+    scanResultsSubscription = widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
       for (ScanResult result in results) {
         _addDeviceTolist(result.device);
       }
@@ -61,7 +66,8 @@ class _BleScreenState extends State<BleScreen> {
 
     try {
       await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
-    } catch (e) {
+    }
+    catch (e) {
       print("Error starting scan: $e");
       setState(() {
         _scanError = e.toString();
@@ -134,12 +140,37 @@ class _BleScreenState extends State<BleScreen> {
         ),
       );
     }
+    // return ListView(
+    //   padding: const EdgeInsets.all(8),
+    //   children: <Widget>[
+    //     SizedBox(height: 15),
+    //     if (_isScanning)
+    //       CircularProgressIndicator()
+    //     else
+    //       Center(
+    //         child: GlowingButton2(
+    //           text: "Pair Device to Start",
+    //           onPressed: () {
+    //             _startScan();
+    //           },
+    //           color1: Color(0xFF517fa4),
+    //           color2: Colors.cyan,
+    //         ),
+    //       ),
+    //     ...containers,
+    //   ],
+    // );
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[
         SizedBox(height: 15),
         if (_isScanning)
-          CircularProgressIndicator()
+          Center(
+            child: SpinKitSpinningLines(
+              color: Colors.blue,
+              size: 150.0,
+            ),
+          )
         else
           Center(
             child: GlowingButton2(
@@ -314,6 +345,13 @@ class _BleScreenState extends State<BleScreen> {
   }
 
   @override
+  void dispose() {
+    connectedDevicesSubscription!.cancel();
+    scanResultsSubscription!.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -329,7 +367,7 @@ class _BleScreenState extends State<BleScreen> {
         appBar: AppBar(
           centerTitle: true,
           foregroundColor: Colors.black,
-          title: const Text('BLE'),
+          title: const Text('Llama Guard'),
           flexibleSpace: Container(
             decoration: BoxDecoration(
               // color: Color(0xFF6497d3),
