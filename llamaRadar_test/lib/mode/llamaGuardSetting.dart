@@ -108,25 +108,22 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 _value = value.toString();
                 notificationValue = value;
 
-                // CHecking Write->Notification command
+                // Checking Write->Notification command
                 hexList = intsToHexStrings(notificationValue);
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
-                // RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-                // if (regex.hasMatch(textResultFirmware)) {
-                //   functionForFirmware(textResultFirmware);
-                // }
-                // if(showWifissidpass){
-                //   functionForWifi(textResultFirmware);
-                // }
-                hasAtLeastTwoDotsInFirst10Characters(textResultFirmware);
                 if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
                   functionForFirmware(textResultFirmware);
                 }
-                if(dotCount < 2) {
+                //if(!hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
+                int newdot = hasAtLeastTwoDotsInFirst10Characters2(textResultFirmware);
+                if(newdot<2){
                   functionForWifi(textResultFirmware);
                 }
+                // if(hasAtLeastTwoDotsInFirst10Characters2(textResultFirmware)) {
+                //   functionForWifi(textResultFirmware);
+                // }
 
               });
             });
@@ -163,10 +160,21 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     return false;
   }
 
-  // Firmware version
-  void functionForFirmware(textResultFirmware) {
+  int hasAtLeastTwoDotsInFirst10Characters2(String text) {
+    int dtc = 0;
+    if (text.length >= 10) {
+      String first10Chars = text.substring(0, 10);
+      dtc = first10Chars.split('.').length - 1;
+    }
 
-    List<String> parts = splitTextResultFirmware(textResultFirmware);
+    return dtc;
+  }
+
+  // Firmware version
+  void functionForFirmware(String textResultFirmware2) {
+    print("INSIDE_FW");
+
+    List<String> parts = splitTextResultFirmware(textResultFirmware2);
 
     if (parts.length == 2) {
       textFirmwareVersion = parts[0];
@@ -418,7 +426,9 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               onTap: () {
                 if (bleConnectionAvailable) {
                   _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
-                  showWifissidpass = true;
+                  setState(() {
+                    showWifissidpass = true;
+                  });
                 }
                 else {
                   ScaffoldMessenger.of(context).showSnackBar(
