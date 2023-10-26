@@ -189,33 +189,46 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
-    String text = textResultFirmware;
-    print("WCHECK");
-    print(textResultFirmware);
-    // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    // RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-    // if (regex.hasMatch(text)) {
-    //   print("NOTHING");
-    // }
-    // else {
-    List<String> parts = text.replaceAll('[', '').replaceAll(
-        ']', '').split(' ');
-    print(parts.length);
-    print("parts[2]");
-    print(parts[2]);
-    print("parts[3]");
-    print(parts[3]);
-    print("parts[4]");
-    print(parts[4]);
+    String textSP = textResultFirmware;
 
-    if (parts.length > 2) {
-      currentSSID = parts[3];
-      currentpass = parts[4];
-      // currentpass = currentpass.substring(0, currentpass.length - 1);
+    // handle spaces and special character
+    textSP = textSP.replaceFirst(RegExp(r'^\W+'), '');
+    textSP = textSP.trim();
+
+    // Split the input string by space
+    List<String> parts = textSP.split(' ');
+
+    if (parts.length >= 2) {
+      currentSSID = parts.sublist(0, parts.length - 1).join(' ');
+      currentpass = parts.last;
+      currentpass = currentpass.substring(0, currentpass.length - 1);
+
+    } else {
+      print('Invalid input');
     }
-
   }
 
+  // Just checking
+  void divideString(String input) {
+    // Remove leading and trailing spaces
+    input = input.trim();
+
+    // Split the input string by space
+    List<String> parts = input.split(' ');
+
+    if (parts.length >= 2) {
+      // First part is the SSID
+      String ssid = parts.sublist(0, parts.length - 1).join(' ');
+      // Last part is the PASSWORD
+      String password = parts.last;
+
+      // Output the results
+      print('SSID: $ssid');
+      print('PASSWORD: $password');
+    } else {
+      print('Invalid input');
+    }
+  }
 
   // HEX convert
   List<String> splitTextResultFirmware(String textResult) {
