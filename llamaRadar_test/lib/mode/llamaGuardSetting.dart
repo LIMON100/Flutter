@@ -190,21 +190,32 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
     String text = textResultFirmware;
+    print("WCHECK");
+    print(textResultFirmware);
     // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-    if (regex.hasMatch(text)) {
-      print("NOTHING");
+    // RegExp regex = RegExp(r'^.{1,15}\..*\..*');
+    // if (regex.hasMatch(text)) {
+    //   print("NOTHING");
+    // }
+    // else {
+    List<String> parts = text.replaceAll('[', '').replaceAll(
+        ']', '').split(' ');
+    print(parts.length);
+    print("parts[2]");
+    print(parts[2]);
+    print("parts[3]");
+    print(parts[3]);
+    print("parts[4]");
+    print(parts[4]);
+
+    if (parts.length > 2) {
+      currentSSID = parts[3];
+      currentpass = parts[4];
+      // currentpass = currentpass.substring(0, currentpass.length - 1);
     }
-    else {
-      List<String> parts = text.replaceAll('[', '').replaceAll(
-          ']', '').split(' ');
-      if (parts.length > 2) {
-        currentSSID = parts[3];
-        currentpass = parts[4];
-        currentpass = currentpass.substring(0, currentpass.length - 1);
-      }
-    }
+
   }
+
 
   // HEX convert
   List<String> splitTextResultFirmware(String textResult) {
