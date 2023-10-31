@@ -4,6 +4,7 @@ import 'package:lamaradar/icons/custom_icon_icons.dart';
 import 'package:lamaradar/icons/db_icons.dart';
 import 'package:camera/camera.dart';
 import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
+import 'package:lamaradar/temp/VlcPlayerPage.dart';
 
 import 'mode/llamaGuardSetting.dart';
 
@@ -61,6 +62,36 @@ class SideBar extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => const ConnectWifiForDashCam(), //ConnectWifiForDashCam
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = constraints.maxWidth * 0.06;
+                return ListTile(
+                  leading: Icon(
+                    CustomIcon.webcam,
+                    color: Colors.black,
+                    size: constraints.maxWidth * 0.07,
+                  ),
+                  title: Text(
+                    'VLC',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand-VariableFont_wght',
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>  VlcPlayerPage(), //ConnectWifiForDashCam
                       ),
                     );
                   },
