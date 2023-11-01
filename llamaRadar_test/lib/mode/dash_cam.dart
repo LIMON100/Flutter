@@ -93,18 +93,36 @@ class _DashCamState extends State<DashCam> {
   @override
   void initState() {
     super.initState();
+    // _videoPlayerController = VlcPlayerController.network(
+    //   'rtsp://192.168.1.254/xxxx.mp4',
+    //   hwAcc: HwAcc.disabled,
+    //   autoPlay: true,
+    //   options: VlcPlayerOptions(
+    //     advanced: VlcAdvancedOptions([
+    //       VlcAdvancedOptions.networkCaching(0),
+    //       VlcAdvancedOptions.clockJitter(0),
+    //       VlcAdvancedOptions.fileCaching(0),
+    //       VlcAdvancedOptions.liveCaching(0),
+    //     ]),),
+    // );
     _videoPlayerController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
-        advanced: VlcAdvancedOptions([
-          VlcAdvancedOptions.networkCaching(0),
-          VlcAdvancedOptions.clockJitter(0),
-          VlcAdvancedOptions.fileCaching(0),
-          VlcAdvancedOptions.liveCaching(0),
-        ]),),
-    );
+          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(false),
+            VlcVideoOptions.skipFrames(false)],),
+          rtp: VlcRtpOptions(['--rtsp-tcp'],),
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(0),
+            VlcAdvancedOptions.liveCaching(0),
+          ]),
+          sout: VlcStreamOutputOptions([
+          ]),
+          extras: ['--h264-fps=60']
+      ),);
     getFilesFromCamera();
   }
 
@@ -160,19 +178,38 @@ class _DashCamState extends State<DashCam> {
     if (isCameraStreaming) {
       _videoPlayerController.stop();
       _videoPlayerController.dispose();
-    } else {
+    }
+    else {
+      // _videoPlayerController = VlcPlayerController.network(
+      //   'rtsp://192.168.1.254/xxxx.mp4',
+      //   hwAcc: HwAcc.disabled,
+      //   autoPlay: true,
+      //   options: VlcPlayerOptions(
+      //     advanced: VlcAdvancedOptions([
+      //       VlcAdvancedOptions.networkCaching(0),
+      //       VlcAdvancedOptions.clockJitter(0),
+      //       VlcAdvancedOptions.fileCaching(0),
+      //       VlcAdvancedOptions.liveCaching(0),
+      //     ]),),
+      // );
       _videoPlayerController = VlcPlayerController.network(
         'rtsp://192.168.1.254/xxxx.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
-          advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(0),
-            VlcAdvancedOptions.clockJitter(0),
-            VlcAdvancedOptions.fileCaching(0),
-            VlcAdvancedOptions.liveCaching(0),
-          ]),),
-      );
+            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(false),
+              VlcVideoOptions.skipFrames(false)],),
+            rtp: VlcRtpOptions(['--rtsp-tcp'],),
+            advanced: VlcAdvancedOptions([
+              VlcAdvancedOptions.networkCaching(0),
+              VlcAdvancedOptions.clockJitter(0),
+              VlcAdvancedOptions.fileCaching(0),
+              VlcAdvancedOptions.liveCaching(0),
+            ]),
+            sout: VlcStreamOutputOptions([
+            ]),
+            extras: ['--h264-fps=60']
+        ),);
       _videoPlayerController.initialize().then((_) {
         _videoPlayerController.play();
       });

@@ -44,8 +44,6 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
 
   bool showWifiSettings = false;
   String currentTailightMode = 'NO';
-  String currentSsid = 'NO';
-  String currentPassword = 'NO';
 
   double leftLedValue = 50.0;
   double rightLedValue = 50.0;
@@ -65,6 +63,7 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   bool showWifissidpass = false;
   bool showSetWifi = false;
   String completeValue = '';
+  int dotCount = 0;
 
   @override
   void initState() {
@@ -107,27 +106,16 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
                 _value = value.toString();
                 notificationValue = value;
 
-                // CHecking Write->Notification command
+                // Checking Write->Notification command
                 hexList = intsToHexStrings(notificationValue);
                 List<String> hexList2 = hexList;
                 textResultFirmware = hexListToText(hexList2);
 
-                // RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-                // if (regex.hasMatch(textResultFirmware)) {
-                //   functionForFirmware(textResultFirmware);
-                // }
-                // if(showWifissidpass){
-                //   functionForWifi(textResultFirmware);
-                // }
-
                 if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
-                  print("CHECK_DOT");
-                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
                   functionForFirmware(textResultFirmware);
                 }
-                if (hasAtLeastTwoDotsInFirst10Characters(textResultFirmware) != 2) {
-                  print("CHECK_DOT_WIFI");
-                  print(hasAtLeastTwoDotsInFirst10Characters(textResultFirmware));
+
+                if (!hasAtLeastTwoDotsInFirst10Characters(textResultFirmware)) {
                   functionForWifi(textResultFirmware);
                 }
 
@@ -159,47 +147,86 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
   bool hasAtLeastTwoDotsInFirst10Characters(String text) {
     if (text.length >= 10) {
       String first10Chars = text.substring(0, 10);
-      int dotCount = first10Chars.split('.').length - 1;
-      print("DOTCOUNT");
-      print(dotCount);
+      dotCount = first10Chars.split('.').length - 1;
 
       return dotCount >= 2;
     }
     return false;
   }
 
+  // bool hasAtLeastTwoDotsInFirst10Characters2(String text) {
+  //   int dtc = 0;
+  //   if (text.length >= 10) {
+  //     String first10Chars = text.substring(0, 10);
+  //     dtc = first10Chars.split('.').length - 1;
+  //
+  //     if(dtc>=2){
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+  int hasAtLeastTwoDotsInFirst10Characters2(String text) {
+    int dtc = 0;
+    if (text.length >= 10) {
+      String first10Chars = text.substring(0, 10);
+      dtc = first10Chars.split('.').length - 1;
+    }
+    return dtc;
+  }
+
   // Firmware version
-  void functionForFirmware(textResultFirmware) {
-
-    List<String> parts = splitTextResultFirmware(textResultFirmware);
-
+  void functionForFirmware(String textResultFirmware2) {
+    List<String> parts = splitTextResultFirmware(textResultFirmware2);
     if (parts.length == 2) {
       textFirmwareVersion = parts[0];
       textFirmwareDate = parts[1].trim();
       if (textFirmwareDate.isNotEmpty) {
         textFirmwareDate = textFirmwareDate.substring(0, textFirmwareDate.length - 1);
       }
-      print("Version: $textFirmwareVersion");
-      print("Date: $textFirmwareDate");
     }
   }
 
   // Wifi ssid password
   void functionForWifi(textResultFirmware) {
-    print("INSIDE_WIFI");
-    // List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(']', '').split(' ');
-    RegExp regex = RegExp(r'^.{1,15}\..*\..*');
-    if (regex.hasMatch(textResultFirmware)) {
-      print("NOTHING");
+    String textSP = textResultFirmware;
+
+    // handle spaces and special character
+    textSP = textSP.replaceFirst(RegExp(r'^\W+'), '');
+    textSP = textSP.trim();
+
+    // Split the input string by space
+    List<String> parts = textSP.split(' ');
+
+    if (parts.length >= 2) {
+      currentSSID = parts.sublist(0, parts.length - 1).join(' ');
+      currentpass = parts.last;
+      currentpass = currentpass.substring(0, currentpass.length - 1);
+
+    } else {
+      print('Invalid input');
     }
-    else {
-      List<String> parts = textResultFirmware.replaceAll('[', '').replaceAll(
-          ']', '').split(' ');
-      if (parts.length > 2) {
-        currentSSID = parts[3];
-        currentpass = parts[4];
-        currentpass = currentpass.substring(0, currentpass.length - 1);
-      }
+  }
+
+  // Just checking
+  void divideString(String input) {
+    // Remove leading and trailing spaces
+    input = input.trim();
+
+    // Split the input string by space
+    List<String> parts = input.split(' ');
+
+    if (parts.length >= 2) {
+      // First part is the SSID
+      String ssid = parts.sublist(0, parts.length - 1).join(' ');
+      // Last part is the PASSWORD
+      String password = parts.last;
+
+      // Output the results
+      print('SSID: $ssid');
+      print('PASSWORD: $password');
+    } else {
+      print('Invalid input');
     }
   }
 
@@ -422,7 +449,9 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
               onTap: () {
                 if (bleConnectionAvailable) {
                   _sendData([0x02, 0x01, 0x20, 0x00, 0x01, 0x24]);
-                  showWifissidpass = true;
+                  setState(() {
+                    showWifissidpass = true;
+                  });
                 }
                 else {
                   ScaffoldMessenger.of(context).showSnackBar(
