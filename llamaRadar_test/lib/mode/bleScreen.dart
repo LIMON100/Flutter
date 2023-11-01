@@ -12,7 +12,7 @@ class BleScreen extends StatefulWidget {
   BleScreen({Key? key, required this.title}) : super(key: key);
 
   final String title;
-  final FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+  // final FlutterBluePlus flutterBlue = FlutterBluePlus();
   final List<BluetoothDevice> devicesList = <BluetoothDevice>[];
   final Map<Guid, List<int>> readValues = <Guid, List<int>>{};
 
@@ -22,6 +22,7 @@ class BleScreen extends StatefulWidget {
 }
 
 class _BleScreenState extends State<BleScreen> {
+  final FlutterBluePlus flutterBlue = FlutterBluePlus();
   final _writeController = TextEditingController();
   BluetoothDevice? _connectedDevice;
   List<BluetoothService> _services = [];
@@ -44,20 +45,57 @@ class _BleScreenState extends State<BleScreen> {
   void initState() {
     super.initState();
     //  New
-    connectedDevicesSubscription =
-        widget.flutterBlue.connectedDevices.asStream().listen((List<BluetoothDevice> devices) {
-          for (BluetoothDevice device in devices) {
-            _addDeviceTolist(device);
-          }
-        });
+    // connectedDevicesSubscription =
+    //     FlutterBluePlus.connectedDevices.asStream().listen((List<BluetoothDevice> devices) {
+    //       for (BluetoothDevice device in devices) {
+    //         _addDeviceTolist(device);
+    //       }
+    //     });
 
-    scanResultsSubscription = widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
+    List<BluetoothDevice> devs = FlutterBluePlus.connectedDevices;
+    for (BluetoothDevice device in devs) {
+      _addDeviceTolist(device);
+    }
+    scanResultsSubscription = FlutterBluePlus.scanResults.listen((List<ScanResult> results) {
       for (ScanResult result in results) {
         _addDeviceTolist(result.device);
       }
     });
   }
 
+  // Future<void> _startScan() async {
+  //   try {
+  //     // await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
+  //     print("START");
+  //     Set<DeviceIdentifier> seen = {};
+  //     var subscription = FlutterBluePlus.scanResults.listen(
+  //             (results) {
+  //           for (ScanResult r in results) {
+  //             if (seen.contains(r.device.remoteId) == false) {
+  //               print('${r.device.remoteId}: "${r.device.localName}" found! rssi: ${r.rssi}');
+  //               seen.add(r.device.remoteId);
+  //             }
+  //           }
+  //         },
+  //
+  //     );
+  //     await FlutterBluePlus.startScan(timeout: Duration(seconds: 4));
+  //     setState(() {
+  //       _isScanning = true;
+  //       _scanError = null;
+  //     });
+  //   }
+  //   catch (e) {
+  //     print("Error starting scan: $e");
+  //     setState(() {
+  //       _scanError = e.toString();
+  //     });
+  //   }
+  //
+  //   setState(() {
+  //     _isScanning = false;
+  //   });
+  // }
   Future<void> _startScan() async {
     setState(() {
       _isScanning = true;
@@ -65,19 +103,35 @@ class _BleScreenState extends State<BleScreen> {
     });
 
     try {
-      await widget.flutterBlue.startScan(timeout: Duration(seconds: 4));
+      Set<DeviceIdentifier> seen = {};
+
+      var subscription = FlutterBluePlus.scanResults.listen((results) {
+        for (ScanResult r in results) {
+          if (seen.contains(r.device.remoteId) == false) {
+            print('${r.device.remoteId}: "${r.device.localName}" found! rssi: ${r.rssi}');
+            seen.add(r.device.remoteId);
+          }
+        }
+
+      });
+
+      // You can add a timeout to stop the scan after a certain duration
+      await FlutterBluePlus.startScan(timeout: Duration(seconds: 4));
+      await Future.delayed(Duration(seconds: 4));
+      _isScanning = false;
+
+      // Cancel the scan subscription
+      subscription.cancel();
     }
     catch (e) {
       print("Error starting scan: $e");
       setState(() {
         _scanError = e.toString();
+        // _isScanning = false; // Set _isScanning to false in case of an error
       });
     }
-
-    setState(() {
-      _isScanning = false;
-    });
   }
+
 
   //GO to another page
   ListView _buildListViewOfDevices() {
@@ -111,7 +165,7 @@ class _BleScreenState extends State<BleScreen> {
                     style: TextStyle(color: Colors.black),
                   ),
                   onPressed: () async {
-                    widget.flutterBlue.stopScan();
+                    FlutterBluePlus.stopScan();
                     try {
                       await device.connect();
                     } on PlatformException catch (e) {
