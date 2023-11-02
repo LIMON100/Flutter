@@ -197,7 +197,7 @@ class _DashCamState extends State<DashCam> {
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
-            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(false),
+            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
               VlcVideoOptions.skipFrames(false)],),
             rtp: VlcRtpOptions(['--rtsp-tcp'],),
             advanced: VlcAdvancedOptions([

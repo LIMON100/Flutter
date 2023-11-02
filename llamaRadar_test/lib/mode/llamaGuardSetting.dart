@@ -208,27 +208,27 @@ class _LlamaGuardSettingState extends State<LlamaGuardSetting> {
     }
   }
 
-  // Just checking
-  void divideString(String input) {
-    // Remove leading and trailing spaces
-    input = input.trim();
-
-    // Split the input string by space
-    List<String> parts = input.split(' ');
-
-    if (parts.length >= 2) {
-      // First part is the SSID
-      String ssid = parts.sublist(0, parts.length - 1).join(' ');
-      // Last part is the PASSWORD
-      String password = parts.last;
-
-      // Output the results
-      print('SSID: $ssid');
-      print('PASSWORD: $password');
-    } else {
-      print('Invalid input');
-    }
-  }
+  // // Just checking
+  // void divideString(String input) {
+  //   // Remove leading and trailing spaces
+  //   input = input.trim();
+  //
+  //   // Split the input string by space
+  //   List<String> parts = input.split(' ');
+  //
+  //   if (parts.length >= 2) {
+  //     // First part is the SSID
+  //     String ssid = parts.sublist(0, parts.length - 1).join(' ');
+  //     // Last part is the PASSWORD
+  //     String password = parts.last;
+  //
+  //     // Output the results
+  //     print('SSID: $ssid');
+  //     print('PASSWORD: $password');
+  //   } else {
+  //     print('Invalid input');
+  //   }
+  // }
 
   // HEX convert
   List<String> splitTextResultFirmware(String textResult) {
