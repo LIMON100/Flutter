@@ -110,16 +110,21 @@ class _DashCamState extends State<DashCam> {
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
-          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(false),
+          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
             VlcVideoOptions.skipFrames(false)],),
-          rtp: VlcRtpOptions(['--rtsp-tcp'],),
+          rtp: VlcRtpOptions([
+            VlcRtpOptions.rtpOverRtsp(true),
+            ":rtsp-tcp",
+          ]),
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.networkCaching(30),
             VlcAdvancedOptions.clockJitter(0),
-            VlcAdvancedOptions.fileCaching(0),
-            VlcAdvancedOptions.liveCaching(0),
+            VlcAdvancedOptions.fileCaching(30),
+            VlcAdvancedOptions.liveCaching(30),
+            VlcAdvancedOptions.clockSynchronization(1),
           ]),
           sout: VlcStreamOutputOptions([
+            VlcStreamOutputOptions.soutMuxCaching(0),
           ]),
           extras: ['--h264-fps=60']
       ),);
@@ -199,16 +204,21 @@ class _DashCamState extends State<DashCam> {
         options: VlcPlayerOptions(
             video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
               VlcVideoOptions.skipFrames(false)],),
-            rtp: VlcRtpOptions(['--rtsp-tcp'],),
             advanced: VlcAdvancedOptions([
-              VlcAdvancedOptions.networkCaching(0),
+              VlcAdvancedOptions.networkCaching(30),
               VlcAdvancedOptions.clockJitter(0),
-              VlcAdvancedOptions.fileCaching(0),
-              VlcAdvancedOptions.liveCaching(0),
+              VlcAdvancedOptions.fileCaching(30),
+              VlcAdvancedOptions.liveCaching(30),
+              VlcAdvancedOptions.clockSynchronization(1),
             ]),
+            rtp: VlcRtpOptions([
+              VlcRtpOptions.rtpOverRtsp(true),
+              ":rtsp-tcp",
+            ]),
+            extras: ['--h264-fps=60'],
             sout: VlcStreamOutputOptions([
-            ]),
-            extras: ['--h264-fps=60']
+              VlcStreamOutputOptions.soutMuxCaching(0),
+            ])
         ),);
       _videoPlayerController.initialize().then((_) {
         _videoPlayerController.play();
@@ -374,8 +384,33 @@ class _HomeState extends State<Home> {
     initializePlayer();
     _loadRotationAngle();
     movieQualitySet();
+    liveViewState();
+    stopRecordState();
   }
 
+  // In liveView state
+  Future<void> liveViewState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  // Recording also stop
+  Future<void> stopRecordState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
   Future<void> initializePlayer() async {
     await widget.videoPlayerController.initialize();
     widget.videoPlayerController.play();
