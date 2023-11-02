@@ -34,6 +34,8 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
   @override
   void initState() {
     super.initState();
+    // controlBitrate();
+    gsensorR();
     // _vlcController = VlcPlayerController.network(
     //   'rtsp://192.168.1.254/xxxx.mov',
     //   hwAcc: HwAcc.disabled,
@@ -56,21 +58,23 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
-          // video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
-          //   VlcVideoOptions.skipFrames(true)],),
-
+          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
+                    VlcVideoOptions.skipFrames(false)],),
           advanced: VlcAdvancedOptions([
-                VlcAdvancedOptions.networkCaching(0),
+                VlcAdvancedOptions.networkCaching(3),
                 VlcAdvancedOptions.clockJitter(0),
                 VlcAdvancedOptions.fileCaching(0),
-                VlcAdvancedOptions.liveCaching(0),
-
+                VlcAdvancedOptions.liveCaching(3),
           ]),
           rtp: VlcRtpOptions([
                 VlcRtpOptions.rtpOverRtsp(true),
                 ":rtsp-tcp",
               ]),
-          extras: ['--h264-fps=120']
+          extras: ['--h264-fps=60'],
+          // extras: [':network-caching=0',':live-caching=0' ':clock-jitter=0', ':clock-synchro=0','--h264-fps=120'],
+          // sout: VlcStreamOutputOptions([
+          //   VlcStreamOutputOptions.soutMuxCaching(0),
+          // ])
       ),);
 
     _loadRotationAngle();
@@ -85,13 +89,29 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
     // });
   }
 
-  // int calculateLatency() {
-  //   if (frameReceivedTime != null && frameDisplayTime != null) {
-  //     latency = frameDisplayTime.difference(frameReceivedTime);
-  //     return latency.inMilliseconds;
-  //   }
-  //   return 0;
-  // }
+  Future<void> gsensorR() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2011&par=3'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  // Movie HDR CALLED
+  Future<void> controlBitrate() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2014&str=400'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
 
 
   @override

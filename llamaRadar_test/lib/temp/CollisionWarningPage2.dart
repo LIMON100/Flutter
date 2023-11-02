@@ -903,14 +903,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
-            video: VlcVideoOptions([
+            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
               VlcVideoOptions.skipFrames(false)],),
             rtp: VlcRtpOptions(['--rtsp-tcp'],),
             advanced: VlcAdvancedOptions([
-              VlcAdvancedOptions.networkCaching(0),
+              VlcAdvancedOptions.networkCaching(3),
               VlcAdvancedOptions.clockJitter(0),
-              VlcAdvancedOptions.fileCaching(0),
-              VlcAdvancedOptions.liveCaching(0),
+              VlcAdvancedOptions.fileCaching(3),
+              VlcAdvancedOptions.liveCaching(3),
             ]),
             sout: VlcStreamOutputOptions([
             ]),
