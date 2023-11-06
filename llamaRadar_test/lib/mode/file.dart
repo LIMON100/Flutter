@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:connectivity/connectivity.dart';
@@ -13,7 +14,7 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class FileItem {
   final String name;
@@ -29,12 +30,10 @@ class FileName {
   FileName(this.name);
 }
 class Files extends StatefulWidget {
-  final bool isCameraStreaming;
   List<FileItem> images = [];
   List<FileItem> videos = [];
 
   Files({
-    required this.isCameraStreaming,
     required this.images,
     required this.videos,
   });
@@ -71,9 +70,7 @@ class _FilesState extends State<Files> {
   @override
   void initState() {
     super.initState();
-    // movieQualitySet();
-    // flipMovieMirror();
-    // Fetch files from the camera on page load
+    cyclicRecordStateOn();
     images = widget.images;
     videos = widget.videos;
     Connectivity().onConnectivityChanged.listen((connectivity) {
@@ -84,8 +81,19 @@ class _FilesState extends State<Files> {
     getFilesFromCamera();
   }
 
-  // Open File
+  // auto record on/off
+  Future<void> cyclicRecordStateOn() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
 
+  // Open File
   void openImageOrPlayVideo(String file) {
     if (file.endsWith('.JPG')) {
       // Display the image
@@ -401,6 +409,9 @@ class _FilesState extends State<Files> {
     return Scaffold(
       backgroundColor: Colors.white70,
       appBar: AppBar(
+        title: const Text('FILES'),
+        centerTitle: true,
+        foregroundColor: Colors.white,
         backgroundColor: Colors.transparent,
         leading: IconButton(
           color: Colors.black,
@@ -510,6 +521,78 @@ class _FilesState extends State<Files> {
                       SizedBox(height: 20),
                       if (displayItems.isNotEmpty)
                       // WITH ICON
+                      //   ListView.builder(
+                      //     shrinkWrap: true,
+                      //     physics: NeverScrollableScrollPhysics(),
+                      //     itemCount: displayItems.length,
+                      //     itemBuilder: (context, index) {
+                      //       final bool isImage = displayItems[index].name.endsWith('.JPG');
+                      //       final bool isVideo = displayItems[index].name.endsWith('.MP4');
+                      //
+                      //       IconData iconData;
+                      //       if (isImage) {
+                      //         iconData = Icons.photo;
+                      //       } else if (isVideo) {
+                      //         iconData = Icons.videocam;
+                      //       } else {
+                      //         // Handle other file types if needed
+                      //         iconData = Icons.insert_drive_file;
+                      //       }
+                      //       if (_isDownloading && _downloadIndex == index) {
+                      //         // Show circular progress bar and cancel option
+                      //         return ListTile(
+                      //           leading: SizedBox(
+                      //             width: 30,
+                      //             height: 30,
+                      //             child: CircularProgressIndicator(
+                      //               value: _progress,
+                      //               strokeWidth: 2.0,
+                      //               backgroundColor: Colors.black,
+                      //               valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      //             ),
+                      //           ),
+                      //           title: Text(displayItems[index].name),
+                      //           subtitle: Text(displayItems[index].time),
+                      //           trailing: IconButton(
+                      //             icon: Icon(Icons.close),
+                      //             onPressed: () {
+                      //               setState(() {
+                      //                 _isDownloading = false;
+                      //                 _downloadIndex = -1;
+                      //               });
+                      //             },
+                      //           ),
+                      //         );
+                      //       } else {
+                      //         // Show regular list tile with download button
+                      //         return ListTile(
+                      //           leading: Icon(iconData),
+                      //           title: Text(displayItems[index].name),
+                      //           subtitle: Text(displayItems[index].time),
+                      //           trailing: Row(
+                      //             mainAxisSize: MainAxisSize.min,
+                      //             children: [
+                      //               IconButton(
+                      //                 icon: Icon(Icons.delete),
+                      //                 onPressed: () {
+                      //                   deleteFile(displayItems[index].name.toString());
+                      //                 },
+                      //               ),
+                      //               IconButton(
+                      //                 icon: Icon(Icons.download),
+                      //                 onPressed: _isDownloading
+                      //                     ? null
+                      //                     : () => _downloadFile(displayItems[index].name.toString(), index),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //           onTap: () {
+                      //             openImageOrPlayVideo(displayItems[index].name);
+                      //           },
+                      //         );
+                      //       }
+                      //     },
+                      //   ),
                         ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
@@ -527,6 +610,29 @@ class _FilesState extends State<Files> {
                               // Handle other file types if needed
                               iconData = Icons.insert_drive_file;
                             }
+
+                            Widget leadingWidget;
+                            if (isVideo) {
+                              // Generate and display video thumbnail
+                              leadingWidget = FutureBuilder<Uint8List?>(
+                                future: VideoThumbnail.thumbnailData(
+                                  video: displayItems[index].name, // Provide the video file path
+                                  imageFormat: ImageFormat.JPEG,
+                                  maxWidth: 100, // Adjust the size as needed
+                                  quality: 25, // Adjust the quality as needed
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                                    return Image.memory(snapshot.data!); // Use snapshot.data! to access non-nullable value
+                                  } else {
+                                    return Icon(iconData); // Display an icon if thumbnail loading fails
+                                  }
+                                },
+                              );
+                            } else {
+                              leadingWidget = Icon(iconData);
+                            }
+
                             if (_isDownloading && _downloadIndex == index) {
                               // Show circular progress bar and cancel option
                               return ListTile(
@@ -540,7 +646,10 @@ class _FilesState extends State<Files> {
                                     valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                                   ),
                                 ),
-                                title: Text(displayItems[index].name),
+                                title: Text(
+                                  displayItems[index].name,
+                                  style: TextStyle(fontWeight: FontWeight.bold), // Make the name bold
+                                ),
                                 subtitle: Text(displayItems[index].time),
                                 trailing: IconButton(
                                   icon: Icon(Icons.close),
@@ -555,8 +664,11 @@ class _FilesState extends State<Files> {
                             } else {
                               // Show regular list tile with download button
                               return ListTile(
-                                leading: Icon(iconData),
-                                title: Text(displayItems[index].name),
+                                leading: leadingWidget,
+                                title: Text(
+                                  displayItems[index].name,
+                                  style: TextStyle(fontWeight: FontWeight.bold), // Make the name bold
+                                ),
                                 subtitle: Text(displayItems[index].time),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,

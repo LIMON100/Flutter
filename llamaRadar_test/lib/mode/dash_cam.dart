@@ -96,6 +96,7 @@ class _DashCamState extends State<DashCam> {
   @override
   void initState() {
     super.initState();
+    stopRecordState();
     _videoPlayerController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
@@ -122,6 +123,40 @@ class _DashCamState extends State<DashCam> {
     // getFilesFromCamera();
   }
 
+  // Recording also stop
+  Future<void> stopRecordState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  // auto record on/off
+  Future<void> cyclicRecordStateoff() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=0'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> cyclicRecordStateOn() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
   // List<FileItem> images = [];
   // List<FileItem> videos = [];
   //
@@ -216,6 +251,57 @@ class _DashCamState extends State<DashCam> {
     super.dispose();
   }
 
+  bool _isLoading = false;
+
+  void _navigateToFilesPage() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Stop the video controller
+    _videoPlayerController.stop();
+
+    await Future.delayed(Duration(seconds: 3));
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    // Navigate to the Files page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Files(
+          images: [],
+          videos: [],
+        ),
+      ),
+    );
+  }
+
+  bool _isLoadingSetting = false;
+
+  void _navigateToSettingPage() async {
+    setState(() {
+      _isLoadingSetting = true;
+    });
+
+    // Stop the video controller
+    _videoPlayerController.stop();
+
+    await Future.delayed(Duration(seconds: 2));
+
+    setState(() {
+      _isLoadingSetting = false;
+    });
+
+    // Navigate to the Files page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DashSettings()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -228,7 +314,7 @@ class _DashCamState extends State<DashCam> {
       ),
       child: Scaffold(
         // backgroundColor: Colors.transparent,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white60,
         appBar: AppBar(
           centerTitle: true,
           foregroundColor: Colors.black,
@@ -237,10 +323,11 @@ class _DashCamState extends State<DashCam> {
             IconButton(
               icon: Icon(Icons.settings),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DashSettings()),
-                );
+                _navigateToSettingPage();
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => DashSettings()),
+                // );
               },
             ),
           ],
@@ -258,9 +345,7 @@ class _DashCamState extends State<DashCam> {
             ),
           ),
         ),
-        // body: _children[_currentIndex],
-        body: IndexedStack(
-          index: _currentIndex,
+        body: Stack(
           children: [
             Home(
               toggleCameraStreaming: toggleCameraStreaming,
@@ -269,50 +354,48 @@ class _DashCamState extends State<DashCam> {
               // images: [],
               // videos: [],
             ),
+            if (_isLoading || _isLoadingSetting)
+              Center(
+                child: SpinKitSpinningCircle(
+                  color: Colors.deepOrange,
+                  size: 150.0,
+                ),
+              ),
           ],
         ),
-        // bottomNavigationBar: Container(
-        //   height: 50,
-        //   decoration: BoxDecoration(
-        //     color: Colors.orangeAccent,
-        //   ),
-        //   child: Center(
-        //     child: InkWell(
-        //       onTap: () {
-        //         Navigator.push(
-        //           context,
-        //           MaterialPageRoute(
-        //             builder: (context) => Files(
-        //               isCameraStreaming: isCameraStreaming,
-        //               images: [],
-        //               videos: [],
-        //             ),
-        //           ),
-        //         );
-        //       },
-        //       child: Padding(
-        //         padding: const EdgeInsets.all(10.0),
-        //         child: Row(
-        //           mainAxisAlignment: MainAxisAlignment.center,
-        //           children: [
-        //             Icon(
-        //               Icons.folder,
-        //               color: Colors.black,
-        //             ),
-        //             SizedBox(width: 5),
-        //             Text(
-        //               'FILES',
-        //               style: TextStyle(
-        //                 color: Colors.black,
-        //                 fontSize: 20,
-        //               ),
-        //             ),
-        //           ],
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
+        bottomNavigationBar: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.blueGrey,
+          ),
+          child: Center(
+            child: InkWell(
+              onTap: () {
+                _navigateToFilesPage();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.folder,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      'FILES',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -402,16 +485,41 @@ class _HomeState extends State<Home> {
     if (isCameraStreaming) {
       // Stop Camera
       widget.videoPlayerController.stop();
-    } else {
+    }
+    else {
       // Open Camera
       setDateOfCam();
       setTimeOfCam();
+      cyclicRecordStateoff();
       widget.videoPlayerController.play();
     }
 
     setState(() {
       isCameraStreaming = !isCameraStreaming;
     });
+  }
+
+  // auto record on/off
+  Future<void> cyclicRecordStateoff() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=0'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> cyclicRecordStateOn() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
   }
 
   // wifi connection
@@ -636,40 +744,49 @@ class _HomeState extends State<Home> {
   // }
 
   Future<void> takePicture() async {
-    String url = 'http://192.168.1.254/?custom=1&cmd=1001';
+    if (isRecording) {
+      String url = 'http://192.168.1.254/?custom=1&cmd=1001';
 
-    try {
-      final response = await http.get(Uri.parse(url));
+      try {
+        final response = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        print('Image captured');
-        // await getFilesFromCamera();
-        // Add snakbar message
+        if (response.statusCode == 200) {
+          print('Image captured');
+          // await getFilesFromCamera();
+          // Add snackbar message for a successful capture
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Image captured successfully.'),
+              duration: Duration(seconds: 2), // Adjust the duration as needed
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Image capture failed due to a network issue.'),
+              duration: Duration(seconds: 2), // Adjust the duration as needed
+            ),
+          );
+          print('Error occurred: ${response.statusCode}');
+          // Add snackbar message for an error
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('                  Image captured successfully.'),
+            content: Text('Image capture failed due to a network issue.'),
             duration: Duration(seconds: 2), // Adjust the duration as needed
           ),
         );
-
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('             Image cannot capture due to network.'),
-            duration: Duration(seconds: 2), // Adjust the duration as needed
-          ),
-        );
-        print('Error occured: ${response.statusCode}');
-        // Add snakbar message
+        print('Error: $e');
       }
-    } catch (e) {
+    } else {
+      // Display a snackbar message when recording is not started
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('             Image cannot capture due to network.'),
+          content: Text('Please start recording before capturing an image.'),
           duration: Duration(seconds: 2), // Adjust the duration as needed
         ),
       );
-      print('Error: $e');
     }
   }
 
@@ -703,7 +820,6 @@ class _HomeState extends State<Home> {
 
   Future<void> setTimeOfCam() async {
     String currentTime = getCurrentTime();
-    print(currentTime);
     final response = await http.get(
         Uri.parse('http://192.168.1.254/?custom=1&cmd=3005&str=$currentTime'));
     if (response.statusCode == 200) {
@@ -899,80 +1015,11 @@ class _HomeState extends State<Home> {
     });
   }
 
-  bool _isLoading = false;
-
-  void _navigateToFilesPage() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Delay for 2 seconds
-    await Future.delayed(Duration(seconds: 2));
-
-    // Stop the video controller
-    widget.videoPlayerController.stop();
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Files(
-          isCameraStreaming: widget.isCameraStreaming,
-          images: [],
-          videos: [],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      bottomNavigationBar: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: Colors.orangeAccent,
-        ),
-        child: Center(
-          child: InkWell(
-            onTap: () {
-              _navigateToFilesPage();
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.folder,
-                    color: Colors.black,
-                  ),
-                  SizedBox(width: 5),
-                  Text(
-                    'FILES',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
       body: OrientationBuilder(builder: (context, orientation) {
-     if (_isLoading)
-       Center(
-         child: SpinKitWave(
-           color: Colors.black,
-           size: 50.0,
-         ),
-       );
       currentOrientation = orientation;
       return Stack(
         children: [

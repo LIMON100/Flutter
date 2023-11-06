@@ -52,7 +52,19 @@ class _DashSettingsState extends State<DashSettings> {
     ssidAndPassChecker();
     currentModeChecker();
     loadSettings();
+    cyclicRecordStateOn();
+  }
 
+  // auto record on/off
+  Future<void> cyclicRecordStateOn() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2012&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
   }
 
   void startContinuousFunction() {
