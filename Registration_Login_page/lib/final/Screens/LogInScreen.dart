@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:testgpss/final/Screens/SignUpScreen.dart';
+import 'package:testgpss/final/model/UserLogInStatus.dart';
 import 'package:testgpss/final/sqflite/sqlite.dart';
 import 'package:testgpss/temp/LocationPage2.dart';
 import '../model/usersauth.dart';
@@ -35,6 +37,13 @@ class _SignInState extends State<SignIn> {
     }
   }
   final formKey = GlobalKey<FormState>();
+
+  bool isLoggedIn = false;
+  Future<void> saveLoginStatus(bool isLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -159,9 +168,6 @@ class _SignInState extends State<SignIn> {
                       // ),
 
                       SizedBox(height: 25),
-
-                      //From here the signin buttons will occur.
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -170,6 +176,10 @@ class _SignInState extends State<SignIn> {
                               if (formKey.currentState!.validate()) {
                                 login();
                               }
+                              setState(() {
+                                isLoggedIn = true;
+                                saveLoginStatus(isLoggedIn);
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               elevation: 3,
