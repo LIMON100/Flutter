@@ -22,8 +22,6 @@ class VlcPlayerPage extends StatefulWidget {
 class _VlcPlayerPageState extends State<VlcPlayerPage> {
   VlcPlayerController? _vlcController;
 
-  double _brightnessLevel = 1.0;
-  late BrightnessController _brightnessController;
   Orientation currentOrientation = Orientation.portrait;
   static const String rotationAngleKey = 'rotation_angle';
   double rotationAngle = 0.0;
@@ -34,25 +32,8 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
   @override
   void initState() {
     super.initState();
-    // controlBitrate();
-    gsensorR();
-    // _vlcController = VlcPlayerController.network(
-    //   'rtsp://192.168.1.254/xxxx.mov',
-    //   hwAcc: HwAcc.disabled,
-    //   autoPlay: true,
-    //   options: VlcPlayerOptions(
-    //     advanced: VlcAdvancedOptions([
-    //       VlcAdvancedOptions.networkCaching(0),
-    //       VlcAdvancedOptions.clockJitter(0),
-    //       VlcAdvancedOptions.fileCaching(0),
-    //       VlcAdvancedOptions.liveCaching(0),
-    //     ]),
-    //     rtp: VlcRtpOptions([
-    //       VlcRtpOptions.rtpOverRtsp(true),
-    //       ":rtsp-tcp",
-    //     ]),
-    //   ),
-    // );
+    liveViewState();
+    stopRecordState();
     _vlcController = VlcPlayerController.network(
       'rtsp://192.168.1.254/xxxx.mp4',
       hwAcc: HwAcc.disabled,
@@ -61,32 +42,46 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
           video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
                     VlcVideoOptions.skipFrames(false)],),
           advanced: VlcAdvancedOptions([
-                VlcAdvancedOptions.networkCaching(3),
+                VlcAdvancedOptions.networkCaching(30),
                 VlcAdvancedOptions.clockJitter(0),
-                VlcAdvancedOptions.fileCaching(0),
-                VlcAdvancedOptions.liveCaching(3),
+                VlcAdvancedOptions.fileCaching(30),
+                VlcAdvancedOptions.liveCaching(30),
+                VlcAdvancedOptions.clockSynchronization(1),
           ]),
           rtp: VlcRtpOptions([
                 VlcRtpOptions.rtpOverRtsp(true),
                 ":rtsp-tcp",
               ]),
           extras: ['--h264-fps=60'],
-          // extras: [':network-caching=0',':live-caching=0' ':clock-jitter=0', ':clock-synchro=0','--h264-fps=120'],
-          // sout: VlcStreamOutputOptions([
-          //   VlcStreamOutputOptions.soutMuxCaching(0),
-          // ])
+          // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
+          sout: VlcStreamOutputOptions([
+            VlcStreamOutputOptions.soutMuxCaching(0),
+          ])
       ),);
-
+    _vlcController!.takeSnapshot();
     _loadRotationAngle();
+  }
 
-    // _vlcController!.addListener(() {
-    //   if (_vlcController!.value.isPlaying) {
-    //     frameReceivedTime = DateTime.now();
-    //     setState(() {
-    //       latency = frameDisplayTime.difference(frameReceivedTime);
-    //     });
-    //   }
-    // });
+  Future<void> liveViewState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
+  Future<void> stopRecordState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
   }
 
   Future<void> gsensorR() async {
@@ -234,41 +229,12 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
                   child: Text('Change Orientation'),
                 ),
                 SizedBox(height: 20,),
-                // Text(
-                //   'Latency: ${latency?.inMilliseconds ?? 0} ms',
-                //   style: TextStyle(fontSize: 20),
-                // ),
-                // Text('Select G-Sensor Sensitivity:'),
-                // DropdownButton<GSensorLevel>(
-                //   value: selectedLevel,
-                //   onChanged: onLevelSelected,
-                //   items: sensitivityLevels.map((GSensorLevel level) {
-                //     return DropdownMenuItem<GSensorLevel>(
-                //       value: level,
-                //       child: Text(levelStrings[level] ?? ''),
-                //     );
-                //   }).toList(),
-                // ),
-                // ElevatedButton(
-                //   onPressed: () {
-                //     gSensorSens(); // Call the function when the button is pressed
-                //   },
-                //   child: Text('Activate G-Sensor'),
-                // ),
               ],
             ),
           );
         }
       ),
     );
-  }
-}
-
-class BrightnessController extends ChangeNotifier {
-  double value = 1.0;
-  void setBrightness(double brightness) {
-    value = brightness;
-    notifyListeners();
   }
 }
 

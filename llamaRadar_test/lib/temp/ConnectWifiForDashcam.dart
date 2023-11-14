@@ -236,12 +236,12 @@ class _ConnectWifiForDashCamState extends State<ConnectWifiForDashCam> {
             onPressed: () {
               Navigator.pop(context);
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BleScreen(title: '',)),
+                MaterialPageRoute(builder: (context) => BleScreen(title: '')),
               ); // Navigate to previous screen
             },
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white70,
         body: SingleChildScrollView(
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),

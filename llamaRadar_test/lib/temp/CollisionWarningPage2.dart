@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:lamaradar/provider/LedValuesProvider.dart';
@@ -75,8 +76,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   String _selectedOption = 'OFF';
   int blinkDurationMilliseconds = 10000;
   double _sliderValue = 0.0;
-  int _selectedValue = 0;
-  final sliderLabels = [0, 30, 60, 90];
+  int _selectedValue = 10;
+  final sliderLabels = [10, 30, 60, 90];
+  bool isButtonEnabled = true;
+  bool isCameraAnimation = false;
 
   @override
   void initState() {
@@ -87,21 +90,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _startBlinking();
     _loadRotationAngle();
     initializePlayer();
-    liveViewState();
+    // liveViewState();
     stopRecordState();
   }
 
 
-  Future<void> liveViewState() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
-    if (response.statusCode == 200) {
-      //fileList = json.decode(response.body);
-      print('HDR');
-    } else {
-      print('Cam error: ${response.statusCode}');
-    }
-  }
+  // Future<void> liveViewState() async {
+  //   final response = await http
+  //       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
+  //   if (response.statusCode == 200) {
+  //     //fileList = json.decode(response.body);
+  //     print('HDR');
+  //   } else {
+  //     print('Cam error: ${response.statusCode}');
+  //   }
+  // }
 
   Future<void> stopRecordState() async {
     final response = await http
@@ -875,10 +878,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // camera open
   void toggleCameraStreaming() {
+    // Extra
+    // setState(() {
+    //   isButtonEnabled = false;
+    //   isCameraAnimation = true;
+    // });
+
     if (isCameraStreaming) {
       _videoPlayerController.stop();
       _videoPlayerController.dispose();
-    } else {
+    }
+    else {
       Connectivity().onConnectivityChanged.listen((connectivity) {
         if (connectivity == ConnectivityResult.wifi) {
           // _videoPlayerController = VlcPlayerController.network(
@@ -968,7 +978,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       isCameraStreaming = !isCameraStreaming;
       isRearCamOpen = !isRearCamOpen;
     });
+    // EXTRA
+
+    // Future.delayed(Duration(seconds: 2), () {
+    //   // Enable the button and open the camera
+    //   setState(() {
+    //     isButtonEnabled = true;
+    //     isCameraAnimation = false;
+    //   });
+    // });
   }
+
+  // Only for stop camera animation
+  // void stopCameraAnime() {
+  //   setState(() {
+  //     isCameraAnimation = true;
+  //   });
+  // }
 
   // Dispose function
   @override
@@ -987,28 +1013,78 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
 
+  // Widget buildCameraButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: ElevatedButton(
+  //         onPressed: toggleCameraStreaming,
+  //         style: ElevatedButton.styleFrom(
+  //           primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(30.0),
+  //           ),
+  //           padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
+  //         ),
+  //         child: Text(
+  //           isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
+  //           style: TextStyle(
+  //             fontSize: 16.0,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
-        child: ElevatedButton(
-          onPressed: toggleCameraStreaming,
-          style: ElevatedButton.styleFrom(
-            primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
-          ),
-          child: Text(
-            isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+        child: Column(
+          children: [
+            if (isCameraStreaming) // Show "Stop Rear Camera" button when streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Stop Rear Camera',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            if (!isCameraStreaming) // Show "Open Rear Cam" button when not streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.cyan.shade500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Open Rear Cam',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -1266,7 +1342,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             ),
           ),
           child: Scaffold(
-            backgroundColor: Colors.transparent,
+            // backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white70,
             appBar: AppBar(
               centerTitle: true,
               foregroundColor: Colors.black,
@@ -1286,6 +1363,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 decoration: BoxDecoration(
                   // color: Color(0xFF6497d3),
                   color: Color(0xFF517fa4),
+                  // color: Colors.white70,
                 ),
               ),
             ),
@@ -1477,6 +1555,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     Row(
                       children: [
                         SizedBox(width: 5),
+                        //Spinning tried
+                        // if (!isButtonEnabled && isCameraAnimation) // Show loading spinner when button is disabled
+                        //   SpinKitThreeInOut(
+                        //     color: Colors.cyan.shade500,
+                        //     size: 80.0,
+                        //   ),
+                        // if (!isCameraAnimation) // Show loading spinner when button is disabled
                         Flexible(
                           flex: 3,
                           child: Container(
@@ -1545,6 +1630,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                       },
                                       onChangeEnd: (value) {
                                         int selectedValue = (_sliderValue * 30).round();
+                                        print("SELECTEFVALUE");
+                                        print(selectedValue);
                                         if (selectedValue == 30) {
                                           _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
                                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1590,6 +1677,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                             ),
                                           );
                                         }
+                                        else if (selectedValue == 0) {
+                                          _selectedValue = 10;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
                                       },
                                     ),
                                   ),
@@ -1603,7 +1705,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                     SizedBox(height: 10),
                                     SizedBox(height: 20),
                                     Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 60),
+                                    SizedBox(height: 25),
+                                    Text('10', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
                                   ],
                                 ),
                               ],
@@ -1626,7 +1730,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) =>
-                                  BleScreen(title: '',)),
+                                  BleScreen(title: '')),
                             );
                           },
                           color1: Color(0xFF517fa4),
