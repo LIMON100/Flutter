@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:testgpss/screens/Login/login_screen.dart';
+import 'package:testgpss/temp/LocationPage2.dart';
+import 'final/Screens/LogInScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'Screens23/LogInScreen.dart';
-
-// import 'package:testgpss/screens/Signup/signup_screen.dart';
-// import 'package:testgpss/screens/Welcome/components/login_signup_btn.dart';
-// import 'package:testgpss/screens/Welcome/welcome_screen.dart';
-// import 'package:testgpss/src/welcomePage.dart';
-
-// import 'Screens23/LogInScreen.dart';
-// import 'Screens23/SignUpScreen.dart';
-
+Future<bool> checkLoginStatus() async {
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  return isLoggedIn;
+}
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +16,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,7 +24,37 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SignIn(),
+      home: FutureBuilder(
+        future: checkLoginStatus(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.data == true) {
+              // User is logged in, redirect to home page
+              return LocationPage2();
+            }
+            else {
+              // User is not logged in, redirect to login page
+              return SignIn();
+            }
+          } else {
+            // Loading indicator
+            return CircularProgressIndicator();
+          }
+        },
+      ),
     );
   }
+
+  // // This widget is the root of your application.
+  // @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp(
+  //     debugShowCheckedModeBanner: false,
+  //     title: 'Flutter Google Maps',
+  //     theme: ThemeData(
+  //       primarySwatch: Colors.blue,
+  //     ),
+  //     home: SignIn(),
+  //   );
+  // }
 }
