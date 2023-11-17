@@ -48,14 +48,56 @@ class _ForgetPaswordState extends State<ForgetPasword> {
   }
   final TextEditingController _usernameController = TextEditingController();
 
-  void _navigateToPage2() {
+  // Proceed to next page
+  // void _navigateToPage2() {
+  //   if (_usernameController.text.isNotEmpty) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => PasswordUpdate(username: _usernameController.text)),
+  //     );
+  //   }
+  // }
+  void _navigateToPage2() async {
     if (_usernameController.text.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => PasswordUpdate(username: _usernameController.text)),
-      );
+      // Check if the username exists in the database
+      if (await _isUsernameExists(_usernameController.text)) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PasswordUpdate(username: _usernameController.text)),
+        );
+      } else {
+        // Show a message if the username doesn't exist
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Invalid Username"),
+              content: Text("Entered Correct username."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
+
+  Future<bool> _isUsernameExists(String username) async {
+    // Check if the username exists in the database
+    final db = await DatabaseHelper().initDB();
+    final count = Sqflite.firstIntValue(await db.rawQuery(
+      'SELECT COUNT(*) FROM users WHERE usrName = ?',
+      [username],
+    ));
+    return count! > 0;
+  }
+
 
   Future<String> databasePath = DatabaseHelper().getDatabasePath();
 
@@ -73,7 +115,7 @@ class _ForgetPaswordState extends State<ForgetPasword> {
               // color: Color(0xfff5f8fd),
                 color: Colors.white38,
                 borderRadius:
-                BorderRadius.all(Radius.circular(20))),
+                BorderRadius.all(Radius.circular(80))),
             child: TextFormField(
               controller: _usernameController,
               validator: (value) {
