@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lamaradar/auth/forgetPassword.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/usersauth.dart';
@@ -101,7 +102,7 @@ class _SignInState extends State<SignIn> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 60),
+                        SizedBox(height: 30),
                         Container(
                           padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -138,12 +139,12 @@ class _SignInState extends State<SignIn> {
                                     controller: username,
                                     validator: (value) {
                                       if (value!.isEmpty) {
-                                        return "password is required";
+                                        return "Email is required";
                                       }
                                       return null;
                                     },
                                     decoration: InputDecoration(
-                                      hintText: "Email",
+                                      hintText: "Email/User-name",
                                       border: InputBorder.none,
                                       prefixIcon: Icon(
                                         Icons.email,
@@ -184,16 +185,25 @@ class _SignInState extends State<SignIn> {
                           height: 25,
                         ),
 
-                        // Container(
-                        //   alignment: Alignment.centerRight,
-                        //   child: Container(
-                        //       child: Text(
-                        //     "Forgot Password?",
-                        //     style: TextStyle(
-                        //         color: Colors.deepPurpleAccent,
-                        //         fontWeight: FontWeight.w500),
-                        //   )),
-                        // ),
+                        Container(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => ForgetPasword())
+                                  );
+                                },
+                                child: Container(
+                                  child: Text("Forgot Password",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black)),
+                                ),
+                              )
+                          ),
+                        ),
 
                         SizedBox(height: 10),
                         Row(
