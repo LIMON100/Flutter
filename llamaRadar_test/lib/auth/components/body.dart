@@ -72,6 +72,17 @@ class _BodyState extends State<Body> {
       Color(0xFF97989D),
       Color(0xFF0F2642),
     ];
+    var customColors2 = [
+      Color(0xFF7A2832),
+      Color(0xFF97989D),
+      Color(0xFF278BD9),
+    ];
+    List<Color> lightBgColors2 = [
+      Color(0xFFA85B3A),
+      Color(0xFFBB783B),
+      Color(0xFFB98454),
+      if (isFullSun) Color(0xFFFF9D80),
+    ];
     return Scaffold(
       body: SingleChildScrollView(
         child: Form(
@@ -85,7 +96,7 @@ class _BodyState extends State<Body> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: isDayMood ? customColors : darkBgColors,
+                colors: isDayMood ? lightBgColors2 : darkBgColors,
               ),
             ),
             child: Stack(
@@ -160,12 +171,6 @@ class _BodyState extends State<Body> {
                                         ? Icons.visibility
                                         : Icons.visibility_off))),
                           ),
-                            // decoration: InputDecoration(
-                            //   hintText: "Type Password",
-                            //   border: InputBorder.none,
-                            //   prefixIcon:
-                            //   Icon(Icons.vpn_key, color: Colors.black),
-                            // ),
                         ),
                         SizedBox(height: 25),
                         Container(
@@ -187,12 +192,6 @@ class _BodyState extends State<Body> {
                               }
                               return null;
                             },
-                            // decoration: InputDecoration(
-                            //   hintText: "Again type Password",
-                            //   border: InputBorder.none,
-                            //   prefixIcon:
-                            //   Icon(Icons.vpn_key, color: Colors.black),
-                            // ),
                             decoration: InputDecoration(
                                 prefixIcon: Icon(Icons.vpn_key, color: Colors.black),
                                 border: InputBorder.none,
@@ -210,7 +209,18 @@ class _BodyState extends State<Body> {
                                         : Icons.visibility_off))),
                           ),
                         ),
-                        SizedBox(height:25),
+                        SizedBox(height:10),
+                        // Container(
+                        //   alignment: Alignment.centerRight,
+                        //   child: Container(
+                        //       child: Text(
+                        //         "Forgot Password?",
+                        //         style: TextStyle(
+                        //             color: Colors.black,
+                        //             fontWeight: FontWeight.w500),
+                        //       )),
+                        // ),
+                        SizedBox(height:20),
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
@@ -249,7 +259,7 @@ class _BodyState extends State<Body> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 25),
+                        SizedBox(height: 15),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -292,39 +302,3 @@ class _BodyState extends State<Body> {
     );
   }
 }
-
-
-// function to save the user's login status to the database.
-// Future<void> saveUserLoginStatus(UserLoginStatus userLoginStatus) async {
-//   // final db = await DatabaseHelper();
-//   Database db = await DatabaseHelper.initDB();
-//   await db.insert('UserLoginStatus', userLoginStatus.toMap());
-// }
-// //
-// // // Create a function to check the user's login status.
-// Future<bool> checkUserStatus(int userId) async {
-//   DatabaseHelper.
-//   var result = await db.rawQuery(
-//       "select user_status from users where usrId = ?", whereArgs: [userId]);
-//   return result.first['user_status'];
-// }
-//
-// // When the user logs in, call the function to save the user's login status to the database.
-// void login(int userId) {
-//   saveUserLoginStatus(UserLoginStatus(id: userId, loggedIn: true));
-// }
-//
-// // When the user logs out, call the function to clear the user's login status from the database.
-// void logout() {
-//   saveUserLoginStatus(UserLoginStatus(id: 1, loggedIn: false));
-// }
-//
-// // On every page load, check the user's login status. If the user is logged in, redirect the user to the home page. If the user is not logged in, redirect the user to the login page.
-// Future<void> checkLoginStatus() async {
-//   final isLoggedIn = await checkUserLoginStatus(1);
-//   if (isLoggedIn) {
-// // Redirect the user to the home page.
-//   } else {
-// // Redirect the user to the login page.
-//   }
-// }

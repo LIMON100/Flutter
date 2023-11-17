@@ -3,6 +3,30 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../size_config.dart';
 
 
+// class Sun extends StatelessWidget {
+//   const Sun({
+//     required Key key,
+//     required Duration duration,
+//     required this.isFullSun,
+//   })  : _duration = duration,
+//         super(key: key);
+//
+//   final Duration _duration;
+//   final bool isFullSun;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return AnimatedPositioned(
+//       duration: _duration,
+//       curve: Curves.easeInOut,
+//       left: getProportionateScreenWidth(30),
+//       bottom: getProportionateScreenWidth(isFullSun ? -45 : -130),
+//       child: SvgPicture.asset("assets/icons/Sun.svg"),
+//     );
+//   }
+// }
+
+
 class Sun extends StatelessWidget {
   const Sun({
     required Key key,
@@ -16,12 +40,14 @@ class Sun extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedPositioned(
+    return isFullSun
+        ? AnimatedPositioned(
       duration: _duration,
       curve: Curves.easeInOut,
       left: getProportionateScreenWidth(30),
-      bottom: getProportionateScreenWidth(isFullSun ? -45 : -120),
+      bottom: getProportionateScreenWidth(-45),
       child: SvgPicture.asset("assets/icons/Sun.svg"),
-    );
+    )
+        : SizedBox(); // Return an empty SizedBox if isFullSun is false
   }
 }
