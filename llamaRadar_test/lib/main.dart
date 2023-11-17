@@ -4,13 +4,12 @@ import 'package:lamaradar/provider/BluetoothStateProvider.dart';
 import 'package:lamaradar/provider/PopupWindowProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'SideBar.dart';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:page_transition/page_transition.dart';
-
 import 'auth/Screens/LogInScreen.dart';
+
 
 Future<bool> checkLoginStatus() async {
   final prefs = await SharedPreferences.getInstance();
@@ -104,15 +103,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       home: BleScreen(title: ''),
-//     );
-//   }
-// }
 

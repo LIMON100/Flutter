@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
+import 'package:lamaradar/temp/checkdb.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mode/llamaGuardSetting.dart';
 
@@ -137,6 +138,37 @@ class _SideBarState extends State<SideBar> {
             //         Navigator.of(context).push(
             //           MaterialPageRoute(
             //             builder: (context) =>  TestGps(), //ConnectWifiForDashCam
+            //           ),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
+
+            // LayoutBuilder(
+            //   builder: (context, constraints) {
+            //     final fontSize = constraints.maxWidth * 0.06;
+            //     return ListTile(
+            //       leading: Icon(
+            //         CustomIcon.webcam,
+            //         color: Colors.black,
+            //         size: constraints.maxWidth * 0.07,
+            //       ),
+            //       title: Text(
+            //         'Check DB ',
+            //         style: TextStyle(
+            //           fontFamily: 'Quicksand-VariableFont_wght',
+            //           fontSize: fontSize,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black,
+            //           letterSpacing: 2.0,
+            //         ),
+            //       ),
+            //       onTap: () {
+            //         Navigator.pop(context);
+            //         Navigator.of(context).push(
+            //           MaterialPageRoute(
+            //             builder: (context) =>  CheckDB(), //ConnectWifiForDashCam
             //           ),
             //         );
             //       },
