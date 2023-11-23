@@ -1,14 +1,14 @@
 import 'dart:async';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:testgpss/final/Screens/LogInScreen.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:testgpss/final/showGpsData.dart';
+import 'package:testgpss/final/temp/MyScreenState.dart';
 import 'package:testgpss/temp/LocationPageSharedPreference.dart';
-
 import '../final/model/UserLogInStatus.dart';
 import '../final/sqflite/sqlite.dart';
 
@@ -24,6 +24,7 @@ class _TestGpscordDataState extends State<TestGpscordData> {
   String? _currentAddress;
   Position? _currentPosition;
   late Timer _timer;
+  ScreenshotController screenshotController = ScreenshotController();
 
   @override
   void initState() {
@@ -156,58 +157,6 @@ class _TestGpscordDataState extends State<TestGpscordData> {
     ];
   }
 
-  // List<Map<String, dynamic>> demoData = [
-  //   {
-  //     "latitude": _currentPosition!.latitude,
-  //     "longitude": _currentPosition!.longitude,
-  //     "image": "assets/images/logo.png",
-  //     "date": "2023-11-11",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 83.710648,
-  //     "longitude": 0.406969,
-  //     "image": "assets/images/land_tree_dark.png",
-  //     "date": "2023-11-11",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 23.710648,
-  //     "longitude": 800.406969,
-  //     "image": "assets/images/land_tree_dark.png",
-  //     "date": "2023-11-21",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 03.710648,
-  //     "longitude": 90.406969,
-  //     "image": "assets/images/logo.png",
-  //     "date": "2023-11-10",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 1.710648,
-  //     "longitude": 2.406969,
-  //     "image": "assets/images/land_tree_light.png",
-  //     "date": "2023-11-05",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 1232.710648,
-  //     "longitude": 22.406969,
-  //     "image": "assets/images/land_tree_light.png",
-  //     "date": "2023-11-05",
-  //     "time": "16:26"
-  //   },
-  //   {
-  //     "latitude": 0.710648,
-  //     "longitude": 02.406969,
-  //     "image": "assets/images/land_tree_light.png",
-  //     "date": "2023-09-05",
-  //     "time": "16:26"
-  //   },
-  // ];
-
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   Future<void> insertDemoData() async {
     for(Map<String, dynamic> row in getDemoData()) {
@@ -215,15 +164,44 @@ class _TestGpscordDataState extends State<TestGpscordData> {
     }
   }
 
+  Future<String> saveImageTo(Uint8List bytes) async {
+    await Permission.storage.request();
+    final time = DateTime.now()
+        .toString()
+        .replaceAll('.', '-')
+        .replaceAll(':', '-');
+    final name = 'screenshot$time';
+    final result = await ImageGallerySaver.saveImage(bytes, name: name);
+    return result['filePath'];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("GPS COORD DATA")),
+      appBar: AppBar(title: const Text("SAVE GPS COORD DATA")),
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Screenshot(
+                controller: screenshotController,
+                child: Container(
+                  padding: const EdgeInsets.all(30.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 5.0),
+                    color: Colors.amberAccent,
+                  ),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo.png',
+                      ),
+                      // Text("This widget will be captured as an image"),
+                    ],
+                  ),
+                ),
+              ),
               ElevatedButton(
                 onPressed: insertDemoData,
                 child: const Text("Save Data"),
@@ -235,6 +213,14 @@ class _TestGpscordDataState extends State<TestGpscordData> {
                       MaterialPageRoute(builder: (context) => ShowGpsData()));
                 },
                 child: const Text("CHECK GPS DATA"),
+              ),
+              ElevatedButton(
+                onPressed: (){
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ScreenCaptureWidget()));
+                },
+                child: const Text("TEST SCREENSHOT"),
               ),
             ],
           ),
