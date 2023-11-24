@@ -7,6 +7,7 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:testgpss/final/showGpsData.dart';
+import 'package:testgpss/final/temp/DatabaseViewerScreen.dart';
 import 'package:testgpss/final/temp/MyScreenState.dart';
 import 'package:testgpss/temp/LocationPageSharedPreference.dart';
 import '../final/model/UserLogInStatus.dart';
@@ -25,6 +26,8 @@ class _TestGpscordDataState extends State<TestGpscordData> {
   Position? _currentPosition;
   late Timer _timer;
   ScreenshotController screenshotController = ScreenshotController();
+  late String imagePath = '';
+  Uint8List? capturedImage = Uint8List(0);
 
   @override
   void initState() {
@@ -95,62 +98,83 @@ class _TestGpscordDataState extends State<TestGpscordData> {
     });
   }
 
+  // Save Screenshot
+  Future<void> _saveScreenshot() async {
+    print("Screen");
+    capturedImage = await screenshotController.capture();
+  }
 
-  List<Map<String, dynamic>> getDemoData() {
+
+  Future<String> saveImageTo(Uint8List bytes) async {
+    await Permission.storage.request();
+    final time = DateTime.now()
+        .toString()
+        .replaceAll('.', '-')
+        .replaceAll(':', '-')
+        .replaceAll(' ', '_');
+    final name = 'screenshot$time';
+    final result = await ImageGallerySaver.saveImage(bytes, name: name);
+    imagePath = result['filePath'];
+    print("IMAGE");
+    print(name);
+    return result['filePath'];
+  }
+
+  List<Map<String, dynamic>> getDemoData(){
     return [
       {
         "latitude": _currentPosition?.latitude,
         "longitude": _currentPosition?.longitude,
-        "image": "assets/images/logo.png",
+        "image": capturedImage,
         "date": "2023-11-11",
         "time": "16:26",
       },
       {
         "latitude": _currentPosition?.latitude,
         "longitude": _currentPosition?.longitude,
-        "image": "assets/images/logo.png",
+        "image": capturedImage,
         "date": "2023-11-11",
         "time": "16:26",
       },
       {
-        "latitude": 83.710648,
-        "longitude": 0.406969,
-        "image": "assets/images/land_tree_dark.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-11-11",
         "time": "16:26"
       },
       {
-        "latitude": 23.710648,
-        "longitude": 800.406969,
-        "image": "assets/images/land_tree_dark.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-11-21",
         "time": "16:26"
       },
       {
-        "latitude": 03.710648,
-        "longitude": 90.406969,
-        "image": "assets/images/logo.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-11-10",
         "time": "16:26"
       },
       {
-        "latitude": 1.710648,
-        "longitude": 2.406969,
-        "image": "assets/images/land_tree_light.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-11-05",
         "time": "16:26"
       },
       {
-        "latitude": 1232.710648,
-        "longitude": 22.406969,
-        "image": "assets/images/land_tree_light.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-11-05",
         "time": "16:26"
       },
       {
-        "latitude": 0.710648,
-        "longitude": 02.406969,
-        "image": "assets/images/land_tree_light.png",
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
         "date": "2023-09-05",
         "time": "16:26"
       },
@@ -159,20 +183,10 @@ class _TestGpscordDataState extends State<TestGpscordData> {
 
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   Future<void> insertDemoData() async {
+    print("DEMO");
     for(Map<String, dynamic> row in getDemoData()) {
       await helper.insertCoordinates(row);
     }
-  }
-
-  Future<String> saveImageTo(Uint8List bytes) async {
-    await Permission.storage.request();
-    final time = DateTime.now()
-        .toString()
-        .replaceAll('.', '-')
-        .replaceAll(':', '-');
-    final name = 'screenshot$time';
-    final result = await ImageGallerySaver.saveImage(bytes, name: name);
-    return result['filePath'];
   }
 
   @override
@@ -195,7 +209,7 @@ class _TestGpscordDataState extends State<TestGpscordData> {
                   child: Stack(
                     children: [
                       Image.asset(
-                        'assets/images/logo.png',
+                        'assets/images/land_tree_light.png',
                       ),
                       // Text("This widget will be captured as an image"),
                     ],
@@ -203,7 +217,10 @@ class _TestGpscordDataState extends State<TestGpscordData> {
                 ),
               ),
               ElevatedButton(
-                onPressed: insertDemoData,
+                onPressed: (){
+                  _saveScreenshot();
+                  insertDemoData();
+                },
                 child: const Text("Save Data"),
               ),
               ElevatedButton(
@@ -214,13 +231,21 @@ class _TestGpscordDataState extends State<TestGpscordData> {
                 },
                 child: const Text("CHECK GPS DATA"),
               ),
+              // ElevatedButton(
+              //   onPressed: (){
+              //     Navigator.push(
+              //         context,
+              //         MaterialPageRoute(builder: (context) => ScreenCaptureWidget()));
+              //   },
+              //   child: const Text("TEST SCREENSHOT"),
+              // ),
               ElevatedButton(
                 onPressed: (){
                   Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ScreenCaptureWidget()));
+                      MaterialPageRoute(builder: (context) => DatabaseViewerScreen()));
                 },
-                child: const Text("TEST SCREENSHOT"),
+                child: const Text("CHECK DB"),
               ),
             ],
           ),
