@@ -12,6 +12,8 @@ import 'package:testgpss/final/temp/MyScreenState.dart';
 import 'package:testgpss/temp/LocationPageSharedPreference.dart';
 import '../final/model/UserLogInStatus.dart';
 import '../final/sqflite/sqlite.dart';
+import 'package:intl/intl.dart';
+
 
 class TestGpscordData extends StatefulWidget {
   const TestGpscordData({Key? key}) : super(key: key);
@@ -27,17 +29,38 @@ class _TestGpscordDataState extends State<TestGpscordData> {
   late Timer _timer;
   ScreenshotController screenshotController = ScreenshotController();
   late String imagePath = '';
-  Uint8List? capturedImage = Uint8List(0);
+  var now = DateTime.now();
+  var formatterDate = DateFormat('yyyy-MM-dd');
+  var formatterTime = DateFormat('HH:mm:ss');
+  Map<String, String>? dateTime;
+  // Uint8List? capturedImage = Uint8List(0);
+  // GlobalKey<ScreenshotController> screenshotController = GlobalKey<ScreenshotController>();
+
+  Uint8List? capturedImage;
 
   @override
   void initState() {
     super.initState();
     // _loadSavedCoordinates();
+    dateTime = {}; // Initialize dateTime here
+    getCurrentDateTime();
     _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
       _getCurrentPosition();
     });
   }
 
+  void getCurrentDateTime() {
+    dateTime!['date'] = formatterDate.format(now);
+    dateTime!['time'] = formatterTime.format(now);
+    print(formatterDate.format(now));
+    print(formatterTime.format(now));
+  }
+  // Map<String, String> getCurrentDateTime2() {
+  //   return {
+  //     'date': formatterDate.format(now),
+  //     'time': formatterTime.format(now),
+  //   };
+  // }
   Future<void> _getCurrentPosition() async {
     final hasPermission = await _handleLocationPermission();
 
@@ -100,7 +123,6 @@ class _TestGpscordDataState extends State<TestGpscordData> {
 
   // Save Screenshot
   Future<void> _saveScreenshot() async {
-    print("Screen");
     capturedImage = await screenshotController.capture();
   }
 
@@ -176,14 +198,20 @@ class _TestGpscordDataState extends State<TestGpscordData> {
         "longitude": _currentPosition?.longitude,
         "image": capturedImage,
         "date": "2023-09-05",
-        "time": "16:26"
+        "time": dateTime!['time'].toString()
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": dateTime!['date'].toString(),
+        "time": dateTime!['time'].toString()
       },
     ];
   }
 
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   Future<void> insertDemoData() async {
-    print("DEMO");
     for(Map<String, dynamic> row in getDemoData()) {
       await helper.insertCoordinates(row);
     }
@@ -218,6 +246,7 @@ class _TestGpscordDataState extends State<TestGpscordData> {
               ),
               ElevatedButton(
                 onPressed: (){
+                  getCurrentDateTime();
                   _saveScreenshot();
                   insertDemoData();
                 },
@@ -247,6 +276,8 @@ class _TestGpscordDataState extends State<TestGpscordData> {
                 },
                 child: const Text("CHECK DB"),
               ),
+              Text(dateTime!['date'].toString()),
+              Text(dateTime!['time'].toString()),
             ],
           ),
         ),
