@@ -4,11 +4,11 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:lamaradar/provider/PopupWindowProvider.dart';
+import '../sqflite/sqlite.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -20,8 +20,14 @@ import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:provider/provider.dart';
-import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:typed_data';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:intl/intl.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -81,9 +87,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool isButtonEnabled = true;
   bool isCameraAnimation = false;
 
+  // For gps coordinates database
+  String? _currentAddress;
+  Position? _currentPosition;
+  ScreenshotController screenshotController = ScreenshotController();
+  late String imagePath = '';
+  var now = DateTime.now();
+  var formatterDate = DateFormat('yyyy-MM-dd');
+  var formatterTime = DateFormat('HH:mm:ss');
+  Map<String, String>? dateTime;
+  Uint8List? capturedImage;
+
   @override
   void initState() {
     super.initState();
+    dateTime = {};
+    getCurrentDateTime();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
@@ -94,6 +113,171 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     stopRecordState();
   }
 
+  // ------------------Start GPS data processing-----------------
+  // current date and time
+  void getCurrentDateTime() {
+      dateTime!['date'] = formatterDate.format(now);
+      dateTime!['time'] = formatterTime.format(now);
+      print(formatterDate.format(now));
+      print(formatterTime.format(now));
+    }
+
+  Future<void> _getCurrentPosition() async {
+    final hasPermission = await _handleLocationPermission();
+
+    if (!hasPermission) return;
+
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() {
+        _currentPosition = position;
+      });
+      _getAddressFromLatLng(_currentPosition!);
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(
+        _currentPosition!.latitude, _currentPosition!.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+        '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
+      });
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+  // Save Screenshot
+  Future<void> _saveScreenshot() async {
+    capturedImage = await screenshotController.capture();
+  }
+
+
+  Future<String> saveImageTo(Uint8List bytes) async {
+    await Permission.storage.request();
+    final time = DateTime.now()
+        .toString()
+        .replaceAll('.', '-')
+        .replaceAll(':', '-')
+        .replaceAll(' ', '_');
+    final name = 'screenshot$time';
+    final result = await ImageGallerySaver.saveImage(bytes, name: name);
+    imagePath = result['filePath'];
+    print("IMAGE");
+    print(name);
+    return result['filePath'];
+  }
+
+  List<Map<String, dynamic>> getDemoData(){
+    return [
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-11",
+        "time": "16:26",
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-11",
+        "time": "16:26",
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-11",
+        "time": "16:26"
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-21",
+        "time": "16:26"
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-10",
+        "time": "16:26"
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-05",
+        "time": "16:26"
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-11-05",
+        "time": "16:26"
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": "2023-09-05",
+        "time": dateTime!['time'].toString()
+      },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": dateTime!['date'].toString(),
+        "time": dateTime!['time'].toString()
+      },
+    ];
+  }
+
+  GpsDatabaseHelper helper = GpsDatabaseHelper();
+  Future<void> insertDemoData() async {
+    for(Map<String, dynamic> row in getDemoData()) {
+      await helper.insertCoordinates(row);
+    }
+  }
+  // ------------------End GPS data processing-----------------
 
   // Future<void> liveViewState() async {
   //   final response = await http
