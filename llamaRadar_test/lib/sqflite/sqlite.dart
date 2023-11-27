@@ -98,3 +98,51 @@ class DatabaseHelper {
     await deleteDatabase();
   }
 }
+
+
+// Database for gpsCoordinates
+class GpsDatabaseHelper {
+  Database? _database;
+  static const String tableName = 'gps_coordinates';
+
+  Future<Database> get database async {
+    if (_database != null) {
+      return _database!;
+    }
+
+    _database = await initDatabase();
+    return _database!;
+  }
+
+  Future<Database> initDatabase() async {
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'gpscoord.db');
+
+    return await openDatabase(path, version: 1, onCreate: _createDb);
+  }
+
+  Future<void> _createDb(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE $tableName (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        latitude REAL,
+        longitude REAL,
+        image BLOB, 
+        date TEXT,
+        time TEXT
+      )
+    ''');
+  }
+  //image TEXT
+  Future<int> insertCoordinates(Map<String, dynamic> row) async {
+    Database db = await database;
+    int result = await db.insert(tableName, row);
+    print('Inserted row with result: $result');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllRows() async {
+    Database db = await database;
+    return await db.query(tableName);
+  }
+}
