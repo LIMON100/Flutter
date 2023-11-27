@@ -110,7 +110,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _loadRotationAngle();
     initializePlayer();
     // liveViewState();
-    stopRecordState();
+    // stopRecordState();
+    // _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    //   _getCurrentPosition();
+    //   getCurrentDateTime();
+    //   _saveScreenshot();
+    //   insertDemoData();
+    // });
+    _getCurrentPosition();
+    getCurrentDateTime();
+    _saveScreenshot();
+    insertDemoData();
   }
 
   // ------------------Start GPS data processing-----------------
@@ -265,7 +275,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         "latitude": _currentPosition?.latitude,
         "longitude": _currentPosition?.longitude,
         "image": capturedImage,
-        "date": dateTime!['date'].toString(),
+        "date": "2023-11-27",
         "time": dateTime!['time'].toString()
       },
     ];
@@ -273,6 +283,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   Future<void> insertDemoData() async {
+    print("ISERT");
     for(Map<String, dynamic> row in getDemoData()) {
       await helper.insertCoordinates(row);
     }
@@ -290,16 +301,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //   }
   // }
 
-  Future<void> stopRecordState() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
-    if (response.statusCode == 200) {
-      //fileList = json.decode(response.body);
-      print('HDR');
-    } else {
-      print('Cam error: ${response.statusCode}');
-    }
-  }
+  // Future<void> stopRecordState() async {
+  //   final response = await http
+  //       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
+  //   if (response.statusCode == 200) {
+  //     //fileList = json.decode(response.body);
+  //     print('HDR');
+  //   } else {
+  //     print('Cam error: ${response.statusCode}');
+  //   }
+  // }
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -747,6 +758,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
 
+      // Save value gps coordinates and images
+      _getCurrentPosition();
+      getCurrentDateTime();
+      _saveScreenshot();
+      insertDemoData();
+
       Timer(Duration(milliseconds: 400), () {
         left_greenPlayer.stop();
       });
@@ -861,6 +878,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
+
+      // Save value gps coordinates and images
+      _getCurrentPosition();
+      getCurrentDateTime();
+      _saveScreenshot();
+      insertDemoData();
 
       Timer(Duration(milliseconds: 400), () {
         right_greenPlayer.stop();
@@ -1748,38 +1771,41 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                         // if (!isCameraAnimation) // Show loading spinner when button is disabled
                         Flexible(
                           flex: 3,
-                          child: Container(
-                            height: 280,
-                            width: 300,
-                            child: Center(
-                              child: Stack(
-                                children: [
-                                  isCameraStreaming && _videoPlayerController != null
-                                      ? Transform.rotate(
-                                    angle: rotationAngle * 3.14159265359 / 180,
-                                    child: VlcPlayer(
-                                      controller: _videoPlayerController,
-                                      aspectRatio: currentOrientation == Orientation.portrait
-                                          ? 16 / 9
-                                          : 9 / 16,
-                                    ),
-                                  )
-                                      : Image.asset(
-                                    'images/test_background3.jpg',
-                                    fit: BoxFit.fitWidth,
-                                  ),
-                                  if (isCameraStreaming)
-                                    Positioned(
-                                      bottom: 16.0,
-                                      right: 16.0,
-                                      child: IconButton(
-                                        color: Colors.red,
-                                        icon: Icon(Icons.cameraswitch_outlined),
-                                        onPressed: changeOrientation,
-                                        iconSize: 40.0,
+                          child: Screenshot(
+                            controller: screenshotController,
+                            child: Container(
+                              height: 280,
+                              width: 300,
+                              child: Center(
+                                child: Stack(
+                                  children: [
+                                    isCameraStreaming && _videoPlayerController != null
+                                        ? Transform.rotate(
+                                      angle: rotationAngle * 3.14159265359 / 180,
+                                      child: VlcPlayer(
+                                        controller: _videoPlayerController,
+                                        aspectRatio: currentOrientation == Orientation.portrait
+                                            ? 16 / 9
+                                            : 9 / 16,
                                       ),
+                                    )
+                                        : Image.asset(
+                                      'images/test_background3.jpg',
+                                      fit: BoxFit.fitWidth,
                                     ),
-                                ],
+                                    if (isCameraStreaming)
+                                      Positioned(
+                                        bottom: 16.0,
+                                        right: 16.0,
+                                        child: IconButton(
+                                          color: Colors.red,
+                                          icon: Icon(Icons.cameraswitch_outlined),
+                                          onPressed: changeOrientation,
+                                          iconSize: 40.0,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
