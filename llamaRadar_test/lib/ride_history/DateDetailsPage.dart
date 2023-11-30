@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lamaradar/ride_history/maps/maker_with_image.dart';
+import 'package:lamaradar/ride_history/maps/marker_info.dart';
 import 'package:sqflite/sqflite.dart';
 import '../sqflite/sqlite.dart';
+import 'maps/MapScreen.dart';
 
 class DateDetailsPage extends StatefulWidget  {
   final String date;
@@ -37,8 +40,6 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
 
     setState(() {
       _gpsCoordinates = gpsCoordinates;
-      print("GPS");
-      print(_gpsCoordinates);
       //Extra
       _imageList = _gpsCoordinates
           .map<Uint8List?>((coordinate) => _getImageBytes(coordinate['image']))
@@ -69,43 +70,87 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
         title: Text(widget.date),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: _gpsCoordinates.length,
-        itemBuilder: (context, index) {
-          final gpsCoordinate = _gpsCoordinates[index];
-          if (gpsCoordinate['latitude'] != null &&
-              gpsCoordinate['longitude'] != null) {
-            return GestureDetector(
-              onTap: () {
-                // Navigate to details page for the selected gps coordinate
-              },
-              child: ListTile(
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Latitude: ${gpsCoordinate['latitude']}, Longitude: ${gpsCoordinate['longitude']}',
-                    ),
-                    Text(
-                      'Time: ${gpsCoordinate['time']}',
-                    ),
-                    SizedBox(height: 8.0),
-                    // Display the image if it exists and is valid
-                    if (_imageList[index] != null)
-                      Image.memory(
-                        _imageList[index]!,
-                        height: 100.0,
-                        width: 100.0,
-                      ),
-                  ],
+      body: Column(
+        children: [
+          SizedBox(height: 10,),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MarkerWithImage(date: widget.date),
                 ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 3,
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+              primary: Colors.brown, // Change to your preferred color
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: Colors.white70),
+                borderRadius: BorderRadius.all(Radius.circular(30)),
               ),
-            );
-          } else {
-            // If latitude or longitude is null, return an empty container
-            return Container();
-          }
-        },
+            ),
+            child: Text(
+              "OPEN MAP",
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _gpsCoordinates.length,
+              itemBuilder: (context, index) {
+                final gpsCoordinate = _gpsCoordinates[index];
+                if (gpsCoordinate['latitude'] != null &&
+                    gpsCoordinate['longitude'] != null) {
+                  return GestureDetector(
+                    onTap: () {
+                      // Open the map screen when the button is pressed
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapScreen(
+                            latitude: gpsCoordinate['latitude'],
+                            longitude: gpsCoordinate['longitude'],
+                            image: _imageList[index],
+                          ),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Latitude: ${gpsCoordinate['latitude']}, Longitude: ${gpsCoordinate['longitude']}',
+                          ),
+                          Text(
+                            'Time: ${gpsCoordinate['time']}',
+                          ),
+                          SizedBox(height: 8.0),
+                          // Display the image if it exists and is valid
+                          if (_imageList[index] != null)
+                            Image.memory(
+                              _imageList[index]!,
+                              height: 100.0,
+                              width: 100.0,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                } else {
+                  // If latitude or longitude is null, return an empty container
+                  return Container();
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
