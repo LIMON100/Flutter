@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import '../sqflite/sqlite.dart';
 import 'maps/MapScreen.dart';
 import 'maps/temp/GpsMapScreen.dart';
+import 'maps/temp/GpsMapScreen2.dart';
 
 class DateDetailsPage extends StatefulWidget  {
   final String date;
