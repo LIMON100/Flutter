@@ -7,6 +7,7 @@ import 'package:lamaradar/ride_history/maps/marker_info.dart';
 import 'package:sqflite/sqflite.dart';
 import '../sqflite/sqlite.dart';
 import 'maps/MapScreen.dart';
+import 'maps/temp/GpsMapScreen.dart';
 
 class DateDetailsPage extends StatefulWidget  {
   final String date;
@@ -26,7 +27,6 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
   void initState() {
     super.initState();
     _fetchGpsCoordinates();
-    // _fetchImages();
   }
 
   // Fetch all data based on date
@@ -78,7 +78,7 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MarkerWithImage(date: widget.date),
+                  builder: (context) => GpsMapScreen(date: widget.date),
                 ),
               );
             },
@@ -109,17 +109,16 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
                     gpsCoordinate['longitude'] != null) {
                   return GestureDetector(
                     onTap: () {
-                      // Open the map screen when the button is pressed
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MapScreen(
-                            latitude: gpsCoordinate['latitude'],
-                            longitude: gpsCoordinate['longitude'],
-                            image: _imageList[index],
-                          ),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => MapScreen(
+                      //       latitude: gpsCoordinate['latitude'],
+                      //       longitude: gpsCoordinate['longitude'],
+                      //       image: _imageList[index],
+                      //     ),
+                      //   ),
+                      // );
                     },
                     child: ListTile(
                       title: Column(
@@ -133,18 +132,55 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
                           ),
                           SizedBox(height: 8.0),
                           // Display the image if it exists and is valid
-                          if (_imageList[index] != null)
-                            Image.memory(
-                              _imageList[index]!,
-                              height: 100.0,
-                              width: 100.0,
-                            ),
+                          Row(
+                            children: [
+                              if (_imageList[index] != null)
+                                Image.memory(
+                                  _imageList[index]!,
+                                  height: 100.0,
+                                  width: 100.0,
+                                ),
+                              SizedBox(width: 80),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Navigate to the map page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MapScreen(
+                                        latitude: gpsCoordinate['latitude'],
+                                        longitude: gpsCoordinate['longitude'],
+                                        image: _imageList[index],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 3,
+                                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                                  primary: Colors.blueGrey, // Change to your preferred color
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(color: Colors.white70),
+                                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                                  ),
+                                ),
+                                child: Text(
+                                  "MAP",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
                         ],
                       ),
                     ),
                   );
-                } else {
-                  // If latitude or longitude is null, return an empty container
+                }
+                else {
                   return Container();
                 }
               },

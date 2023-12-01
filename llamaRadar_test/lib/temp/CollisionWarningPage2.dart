@@ -109,18 +109,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     _startBlinking();
     _loadRotationAngle();
     initializePlayer();
-    // liveViewState();
-    // stopRecordState();
-    // _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-    //   _getCurrentPosition();
-    //   getCurrentDateTime();
-    //   _saveScreenshot();
-    //   insertDemoData();
-    // });
-    _getCurrentPosition();
-    getCurrentDateTime();
-    _saveScreenshot();
-    insertDemoData();
+    // _getCurrentPosition();
+    // getCurrentDateTime();
+    // _saveScreenshot();
+    // insertDemoData();
   }
 
   // ------------------Start GPS data processing-----------------
@@ -215,67 +207,67 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   List<Map<String, dynamic>> getDemoData(){
     return [
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26",
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26",
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-21",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-10",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-05",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-05",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-09-05",
+      //   "time": dateTime!['time'].toString()
+      // },
       {
         "latitude": _currentPosition?.latitude,
         "longitude": _currentPosition?.longitude,
         "image": capturedImage,
-        "date": "2023-11-11",
-        "time": "16:26",
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-11",
-        "time": "16:26",
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-11",
-        "time": "16:26"
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-21",
-        "time": "16:26"
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-10",
-        "time": "16:26"
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-05",
-        "time": "16:26"
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-05",
-        "time": "16:26"
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-09-05",
-        "time": dateTime!['time'].toString()
-      },
-      {
-        "latitude": _currentPosition?.latitude,
-        "longitude": _currentPosition?.longitude,
-        "image": capturedImage,
-        "date": "2023-11-27",
+        "date": dateTime!['date'].toString(),
         "time": dateTime!['time'].toString()
       },
     ];
@@ -283,7 +275,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   Future<void> insertDemoData() async {
-    print("ISERT");
     for(Map<String, dynamic> row in getDemoData()) {
       await helper.insertCoordinates(row);
     }
@@ -878,12 +869,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
-
-      // Save value gps coordinates and images
-      _getCurrentPosition();
-      getCurrentDateTime();
-      _saveScreenshot();
-      insertDemoData();
 
       Timer(Duration(milliseconds: 400), () {
         right_greenPlayer.stop();

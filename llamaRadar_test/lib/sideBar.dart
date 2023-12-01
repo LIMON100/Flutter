@@ -4,6 +4,11 @@ import 'package:lamaradar/auth/Screens/LogInScreen.dart';
 import 'package:lamaradar/icons/custom_icon_icons.dart';
 import 'package:lamaradar/icons/db_icons.dart';
 import 'package:camera/camera.dart';
+import 'package:lamaradar/ride_history/maps/marker_info.dart';
+import 'package:lamaradar/ride_history/maps/maker_with_image.dart';
+import 'package:lamaradar/ride_history/maps/temp/CustomMarkerInfoWindowScreen.dart';
+import 'package:lamaradar/ride_history/maps/temp/custom_marker_with_network_image.dart';
+import 'package:lamaradar/ride_history/showGpsData.dart';
 import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
@@ -84,6 +89,36 @@ class _SideBarState extends State<SideBar> {
                 );
               },
             ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = constraints.maxWidth * 0.06;
+                return ListTile(
+                  leading: Icon(
+                    Icons.history,
+                    color: Colors.black,
+                    size: constraints.maxWidth * 0.07,
+                  ),
+                  title: Text(
+                    'Ride History',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand-VariableFont_wght',
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>  ShowGpsData(), //ConnectWifiForDashCam
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
             // LayoutBuilder(
             //   builder: (context, constraints) {
             //     final fontSize = constraints.maxWidth * 0.06;
@@ -94,7 +129,7 @@ class _SideBarState extends State<SideBar> {
             //         size: constraints.maxWidth * 0.07,
             //       ),
             //       title: Text(
-            //         'NETWORK',
+            //         'Test map',
             //         style: TextStyle(
             //           fontFamily: 'Quicksand-VariableFont_wght',
             //           fontSize: fontSize,
@@ -107,37 +142,7 @@ class _SideBarState extends State<SideBar> {
             //         Navigator.pop(context);
             //         Navigator.of(context).push(
             //           MaterialPageRoute(
-            //             builder: (context) =>  NetworkStreamPlayer(), //ConnectWifiForDashCam
-            //           ),
-            //         );
-            //       },
-            //     );
-            //   },
-            // ),
-            // LayoutBuilder(
-            //   builder: (context, constraints) {
-            //     final fontSize = constraints.maxWidth * 0.06;
-            //     return ListTile(
-            //       leading: Icon(
-            //         CustomIcon.webcam,
-            //         color: Colors.black,
-            //         size: constraints.maxWidth * 0.07,
-            //       ),
-            //       title: Text(
-            //         'VLC',
-            //         style: TextStyle(
-            //           fontFamily: 'Quicksand-VariableFont_wght',
-            //           fontSize: fontSize,
-            //           fontWeight: FontWeight.bold,
-            //           color: Colors.black,
-            //           letterSpacing: 2.0,
-            //         ),
-            //       ),
-            //       onTap: () {
-            //         Navigator.pop(context);
-            //         Navigator.of(context).push(
-            //           MaterialPageRoute(
-            //             builder: (context) =>  TestGps(), //ConnectWifiForDashCam
+            //             builder: (context) =>  CustomMarkerInfoWindowScreen(), //ConnectWifiForDashCam
             //           ),
             //         );
             //       },
@@ -190,7 +195,7 @@ class _SideBarState extends State<SideBar> {
                     ),
                   ),
                   leading: Icon(
-                    CustomIcon.exit,
+                    Icons.logout,
                     color: Colors.black,
                     size: constraints.maxWidth * 0.07,
                   ),
