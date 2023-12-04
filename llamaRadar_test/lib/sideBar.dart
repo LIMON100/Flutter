@@ -119,36 +119,36 @@ class _SideBarState extends State<SideBar> {
                 );
               },
             ),
-            // LayoutBuilder(
-            //   builder: (context, constraints) {
-            //     final fontSize = constraints.maxWidth * 0.06;
-            //     return ListTile(
-            //       leading: Icon(
-            //         CustomIcon.webcam,
-            //         color: Colors.black,
-            //         size: constraints.maxWidth * 0.07,
-            //       ),
-            //       title: Text(
-            //         'Test map',
-            //         style: TextStyle(
-            //           fontFamily: 'Quicksand-VariableFont_wght',
-            //           fontSize: fontSize,
-            //           fontWeight: FontWeight.bold,
-            //           color: Colors.black,
-            //           letterSpacing: 2.0,
-            //         ),
-            //       ),
-            //       onTap: () {
-            //         Navigator.pop(context);
-            //         Navigator.of(context).push(
-            //           MaterialPageRoute(
-            //             builder: (context) =>  CustomMarkerInfoWindowScreen(), //ConnectWifiForDashCam
-            //           ),
-            //         );
-            //       },
-            //     );
-            //   },
-            // ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = constraints.maxWidth * 0.06;
+                return ListTile(
+                  leading: Icon(
+                    CustomIcon.webcam,
+                    color: Colors.black,
+                    size: constraints.maxWidth * 0.07,
+                  ),
+                  title: Text(
+                    'Test map',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand-VariableFont_wght',
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>  MarkerWithImage(date: '2023-12-01'), //TestGps
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
 
             // LayoutBuilder(
             //   builder: (context, constraints) {
