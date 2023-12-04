@@ -79,7 +79,7 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => GpsMapScreen(date: widget.date),
+                  builder: (context) => MarkerWithImage(date: widget.date),
                 ),
               );
             },
