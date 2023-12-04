@@ -4,10 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,33 +22,29 @@ class _CustomMarkerWithNetworkImageState extends State<CustomMarkerWithNetworkIm
 
   final Completer<GoogleMapController> _controller = Completer();
 
-
-  List<String> images = [ 'images/car.png' ,'images/car2.png', 'images/marker2.png' ,
-    'images/marker3.png', 'images/marker.png' , 'images/motorcycle.png' ,];
-
   final List<Marker> _markers =  <Marker>[];
-  // List<LatLng> _latLang =  [
-  //   LatLng(33.6941, 72.9734), LatLng(33.7008, 72.9682) ,LatLng(33.6992, 72.9744),
-  //   LatLng(33.6939, 72.9771), LatLng(33.6910, 72.9807), LatLng(33.7036, 72.9785)
-  // ];
-
-  List<LatLng> _latLang = [
-    LatLng(34.0522, -118.2437),
-    LatLng(34.0776, -118.2654),
-    LatLng(34.0522, -118.3086),
-    LatLng(34.0619, -118.3090),
-    LatLng(34.0521, -118.2637),
-    LatLng(34.0610, -118.3007),
-    LatLng(34.0983, -118.3267),
-    LatLng(34.0975, -118.3614),
-    LatLng(34.0522, -118.2437),
-    LatLng(34.0604, -118.4198),
+  List<LatLng> _latLang =  [
+    LatLng(33.6941, 72.9734),
+    LatLng(33.7008, 72.9682),
+    LatLng(33.6992, 72.9744),
+    LatLng(33.6939, 72.9771),
+    LatLng(33.6910, 72.9807),
+    LatLng(33.7036, 72.9785),
+    LatLng(33.7022, 72.9688),
+    LatLng(33.6948, 72.9672),
+    LatLng(33.7015, 72.9763),
+    LatLng(33.6963, 72.9816),
+    LatLng(33.6981, 72.9661),
+    LatLng(33.7062, 72.9764),
+    LatLng(33.6895, 72.9730),
+    LatLng(33.7051, 72.9689),
+    LatLng(33.6927, 72.9767),
   ];
+
   static const CameraPosition _kGooglePlex =  CameraPosition(
     target: LatLng(33.6941, 72.9734),
     zoom: 15,
   );
-
 
   Future<Uint8List>  getBytesFromAssets(String path , int width) async
   {
@@ -61,16 +54,15 @@ class _CustomMarkerWithNetworkImageState extends State<CustomMarkerWithNetworkIm
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
 
-
-
   @override
   void initState() {
     super.initState();
     loadData();
   }
 
-
   loadData() async {
+    Completer<void> completer = Completer<void>();
+
     for (int i = 0; i < _latLang.length; i++) {
       Uint8List? image = await _loadNetworkImage('https://images.bitmoji.com/3d/avatar/201714142-99447061956_1-s5-v1.webp');
 
@@ -100,7 +92,16 @@ class _CustomMarkerWithNetworkImageState extends State<CustomMarkerWithNetworkIm
 
     // Move the camera to fit all markers
     _fitAllMarkers();
+
+    // Complete the completer
+    completer.complete();
+
+    // Trigger a rebuild of the widget
+    setState(() {});
+
+    return completer.future;
   }
+
 
   void _fitAllMarkers() async {
     if (_markers.isNotEmpty) {
