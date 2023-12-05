@@ -137,5 +137,4 @@ class _NetworkStreamPlayerState extends State<NetworkStreamPlayer> {
       ),
     );
   }
-
 }
