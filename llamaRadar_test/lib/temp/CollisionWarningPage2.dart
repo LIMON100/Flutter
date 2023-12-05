@@ -31,6 +31,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:intl/intl.dart';
 import 'package:lamaradar/ride_history/mapView.dart';
 
+
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
 
@@ -100,35 +101,39 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   Map<String, String>? dateTime;
   Uint8List? capturedImage;
 
+  // Helper for database
+  GpsDatabaseHelper helper = GpsDatabaseHelper();
+  bool dataInserted = false;
+  bool _dangerWarningCalled = false;
+
   @override
   void initState() {
     super.initState();
     dateTime = {};
-    getCurrentDateTime();
+    // getCurrentDateTime();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
     _loadRotationAngle();
     initializePlayer();
-
-    // FOR TESTING
-    // _getCurrentPosition();
-    // getCurrentDateTime();
-    // _saveScreenshot();
-    // insertDemoData();
   }
 
   // ------------------Start GPS data processing-----------------
   // current date and time
+  int dt = 0;
+  int cpos = 0;
+  int ss = 0;
   void getCurrentDateTime() {
-      dateTime!['date'] = formatterDate.format(now);
-      dateTime!['time'] = formatterTime.format(now);
-      print(formatterDate.format(now));
-      print(formatterTime.format(now));
-    }
+    print("dt $dt");
+    dateTime!['date'] = formatterDate.format(now);
+    dateTime!['time'] = formatterTime.format(now);
+    dt = dt + 1;
+  }
 
   Future<void> _getCurrentPosition() async {
+    print("cpos $cpos");
+    cpos = cpos + 1;
     final hasPermission = await _handleLocationPermission();
 
     if (!hasPermission) return;
@@ -190,6 +195,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Save Screenshot
   Future<void> _saveScreenshot() async {
+    print("ss $ss");
+    ss = ss + 1;
     capturedImage = await screenshotController.capture();
   }
 
@@ -221,7 +228,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //   ];
   // }
   //
-  // GpsDatabaseHelper helper = GpsDatabaseHelper();
+  // // GpsDatabaseHelper helper = GpsDatabaseHelper();
   // Future<void> insertDemoData() async {
   //   for(Map<String, dynamic> row in getDemoData()) {
   //     await helper.insertCoordinates(row);
@@ -238,11 +245,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       "time": dateTime!['time'].toString()
     };
   }
-
-  GpsDatabaseHelper helper = GpsDatabaseHelper();
+  //
+  int da = 0;
   Future<void> insertDemoData() async {
-    Map<String, dynamic> demoData = getDemoData();
-    await helper.insertCoordinates(demoData);
+    if(_dangerWarningCalled) {
+      print("insertData $da");
+      print(da);
+      Map<String, dynamic> demoData = getDemoData();
+      await helper.insertCoordinates(demoData);
+      _dangerWarningCalled = false;
+      da = da + 1;
+    }
   }
   // ------------------End GPS data processing-----------------
 
@@ -459,12 +472,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // Disconnect BLE
   void _disconnectFromDevice() {
-
     setState(() {
       _isDisconnected = true;
     });
-
-    // Perform the disconnection logic asynchronously
     _performDisconnection();
   }
 
@@ -489,8 +499,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //Blinking funciton
   Timer? _leftBlinkTimer;
   Timer? _rightBlinkTimer;
-
-
 
 
   // MPU with blinking
@@ -659,19 +667,112 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Left/Right/Rear icon
   int right_danger_counter = 0;
 
+  // Test insertDemodatacalling
+
+  int callGPS = 0;
+  bool _isGpsDataCallScheduled = false;
+  void callGpsData(){
+    // Save value gps coordinates and images
+    if (!_isGpsDataCallScheduled) {
+      _isGpsDataCallScheduled = true;
+
+      Timer(Duration(seconds: 1), () {
+        print('Calling GPS data...');
+
+        _getCurrentPosition();
+        getCurrentDateTime();
+        _saveScreenshot();
+        insertDemoData();
+        _isGpsDataCallScheduled = false;
+      });
+    }
+  }
+
+  Widget _getLeftIcon() {
+    double opacity = 1.0;
+    Color color = Colors.red;
+
+    String location = _getLocation();
+
+    if (location == 'Left Notification Danger') {
+      _dangerWarningCalled = true;
+      color = Colors.red;
+      left_redPlayer.setAsset('assets/danger3.mp3');
+      left_redPlayer.play();
+
+      print("callGPS");
+      print(callGPS);
+      callGPS = callGPS + 1;
+
+      Timer(Duration(milliseconds: 600), () {
+        left_redPlayer.stop();
+      });
+      callGpsData();
+    }
+
+    else if (location == 'Left Notification Warning') {
+      dataInserted = true;
+      color = Colors.yellow;
+      left_greenPlayer.setAsset('assets/warning3.wav');
+      left_greenPlayer.play();
+
+
+      Timer(Duration(milliseconds: 400), () {
+        left_greenPlayer.stop();
+      });
+    }
+    else {
+      color = Colors.green;
+      left_greenPlayer.stop();
+      left_redPlayer.stop();
+      dataInserted = false; // Reset the flag when the condition is not met
+    }
+
+    return AnimatedOpacity(
+      duration: Duration(milliseconds: 300),
+      opacity: opacity,
+      child: Container(
+        height: 48,
+        color: Colors.transparent,
+        child: Image.asset(
+          'assets/icons/left_warning_llama_rb.png',
+          color: color,
+        ),
+      ),
+    );
+  }
+
+
+  // previous workable
   // Widget _getLeftIcon() {
   //   double opacity = 1.0;
   //   Color color = Colors.red;
   //
-  //   if (_getLocation() == 'Left Notification Danger') {
+  //   String location = _getLocation();
+  //
+  //   if (location == 'Left Notification Danger') {
   //     color = Colors.red;
-  //     left_redPlayer.setAsset('assets/warning_beep.mp3');
+  //     left_redPlayer.setAsset('assets/danger3.mp3');
   //     left_redPlayer.play();
+  //
+  //     // Save value gps coordinates and images
+  //     _getCurrentPosition();
+  //     getCurrentDateTime();
+  //     _saveScreenshot();
+  //     insertDemoData();
+  //
+  //     Timer(Duration(milliseconds: 600), () {
+  //       left_redPlayer.stop();
+  //     });
   //   }
-  //   else if (_getLocation() == 'Left Notification Warning') {
+  //   else if (location == 'Left Notification Warning') {
   //     color = Colors.yellow;
-  //     left_greenPlayer.setAsset('assets/danger_beep.mp3');
+  //     left_greenPlayer.setAsset('assets/warning3.wav');
   //     left_greenPlayer.play();
+  //
+  //     Timer(Duration(milliseconds: 400), () {
+  //       left_greenPlayer.stop();
+  //     });
   //   }
   //   else {
   //     color = Colors.green;
@@ -693,57 +794,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   //     ),
   //   );
   // }
-
-  Widget _getLeftIcon() {
-    double opacity = 1.0;
-    Color color = Colors.red;
-
-    String location = _getLocation();
-
-    if (location == 'Left Notification Danger') {
-      color = Colors.red;
-      left_redPlayer.setAsset('assets/danger3.mp3');
-      left_redPlayer.play();
-
-      Timer(Duration(milliseconds: 600), () {
-        left_redPlayer.stop();
-      });
-    }
-    else if (location == 'Left Notification Warning') {
-      color = Colors.yellow;
-      left_greenPlayer.setAsset('assets/warning3.wav');
-      left_greenPlayer.play();
-
-      // Save value gps coordinates and images
-      _getCurrentPosition();
-      getCurrentDateTime();
-      _saveScreenshot();
-      insertDemoData();
-
-      Timer(Duration(milliseconds: 400), () {
-        left_greenPlayer.stop();
-      });
-    }
-    else {
-      color = Colors.green;
-      left_greenPlayer.stop();
-      left_redPlayer.stop();
-    }
-
-    return AnimatedOpacity(
-      duration: Duration(milliseconds: 300),
-      opacity: opacity,
-      // child: Icon(Icons.arrow_back, color: color),
-      child: Container(
-        height: 48,
-        color: Colors.transparent,
-        child: Image.asset(
-          'assets/icons/left_warning_llama_rb.png',
-          color: color,
-        ),
-      ),
-    );
-  }
 
 
   // Demo test lefIcon+getLocation
@@ -822,6 +872,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     Color color = Colors.red;
 
     if (_getLocation() == 'Right Notification Danger') {
+      dataInserted = true;
       color = Colors.red;
       right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
@@ -831,6 +882,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       });
     }
     else if (_getLocation() == 'Right Notification Warning') {
+      dataInserted = true;
       color = Colors.yellow;
       right_greenPlayer.setAsset('assets/warning3.wav');
       right_greenPlayer.play();
@@ -866,6 +918,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     final popupState = Provider.of<PopupWindowProvider>(context, listen: false);
 
     if (_getLocation() == 'Rear Notification Danger') {
+      dataInserted = true;
       color = Colors.red;
       rear_redPlayer.setAsset('assets/danger3.mp3');
       rear_redPlayer.play();
@@ -1847,68 +1900,69 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     ),
                     // Stop ride
                     SizedBox(height: 30),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     // SizedBox(width: 50),
-                    //     GlowingButton2(
-                    //       text: "Stop Ride",
-                    //       onPressed: () {
-                    //         _disconnectFromDevice();
-                    //         Navigator.push(
-                    //           context,
-                    //           MaterialPageRoute(builder: (context) =>
-                    //               BleScreen(title: '')),
-                    //         );
-                    //       },
-                    //       color1: Color(0xFF517fa4),
-                    //       color2: Colors.cyan,
-                    //     ),
-                    //   ],
-                    // ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GlowingButton2(
-                        text: "Stop Ride",
-                        onPressed: () {
-                          // Show a confirmation dialog
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text("Stop Ride"),
-                                content: Text("Are you sure you want to Review your ride?"),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => ShowGpsData()),
-                                      );
-                                    },
-                                    child: Text("Yes"),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      _disconnectFromDevice();
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => BleScreen(title: '')),
-                                      );
-                                    },
-                                    child: Text("No"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        color1: Color(0xFF517fa4),
-                        color2: Colors.cyan,
-                      ),
-                    ],
-                  ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SizedBox(width: 50),
+                        GlowingButton2(
+                          text: "Stop Ride",
+                          onPressed: () {
+                            _disconnectFromDevice();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) =>
+                                  BleScreen(title: '')),
+                            );
+                          },
+                          color1: Color(0xFF517fa4),
+                          color2: Colors.cyan,
+                        ),
+                      ],
+                    ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     GlowingButton2(
+                  //       text: "Stop Ride",
+                  //       onPressed: () {
+                  //         // Show a confirmation dialog
+                  //         showDialog(
+                  //           context: context,
+                  //           builder: (BuildContext context) {
+                  //             return AlertDialog(
+                  //               title: Text("Stop Ride"),
+                  //               content: Text("Are you sure you want to Review your ride?"),
+                  //               actions: [
+                  //                 TextButton(
+                  //                   onPressed: () {
+                  //                     _disconnectFromDevice();
+                  //                     Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(builder: (context) => ShowGpsData()),
+                  //                     );
+                  //                   },
+                  //                   child: Text("Yes"),
+                  //                 ),
+                  //                 TextButton(
+                  //                   onPressed: () {
+                  //                     _disconnectFromDevice();
+                  //                     Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+                  //                     );
+                  //                   },
+                  //                   child: Text("No"),
+                  //                 ),
+                  //               ],
+                  //             );
+                  //           },
+                  //         );
+                  //       },
+                  //       color1: Color(0xFF517fa4),
+                  //       color2: Colors.cyan,
+                  //     ),
+                  //   ],
+                  // ),
                   // Image with power button
                     SizedBox(height: 30),
                     Container(
