@@ -117,8 +117,6 @@ class _BleScreenState extends State<BleScreen> {
 
       // You can add a timeout to stop the scan after a certain duration
       await FlutterBluePlus.startScan(timeout: Duration(seconds: 4));
-      await Future.delayed(Duration(seconds: 4));
-      _isScanning = false;
 
       // Cancel the scan subscription
       subscription.cancel();
@@ -127,9 +125,12 @@ class _BleScreenState extends State<BleScreen> {
       print("Error starting scan: $e");
       setState(() {
         _scanError = e.toString();
-        // _isScanning = false; // Set _isScanning to false in case of an error
       });
     }
+    await Future.delayed(Duration(seconds: 4));
+    setState(() {
+      _isScanning = false;
+    });
   }
 
 
@@ -194,26 +195,7 @@ class _BleScreenState extends State<BleScreen> {
         ),
       );
     }
-    // return ListView(
-    //   padding: const EdgeInsets.all(8),
-    //   children: <Widget>[
-    //     SizedBox(height: 15),
-    //     if (_isScanning)
-    //       CircularProgressIndicator()
-    //     else
-    //       Center(
-    //         child: GlowingButton2(
-    //           text: "Pair Device to Start",
-    //           onPressed: () {
-    //             _startScan();
-    //           },
-    //           color1: Color(0xFF517fa4),
-    //           color2: Colors.cyan,
-    //         ),
-    //       ),
-    //     ...containers,
-    //   ],
-    // );
+
     return ListView(
       padding: const EdgeInsets.all(8),
       children: <Widget>[

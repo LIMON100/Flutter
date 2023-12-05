@@ -8,6 +8,7 @@ import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:lamaradar/provider/PopupWindowProvider.dart';
+import '../sqflite/sqlite.dart';
 import 'glowing_button.dart';
 import 'warning_icons.dart';
 import 'indicator_icons.dart';
@@ -19,8 +20,14 @@ import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:provider/provider.dart';
-import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:typed_data';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:intl/intl.dart';
 
 class CollisionWarningPage2 extends StatefulWidget {
   final BluetoothDevice device;
@@ -75,19 +82,226 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   String _selectedOption = 'OFF';
   int blinkDurationMilliseconds = 10000;
   double _sliderValue = 0.0;
-  int _selectedValue = 0;
-  final sliderLabels = [0, 30, 60, 90];
+  int _selectedValue = 10;
+  final sliderLabels = [10, 30, 60, 90];
+  bool isButtonEnabled = true;
+  bool isCameraAnimation = false;
+
+  // For gps coordinates database
+  String? _currentAddress;
+  Position? _currentPosition;
+  ScreenshotController screenshotController = ScreenshotController();
+  late String imagePath = '';
+  var now = DateTime.now();
+  var formatterDate = DateFormat('yyyy-MM-dd');
+  var formatterTime = DateFormat('HH:mm:ss');
+  Map<String, String>? dateTime;
+  Uint8List? capturedImage;
 
   @override
   void initState() {
     super.initState();
+    dateTime = {};
+    getCurrentDateTime();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
     _startBlinking();
     _loadRotationAngle();
     initializePlayer();
+    // _getCurrentPosition();
+    // getCurrentDateTime();
+    // _saveScreenshot();
+    // insertDemoData();
   }
+
+  // ------------------Start GPS data processing-----------------
+  // current date and time
+  void getCurrentDateTime() {
+      dateTime!['date'] = formatterDate.format(now);
+      dateTime!['time'] = formatterTime.format(now);
+      print(formatterDate.format(now));
+      print(formatterTime.format(now));
+    }
+
+  Future<void> _getCurrentPosition() async {
+    final hasPermission = await _handleLocationPermission();
+
+    if (!hasPermission) return;
+
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() {
+        _currentPosition = position;
+      });
+      _getAddressFromLatLng(_currentPosition!);
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(
+        _currentPosition!.latitude, _currentPosition!.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+        '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
+      });
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+  // Save Screenshot
+  Future<void> _saveScreenshot() async {
+    capturedImage = await screenshotController.capture();
+  }
+
+
+  Future<String> saveImageTo(Uint8List bytes) async {
+    await Permission.storage.request();
+    final time = DateTime.now()
+        .toString()
+        .replaceAll('.', '-')
+        .replaceAll(':', '-')
+        .replaceAll(' ', '_');
+    final name = 'screenshot$time';
+    final result = await ImageGallerySaver.saveImage(bytes, name: name);
+    imagePath = result['filePath'];
+    print("IMAGE");
+    print(name);
+    return result['filePath'];
+  }
+
+  List<Map<String, dynamic>> getDemoData(){
+    return [
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26",
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26",
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-11",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-21",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-10",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-05",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-11-05",
+      //   "time": "16:26"
+      // },
+      // {
+      //   "latitude": _currentPosition?.latitude,
+      //   "longitude": _currentPosition?.longitude,
+      //   "image": capturedImage,
+      //   "date": "2023-09-05",
+      //   "time": dateTime!['time'].toString()
+      // },
+      {
+        "latitude": _currentPosition?.latitude,
+        "longitude": _currentPosition?.longitude,
+        "image": capturedImage,
+        "date": dateTime!['date'].toString(),
+        "time": dateTime!['time'].toString()
+      },
+    ];
+  }
+
+  GpsDatabaseHelper helper = GpsDatabaseHelper();
+  Future<void> insertDemoData() async {
+    for(Map<String, dynamic> row in getDemoData()) {
+      await helper.insertCoordinates(row);
+    }
+  }
+  // ------------------End GPS data processing-----------------
+
+  // Future<void> liveViewState() async {
+  //   final response = await http
+  //       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
+  //   if (response.statusCode == 200) {
+  //     //fileList = json.decode(response.body);
+  //     print('HDR');
+  //   } else {
+  //     print('Cam error: ${response.statusCode}');
+  //   }
+  // }
+
+  // Future<void> stopRecordState() async {
+  //   final response = await http
+  //       .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
+  //   if (response.statusCode == 200) {
+  //     //fileList = json.decode(response.body);
+  //     print('HDR');
+  //   } else {
+  //     print('Cam error: ${response.statusCode}');
+  //   }
+  // }
 
   // wifi connection
   Future<bool> _checkPermissions() async {
@@ -535,6 +749,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
 
+      // Save value gps coordinates and images
+      _getCurrentPosition();
+      getCurrentDateTime();
+      _saveScreenshot();
+      insertDemoData();
+
       Timer(Duration(milliseconds: 400), () {
         left_greenPlayer.stop();
       });
@@ -771,18 +991,24 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
-          video: VlcVideoOptions([
+          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
             VlcVideoOptions.skipFrames(false)],),
-          rtp: VlcRtpOptions(['--rtsp-tcp'],),
           advanced: VlcAdvancedOptions([
-            VlcAdvancedOptions.networkCaching(0),
+            VlcAdvancedOptions.networkCaching(30),
             VlcAdvancedOptions.clockJitter(0),
-            VlcAdvancedOptions.fileCaching(0),
-            VlcAdvancedOptions.liveCaching(0),
+            VlcAdvancedOptions.fileCaching(30),
+            VlcAdvancedOptions.liveCaching(30),
+            VlcAdvancedOptions.clockSynchronization(1),
           ]),
+          rtp: VlcRtpOptions([
+            VlcRtpOptions.rtpOverRtsp(true),
+            ":rtsp-tcp",
+          ]),
+          extras: ['--h264-fps=60'],
+          // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
           sout: VlcStreamOutputOptions([
-          ]),
-          extras: ['--h264-fps=60']
+            VlcStreamOutputOptions.soutMuxCaching(0),
+          ])
       ),);
     await _videoPlayerController!.initialize();
   }
@@ -844,10 +1070,17 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
   // camera open
   void toggleCameraStreaming() {
+    // Extra
+    // setState(() {
+    //   isButtonEnabled = false;
+    //   isCameraAnimation = true;
+    // });
+
     if (isCameraStreaming) {
       _videoPlayerController.stop();
       _videoPlayerController.dispose();
-    } else {
+    }
+    else {
       Connectivity().onConnectivityChanged.listen((connectivity) {
         if (connectivity == ConnectivityResult.wifi) {
           // _videoPlayerController = VlcPlayerController.network(
@@ -867,18 +1100,24 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             hwAcc: HwAcc.disabled,
             autoPlay: true,
             options: VlcPlayerOptions(
-                video: VlcVideoOptions([
+                video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
                   VlcVideoOptions.skipFrames(false)],),
-                rtp: VlcRtpOptions(['--rtsp-tcp'],),
                 advanced: VlcAdvancedOptions([
-                  VlcAdvancedOptions.networkCaching(0),
+                  VlcAdvancedOptions.networkCaching(30),
                   VlcAdvancedOptions.clockJitter(0),
-                  VlcAdvancedOptions.fileCaching(0),
-                  VlcAdvancedOptions.liveCaching(0),
+                  VlcAdvancedOptions.fileCaching(30),
+                  VlcAdvancedOptions.liveCaching(30),
+                  VlcAdvancedOptions.clockSynchronization(1),
                 ]),
+                rtp: VlcRtpOptions([
+                  VlcRtpOptions.rtpOverRtsp(true),
+                  ":rtsp-tcp",
+                ]),
+                extras: ['--h264-fps=60'],
+                // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
                 sout: VlcStreamOutputOptions([
-                ]),
-                extras: ['--h264-fps=60']
+                  VlcStreamOutputOptions.soutMuxCaching(0),
+                ])
             ),);
           _videoPlayerController.initialize().then((_) {
             _videoPlayerController.play();
@@ -903,18 +1142,24 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
-            video: VlcVideoOptions([
+            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
               VlcVideoOptions.skipFrames(false)],),
-            rtp: VlcRtpOptions(['--rtsp-tcp'],),
             advanced: VlcAdvancedOptions([
-              VlcAdvancedOptions.networkCaching(0),
+              VlcAdvancedOptions.networkCaching(30),
               VlcAdvancedOptions.clockJitter(0),
-              VlcAdvancedOptions.fileCaching(0),
-              VlcAdvancedOptions.liveCaching(0),
+              VlcAdvancedOptions.fileCaching(30),
+              VlcAdvancedOptions.liveCaching(30),
+              VlcAdvancedOptions.clockSynchronization(1),
             ]),
+            rtp: VlcRtpOptions([
+              VlcRtpOptions.rtpOverRtsp(true),
+              ":rtsp-tcp",
+            ]),
+            extras: ['--h264-fps=60'],
+            // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
             sout: VlcStreamOutputOptions([
-            ]),
-            extras: ['--h264-fps=60']
+              VlcStreamOutputOptions.soutMuxCaching(0),
+            ])
         ),);
       _videoPlayerController.initialize().then((_) {
         _videoPlayerController.play();
@@ -925,7 +1170,23 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       isCameraStreaming = !isCameraStreaming;
       isRearCamOpen = !isRearCamOpen;
     });
+    // EXTRA
+
+    // Future.delayed(Duration(seconds: 2), () {
+    //   // Enable the button and open the camera
+    //   setState(() {
+    //     isButtonEnabled = true;
+    //     isCameraAnimation = false;
+    //   });
+    // });
   }
+
+  // Only for stop camera animation
+  // void stopCameraAnime() {
+  //   setState(() {
+  //     isCameraAnimation = true;
+  //   });
+  // }
 
   // Dispose function
   @override
@@ -944,28 +1205,78 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
 
+  // Widget buildCameraButton() {
+  //   return Align(
+  //     alignment: Alignment.topCenter,
+  //     child: Container(
+  //       margin: EdgeInsets.only(top: 10),
+  //       child: ElevatedButton(
+  //         onPressed: toggleCameraStreaming,
+  //         style: ElevatedButton.styleFrom(
+  //           primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(30.0),
+  //           ),
+  //           padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
+  //         ),
+  //         child: Text(
+  //           isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
+  //           style: TextStyle(
+  //             fontSize: 16.0,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget buildCameraButton() {
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
         margin: EdgeInsets.only(top: 10),
-        child: ElevatedButton(
-          onPressed: toggleCameraStreaming,
-          style: ElevatedButton.styleFrom(
-            primary: isCameraStreaming ? Colors.red : Colors.cyan.shade500,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 20), // Adjust the padding to move the text to the right
-          ),
-          child: Text(
-            isCameraStreaming ? 'Stop Rear Camera' : 'Open Rear Cam',
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+        child: Column(
+          children: [
+            if (isCameraStreaming) // Show "Stop Rear Camera" button when streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Stop Rear Camera',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            if (!isCameraStreaming) // Show "Open Rear Cam" button when not streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.cyan.shade500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Open Rear Cam',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -1223,7 +1534,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
             ),
           ),
           child: Scaffold(
-            backgroundColor: Colors.transparent,
+            // backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white70,
             appBar: AppBar(
               centerTitle: true,
               foregroundColor: Colors.black,
@@ -1243,6 +1555,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                 decoration: BoxDecoration(
                   // color: Color(0xFF6497d3),
                   color: Color(0xFF517fa4),
+                  // color: Colors.white70,
                 ),
               ),
             ),
@@ -1434,40 +1747,50 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                     Row(
                       children: [
                         SizedBox(width: 5),
+                        //Spinning tried
+                        // if (!isButtonEnabled && isCameraAnimation) // Show loading spinner when button is disabled
+                        //   SpinKitThreeInOut(
+                        //     color: Colors.cyan.shade500,
+                        //     size: 80.0,
+                        //   ),
+                        // if (!isCameraAnimation) // Show loading spinner when button is disabled
                         Flexible(
                           flex: 3,
-                          child: Container(
-                            height: 280,
-                            width: 300,
-                            child: Center(
-                              child: Stack(
-                                children: [
-                                  isCameraStreaming && _videoPlayerController != null
-                                      ? Transform.rotate(
-                                    angle: rotationAngle * 3.14159265359 / 180,
-                                    child: VlcPlayer(
-                                      controller: _videoPlayerController,
-                                      aspectRatio: currentOrientation == Orientation.portrait
-                                          ? 16 / 9
-                                          : 9 / 16,
-                                    ),
-                                  )
-                                      : Image.asset(
-                                    'images/test_background3.jpg',
-                                    fit: BoxFit.fitWidth,
-                                  ),
-                                  if (isCameraStreaming)
-                                    Positioned(
-                                      bottom: 16.0,
-                                      right: 16.0,
-                                      child: IconButton(
-                                        color: Colors.red,
-                                        icon: Icon(Icons.cameraswitch_outlined),
-                                        onPressed: changeOrientation,
-                                        iconSize: 40.0,
+                          child: Screenshot(
+                            controller: screenshotController,
+                            child: Container(
+                              height: 280,
+                              width: 300,
+                              child: Center(
+                                child: Stack(
+                                  children: [
+                                    isCameraStreaming && _videoPlayerController != null
+                                        ? Transform.rotate(
+                                      angle: rotationAngle * 3.14159265359 / 180,
+                                      child: VlcPlayer(
+                                        controller: _videoPlayerController,
+                                        aspectRatio: currentOrientation == Orientation.portrait
+                                            ? 16 / 9
+                                            : 9 / 16,
                                       ),
+                                    )
+                                        : Image.asset(
+                                      'images/test_background3.jpg',
+                                      fit: BoxFit.fitWidth,
                                     ),
-                                ],
+                                    if (isCameraStreaming)
+                                      Positioned(
+                                        bottom: 16.0,
+                                        right: 16.0,
+                                        child: IconButton(
+                                          color: Colors.red,
+                                          icon: Icon(Icons.cameraswitch_outlined),
+                                          onPressed: changeOrientation,
+                                          iconSize: 40.0,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1502,6 +1825,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                       },
                                       onChangeEnd: (value) {
                                         int selectedValue = (_sliderValue * 30).round();
+                                        print("SELECTEFVALUE");
+                                        print(selectedValue);
                                         if (selectedValue == 30) {
                                           _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
                                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1547,6 +1872,21 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                             ),
                                           );
                                         }
+                                        else if (selectedValue == 0) {
+                                          _selectedValue = 10;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
+                                              action: SnackBarAction(
+                                                label: 'Dismiss',
+                                                onPressed: () {
+                                                  // Handle the action when the user dismisses the message
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
                                       },
                                     ),
                                   ),
@@ -1560,7 +1900,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                                     SizedBox(height: 10),
                                     SizedBox(height: 20),
                                     Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 60),
+                                    SizedBox(height: 25),
+                                    Text('10', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
                                   ],
                                 ),
                               ],
@@ -1583,7 +1925,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) =>
-                                  BleScreen(title: '',)),
+                                  BleScreen(title: '')),
                             );
                           },
                           color1: Color(0xFF517fa4),
