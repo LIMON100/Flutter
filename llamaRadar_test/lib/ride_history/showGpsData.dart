@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/ride_history/DateDetailsPage.dart';
 import 'package:sqflite/sqflite.dart';
 import '../sqflite/sqlite.dart';
-
+import 'package:lamaradar/ride_history/mapView.dart';
 
 class ShowGpsData extends StatefulWidget {
   const ShowGpsData({Key? key}) : super(key: key);
@@ -73,6 +75,18 @@ class _ShowGpsDataState extends State<ShowGpsData> {
         title: const Text('Date'),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Handle back button press to navigate to a specific page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BleScreen(title: ''),
+              ),
+            );
+          },
+        ),
       ),
       body: _isLoading
           ? Center(
@@ -97,9 +111,7 @@ class _ShowGpsDataState extends State<ShowGpsData> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DateDetailsPage(
-                    date: gpsCoordinate['date'],
-                  ),
+                  builder: (context) => MapView(date: gpsCoordinate['date']),
                 ),
               );
             },
