@@ -448,6 +448,7 @@ class _HomeState extends State<Home> {
   String buttonText = 'Start Recording';
   static const String rotationAngleKey = 'rotation_angle';
 
+
   // Rtsp Streaming
   @override
   void initState() {
@@ -744,51 +745,89 @@ class _HomeState extends State<Home> {
   // }
 
   Future<void> takePicture() async {
-    if (isRecording) {
-      String url = 'http://192.168.1.254/?custom=1&cmd=1001';
+    String url = 'http://192.168.1.254/?custom=1&cmd=1001';
 
-      try {
-        final response = await http.get(Uri.parse(url));
+    try {
+      final response = await http.get(Uri.parse(url));
 
-        if (response.statusCode == 200) {
-          print('Image captured');
-          // await getFilesFromCamera();
-          // Add snackbar message for a successful capture
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Image captured successfully.'),
-              duration: Duration(seconds: 2), // Adjust the duration as needed
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Image capture failed due to a network issue.'),
-              duration: Duration(seconds: 2), // Adjust the duration as needed
-            ),
-          );
-          print('Error occurred: ${response.statusCode}');
-          // Add snackbar message for an error
-        }
-      } catch (e) {
+      if (response.statusCode == 200) {
+        print('Image captured');
+        // await getFilesFromCamera();
+        // Add snakbar message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Image capture failed due to a network issue.'),
+            content: Text('                  Image captured successfully.'),
             duration: Duration(seconds: 2), // Adjust the duration as needed
           ),
         );
-        print('Error: $e');
+
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('             Image cannot capture due to network.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
+        print('Error occured: ${response.statusCode}');
+        // Add snakbar message
       }
-    } else {
-      // Display a snackbar message when recording is not started
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please start recording before capturing an image.'),
+          content: Text('             Image cannot capture due to network.'),
           duration: Duration(seconds: 2), // Adjust the duration as needed
         ),
       );
+      print('Error: $e');
     }
   }
+
+  // Future<void> takePicture() async {
+  //   if (isRecording) {
+  //     String url = 'http://192.168.1.254/?custom=1&cmd=1001';
+  //
+  //     try {
+  //       final response = await http.get(Uri.parse(url));
+  //
+  //       if (response.statusCode == 200) {
+  //         print('Image captured');
+  //         // await getFilesFromCamera();
+  //         // Add snackbar message for a successful capture
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text('Image captured successfully.'),
+  //             duration: Duration(seconds: 2), // Adjust the duration as needed
+  //           ),
+  //         );
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text('Image capture failed due to a network issue.'),
+  //             duration: Duration(seconds: 2), // Adjust the duration as needed
+  //           ),
+  //         );
+  //         print('Error occurred: ${response.statusCode}');
+  //         // Add snackbar message for an error
+  //       }
+  //     } catch (e) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Image capture failed due to a network issue.'),
+  //           duration: Duration(seconds: 2), // Adjust the duration as needed
+  //         ),
+  //       );
+  //       print('Error: $e');
+  //     }
+  //   } else {
+  //     // Display a snackbar message when recording is not started
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Please start recording before capturing an image.'),
+  //         duration: Duration(seconds: 2), // Adjust the duration as needed
+  //       ),
+  //     );
+  //   }
+  // }
 
   String getCurrentDate() {
     var now = DateTime.now();
@@ -1015,6 +1054,45 @@ class _HomeState extends State<Home> {
     });
   }
 
+
+  // TEST FOR CAMERA
+  bool isTakingPictures = false;
+  Timer? pictureTimer;
+  int pictureCount = 0;
+
+  void startTakingPictures() {
+    pictureTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (pictureCount < 15) {
+        setDateOfCam();
+        setTimeOfCam();
+        changeToPhotoMode();
+        takePicture();
+        changeToVideoMode();
+        pictureCount++;
+      } else {
+        stopTakingPictures();
+      }
+    });
+  }
+
+  void stopTakingPictures() {
+    if (pictureTimer != null && pictureTimer!.isActive) {
+      pictureTimer!.cancel();
+      pictureCount = 0;
+    }
+  }
+
+  Future<void> liveViewState() async {
+    final response = await http
+        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
+    if (response.statusCode == 200) {
+      //fileList = json.decode(response.body);
+      print('HDR');
+    } else {
+      print('Cam error: ${response.statusCode}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1118,6 +1196,147 @@ class _HomeState extends State<Home> {
                           ),
                         ),
 
+                        // TEST BUTTON FOR CAMERA
+                        SizedBox(height: 15),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(width: 15),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    //only capture image
+                                    IconButton(
+                                      onPressed: () {
+                                        setDateOfCam();
+                                        setTimeOfCam();
+                                        changeToVideoMode();
+                                        changeToPhotoMode();
+                                        takePicture();
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   TEST-1',
+                                      style: TextStyle(
+                                        // color: Color(0xFFa8caba),
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 15),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        setDateOfCam();
+                                        setTimeOfCam();
+                                        changeToPhotoMode();
+                                        takePicture();
+                                        liveViewState();
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   TEST-2',
+                                      style: TextStyle(
+                                        // color: Color(0xFFa8caba),
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 15),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        setDateOfCam();
+                                        setTimeOfCam();
+                                        changeToPhotoMode();
+                                        takePicture();
+                                        widget.toggleCameraStreaming();
+                                        setState(() {
+                                          isCameraStreaming = !isCameraStreaming;
+                                        });
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   TEST-3',
+                                      style: TextStyle(
+                                        // color: Color(0xFFa8caba),
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        startTakingPictures();
+                                      },
+                                      icon: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '   TEST-4',
+                                      style: TextStyle(
+                                        // color: Color(0xFFa8caba),
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         SizedBox(height: 5),
                       ],
                     ),
