@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lamaradar/auth/forgetPassword.dart';
@@ -5,6 +6,8 @@ import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/usersauth.dart';
 import '../../sqflite/sqlite.dart';
+import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import '../firebase/temp/global/common/toast.dart';
 import 'registration_screen.dart';
 
 class SignIn extends StatefulWidget {
@@ -15,6 +18,8 @@ class _SignInState extends State<SignIn> {
 
   final username = TextEditingController();
   final password = TextEditingController();
+  final _passwordController = TextEditingController();
+  final FirebaseAuthService _auth = FirebaseAuthService();
   bool isLoginTrue = false;
 
   final db = DatabaseHelper();
@@ -37,11 +42,48 @@ class _SignInState extends State<SignIn> {
     }
   }
   final formKey = GlobalKey<FormState>();
+  bool _isSigning = false;
+
+  // Firebase SignIN
+  void _signIn() async {
+    setState(() {
+      _isSigning = true;
+    });
+
+    String email = username.text;
+    String password = _passwordController.text;
+
+    User? user = await _auth.signInWithEmailAndPassword(email, password);
+
+    setState(() {
+      _isSigning = false;
+    });
+
+    if (user != null) {
+      showToast(message: "User is successfully signed in");
+      // Navigate to the ConnectWifiForDashCam screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BleScreen(title: ''),
+        ),
+      );
+    } else {
+      showToast(message: "Some error occurred");
+    }
+  }
 
   bool isLoggedIn = false;
   Future<void> saveLoginStatus(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+
+  @override
+  void dispose() {
+    username.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -144,7 +186,7 @@ class _SignInState extends State<SignIn> {
                                       return null;
                                     },
                                     decoration: InputDecoration(
-                                      hintText: "Email/User-name",
+                                      hintText: "Email",
                                       border: InputBorder.none,
                                       prefixIcon: Icon(
                                         Icons.email,
@@ -162,7 +204,7 @@ class _SignInState extends State<SignIn> {
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(20))),
                                   child: TextFormField(
-                                    controller: password,
+                                    controller: _passwordController,
                                     validator: (value) {
                                       if (value!.isEmpty) {
                                         return "password is required";
@@ -184,7 +226,6 @@ class _SignInState extends State<SignIn> {
                         SizedBox(
                           height: 25,
                         ),
-
                         Container(
                           alignment: Alignment.centerRight,
                           child: Container(
@@ -212,7 +253,8 @@ class _SignInState extends State<SignIn> {
                             ElevatedButton(
                               onPressed: () {
                                 if (formKey.currentState!.validate()) {
-                                  login();
+                                  // login();
+                                  _signIn();
                                 }
                                 setState(() {
                                   isLoggedIn = true;
@@ -241,9 +283,7 @@ class _SignInState extends State<SignIn> {
                             SizedBox(width: 10),
                           ],
                         ),
-
                         SizedBox(height: 10),
-
                         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                           Text("Don't have an account?"),
                           SizedBox(width: 10),
