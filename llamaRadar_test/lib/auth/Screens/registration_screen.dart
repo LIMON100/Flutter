@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/body.dart';
+import '../components/body_new.dart';
 import '../size_config.dart';
 
 class RegistrationScreen extends StatelessWidget {
@@ -7,7 +8,7 @@ class RegistrationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      body: Body(),
+      body: BodyNew(),
     );
   }
 }

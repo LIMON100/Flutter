@@ -205,11 +205,12 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context) => ConnectWifiForDashCam(),
         ),
       );
-    } else {
+    }
+    else {
       showToast(message: "Some error occurred");
     }
   }
-  
+
 
   _signInWithGoogle()async{
 

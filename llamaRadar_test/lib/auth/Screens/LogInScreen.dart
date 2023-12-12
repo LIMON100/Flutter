@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lamaradar/auth/forgetPassword.dart';
+import 'package:lamaradar/auth/Screens/forgetPassword.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/usersauth.dart';
@@ -237,10 +237,10 @@ class _SignInState extends State<SignIn> {
                                   );
                                 },
                                 child: Container(
-                                  child: Text("Forgot Password",
+                                  child: Text("Forgot Password?",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w700,
-                                          color: Colors.black)),
+                                          color: Colors.red)),
                                 ),
                               )
                           ),
@@ -263,7 +263,7 @@ class _SignInState extends State<SignIn> {
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 3,
-                                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 80),
                                 primary: Colors.deepPurpleAccent, // Change to your preferred color
                                 shape: RoundedRectangleBorder(
                                   side: BorderSide(color: Colors.white70),

@@ -110,16 +110,7 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
                     gpsCoordinate['longitude'] != null) {
                   return GestureDetector(
                     onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => MapScreen(
-                      //       latitude: gpsCoordinate['latitude'],
-                      //       longitude: gpsCoordinate['longitude'],
-                      //       image: _imageList[index],
-                      //     ),
-                      //   ),
-                      // );
+
                     },
                     child: ListTile(
                       title: Column(

@@ -15,6 +15,8 @@ import 'package:html/parser.dart' show parse;
 import 'package:xml/xml.dart' as xml;
 import 'package:lamaradar/mode/dash_cam.dart';
 
+import 'dash_cam_capture.dart';
+
 class ConnectWifiForDashCam extends StatefulWidget {
   const ConnectWifiForDashCam({Key? key}) : super(key: key);
 

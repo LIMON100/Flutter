@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../global/common/toast.dart';
@@ -11,6 +7,7 @@ class FirebaseAuthService {
 
   FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Sign up in Firebase
   Future<User?> signUpWithEmailAndPassword(String email, String password) async {
 
     try {
@@ -28,6 +25,7 @@ class FirebaseAuthService {
 
   }
 
+  // Log in Firebase
   Future<User?> signInWithEmailAndPassword(String email, String password) async {
 
     try {
@@ -44,10 +42,6 @@ class FirebaseAuthService {
     return null;
 
   }
-
-
-
-
 }
 
 

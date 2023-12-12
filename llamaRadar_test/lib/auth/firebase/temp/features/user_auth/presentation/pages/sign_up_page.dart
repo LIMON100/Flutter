@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lamaradar/auth/Screens/LogInScreen.dart';
 import 'package:lamaradar/auth/firebase/temp/features/user_auth/presentation/widgets/form_container_widget.dart';
 
 import '../../../../global/common/toast.dart';
@@ -22,6 +23,37 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _passwordController = TextEditingController();
 
   bool isSigningUp = false;
+
+  void _signUp() async {
+
+    setState(() {
+      isSigningUp = true;
+    });
+
+    String username = _usernameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    User? user = await _auth.signUpWithEmailAndPassword(email, password);
+
+    setState(() {
+      isSigningUp = false;
+    });
+
+    if (user != null) {
+      showToast(message: "New User is successfully created");
+      // Navigator.pushNamed(context, "/home");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignIn(),
+        ),
+      );
+    }
+    else {
+      showToast(message: "Some error happend");
+    }
+  }
 
   @override
   void dispose() {
@@ -125,28 +157,5 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ),
     );
-  }
-
-  void _signUp() async {
-
-setState(() {
-  isSigningUp = true;
-});
-
-    String username = _usernameController.text;
-    String email = _emailController.text;
-    String password = _passwordController.text;
-
-    User? user = await _auth.signUpWithEmailAndPassword(email, password);
-
-setState(() {
-  isSigningUp = false;
-});
-    if (user != null) {
-      showToast(message: "User is successfully created");
-      Navigator.pushNamed(context, "/home");
-    } else {
-      showToast(message: "Some error happend");
-    }
   }
 }

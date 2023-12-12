@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lamaradar/auth/forgetPassword.dart';
+import 'package:lamaradar/auth/Screens/forgetPassword.dart';
 import 'package:lamaradar/sqflite/sqlite.dart';
 
 import '../model/usersauth.dart';
