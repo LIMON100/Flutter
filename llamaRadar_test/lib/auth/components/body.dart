@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:lamaradar/auth/size_config.dart';
 import 'package:flutter/material.dart';
 import '../../model/usersauth.dart';
 import '../../sqflite/sqlite.dart';
 import '../Screens/LogInScreen.dart';
+import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import '../firebase/temp/global/common/toast.dart';
 import 'land.dart';
 import 'sun.dart';
 
@@ -14,9 +17,14 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
+  final user = TextEditingController();
   final username = TextEditingController();
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
+
+  final FirebaseAuthService _auth = FirebaseAuthService();
+  bool isSigningUp = false;
+
   bool isVisible = false;
   bool isFullSun = false;
   bool isDayMood = true;
@@ -30,6 +38,37 @@ class _BodyState extends State<Body> {
         isFullSun = true;
       });
     });
+  }
+
+  void _signUp() async {
+
+    setState(() {
+      isSigningUp = true;
+    });
+
+    User? user = await _auth.signUpWithEmailAndPassword(username.text, confirmPassword.text);
+
+    setState(() {
+      isSigningUp = false;
+    });
+
+    if (user != null) {
+      showToast(message: "New User is successfully created");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignIn(),
+        ),
+      );
+    }
+    else {
+      showToast(message: "Some error happend");
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void changeMood(int activeTabNum) {
@@ -102,7 +141,7 @@ class _BodyState extends State<Body> {
             child: Stack(
               children: [
                 // Replace the following placeholders with your Sun and Land widgets
-                Sun(duration: _duration, isFullSun: isFullSun, key: UniqueKey()),
+                // Sun(duration: _duration, isFullSun: isFullSun, key: UniqueKey()),
                 Land(key: UniqueKey()),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
@@ -112,6 +151,42 @@ class _BodyState extends State<Body> {
                       children: [
                         VerticalSpacing(of: 50, key: UniqueKey()),
                         // VerticalSpacing(key: UniqueKey()),
+                        Center(
+                          child: Text(
+                            "Registration",
+                            style: TextStyle(
+                              fontSize: 24, // Adjust the font size as needed
+                              fontWeight: FontWeight.bold, // Make the text bold
+                              color: Colors.white, // Change the text color to your desired color
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 5),
+                          decoration: BoxDecoration(
+                            // color: Color(0xfff5f8fd),
+                              color: Colors.white38,
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(20))),
+                          child: TextFormField(
+                            controller: user,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "username is required";
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Username",
+                              border: InputBorder.none,
+                              prefixIcon:
+                              Icon(Icons.people, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 25),
                         Container(
                           padding: EdgeInsets.symmetric(
                               horizontal: 2, vertical: 5),
@@ -124,7 +199,7 @@ class _BodyState extends State<Body> {
                             controller: username,
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return "username is required";
+                                return "Email is required";
                               }
                               return null;
                             },
@@ -224,21 +299,22 @@ class _BodyState extends State<Body> {
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              if (formKey.currentState!.validate()) {
-                                final db = DatabaseHelper();
-                                db.signup(UsersAuth(
-                                    usrName: username.text,
-                                    usrPassword: password.text,
-
-                                    ))
-                                    .whenComplete(() {
-                                  //After success user creation go to login screen
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => SignIn()));
-                                });
-                              }
+                              _signUp();
+                              // if (formKey.currentState!.validate()) {
+                              //   final db = DatabaseHelper();
+                              //   db.signup(UsersAuth(
+                              //       usrName: username.text,
+                              //       usrPassword: password.text,
+                              //
+                              //       ))
+                              //       .whenComplete(() {
+                              //     //After success user creation go to login screen
+                              //     Navigator.push(
+                              //         context,
+                              //         MaterialPageRoute(
+                              //             builder: (context) => SignIn()));
+                              //   });
+                              // }
                             },
                             style: ElevatedButton.styleFrom(
                               elevation: 3,
