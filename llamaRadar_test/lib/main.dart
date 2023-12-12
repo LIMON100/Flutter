@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:lamaradar/provider/ConnectionProvider.dart';
 import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:lamaradar/provider/BluetoothStateProvider.dart';
@@ -17,7 +19,9 @@ Future<bool> checkLoginStatus() async {
   return isLoggedIn;
 }
 
-void main() {
+Future main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     MultiProvider(
       providers: [
@@ -71,8 +75,22 @@ class SplashScreen extends StatelessWidget {
 }
 
 
-class MyApp extends StatelessWidget {
+// For Firebase
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  User? user;
+
+  @override
+  void initState(){
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,25 +100,42 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FutureBuilder(
-        future: checkLoginStatus(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data == true) {
-              // User is logged in, redirect to home page
-              return BleScreen(title: '');
-            }
-            else {
-              // User is not logged in, redirect to login page
-              return SignIn();
-            }
-          } else {
-            // Loading indicator
-            return CircularProgressIndicator();
-          }
-        },
-      ),
+      home: user != null ? BleScreen(title: '') : SignIn(),
     );
   }
 }
+
+/// For OFFLINE DB
+// class MyApp extends StatelessWidget {
+//   const MyApp({Key? key}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       title: 'Flutter Google Maps',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: FutureBuilder(
+//         future: checkLoginStatus(),
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.done) {
+//             if (snapshot.data == true) {
+//               // User is logged in, redirect to home page
+//               return BleScreen(title: '');
+//             }
+//             else {
+//               // User is not logged in, redirect to login page
+//               return SignIn();
+//             }
+//           } else {
+//             // Loading indicator
+//             return CircularProgressIndicator();
+//           }
+//         },
+//       ),
+//     );
+//   }
+// }
 
