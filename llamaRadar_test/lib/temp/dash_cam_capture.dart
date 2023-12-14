@@ -8,7 +8,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/mode/settings.dart';
 import '../mode/file.dart';
-import '../temp/ConnectWifiForDashCam.dart';
+import '../mode/ConnectWifiForDashCam.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:http/http.dart' as http;

@@ -11,7 +11,7 @@ import 'package:lamaradar/ride_history/maps/maker_with_image.dart';
 import 'package:lamaradar/ride_history/maps/temp/CustomMarkerInfoWindowScreen.dart';
 import 'package:lamaradar/ride_history/maps/temp/custom_marker_with_network_image.dart';
 import 'package:lamaradar/ride_history/showGpsData.dart';
-import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
+import 'package:lamaradar/mode/ConnectWifiForDashCam.dart';
 import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';

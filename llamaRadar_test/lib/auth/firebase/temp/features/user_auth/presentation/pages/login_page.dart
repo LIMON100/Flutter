@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lamaradar/auth/firebase/temp/features/user_auth/presentation/pages/sign_up_page.dart';
-
-import '../../../../../../../temp/ConnectWifiForDashCam.dart';
+import '../../../../../../../mode/ConnectWifiForDashcam.dart';
 import '../../../../global/common/toast.dart';
 import '../../firebase_auth_implementation/firebase_auth_services.dart';
 import '../widgets/form_container_widget.dart';

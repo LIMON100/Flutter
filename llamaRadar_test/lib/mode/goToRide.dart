@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:lamaradar/temp/CollisionWarningPageTestCapture.dart';
+import 'package:lamaradar/mode/CollisionWarningPageTestCapture.dart';
+import 'package:lamaradar/temp/CollisionWarningPageFirebase.dart';
 import 'package:lamaradar/temp/glowing_button.dart';
-import 'package:lamaradar/temp/CollisionWarningPage2.dart';
+import 'package:lamaradar/mode/CollisionWarningPage2.dart';
 import 'dart:ui';
 
 class CircleButton extends StatelessWidget {
@@ -126,7 +127,7 @@ class _GoToRideState extends State<GoToRide> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CollisionWarningPageTestCapture(device: widget.device)),
+                      MaterialPageRoute(builder: (context) => CollisionWarningPageFirebase(device: widget.device)),
                     );
                   },
                   color:  Color(0xFFa8caba),

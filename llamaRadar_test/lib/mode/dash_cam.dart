@@ -8,7 +8,6 @@ import 'package:camera/camera.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/mode/settings.dart';
-import '../temp/ConnectWifiForDashCam.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:http/http.dart' as http;
@@ -24,6 +23,7 @@ import 'package:gallery_saver/gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../mode/ConnectWifiForDashCam.dart';
 import 'file.dart';
 
 class CircleButton extends StatelessWidget {
