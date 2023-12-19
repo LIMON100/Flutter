@@ -1,3 +1,4 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/temp/checkdb.dart';
 
@@ -6,9 +7,9 @@ import '../../sqflite/sqlite.dart';
 import 'LogInScreen.dart';
 
 class PasswordUpdate extends StatefulWidget {
-  final String username;
-
-  const PasswordUpdate({Key? key, required this.username}) : super(key: key);
+  // final String username;
+  final TextEditingController emailController;
+  const PasswordUpdate({Key? key, required this.emailController}) : super(key: key);
 
   @override
   State<PasswordUpdate> createState() => _PasswordUpdateState();
@@ -18,44 +19,86 @@ class _PasswordUpdateState extends State<PasswordUpdate> {
 
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final _passwordController3 = TextEditingController();
+
   bool isVisible = false;
   bool _isUpdatingPassword = false;
   String _updateMessage = '';
   List<UsersAuth>? users;
 
-  Future<void> updateUser(String username, String password) async {
-    final db = await DatabaseHelper().initDB();
-    await db.update(
-      'users',
-      {'usrPassword': password},
-      where: 'usrName = ?',
-      whereArgs: [username],
-    );
-  }
+  // Future<void> updateUser(String username, String password) async {
+  //   final db = await DatabaseHelper().initDB();
+  //   await db.update(
+  //     'users',
+  //     {'usrPassword': password},
+  //     where: 'usrName = ?',
+  //     whereArgs: [username],
+  //   );
+  // }
 
   Color _updateMessageColor = Colors.black;
-  void _updatePassword() async {
-    if (_passwordController.text.isNotEmpty && _confirmPasswordController.text.isNotEmpty) {
-      if (_passwordController.text == _confirmPasswordController.text) {
-        setState(() {
-          _isUpdatingPassword = true;
-          _updateMessage = '';
-        });
+  // void _updatePassword() async {
+  //   if (_passwordController.text.isNotEmpty && _confirmPasswordController.text.isNotEmpty) {
+  //     if (_passwordController.text == _confirmPasswordController.text) {
+  //       setState(() {
+  //         _isUpdatingPassword = true;
+  //         _updateMessage = '';
+  //       });
+  //
+  //       updateUser(widget.username, _confirmPasswordController.text);
+  //
+  //       setState(() {
+  //         _isUpdatingPassword = false;
+  //         _updateMessage = 'Password updated successfully!';
+  //         _updateMessageColor = Colors.yellow; // Set the color for success message
+  //       });
+  //     } else {
+  //       setState(() {
+  //         _updateMessage = 'Passwords do not match!';
+  //         _updateMessageColor = Colors.red.shade800; // Set the color for error message
+  //       });
+  //     }
+  //   }
+  // }
 
-        updateUser(widget.username, _confirmPasswordController.text);
-
-        setState(() {
-          _isUpdatingPassword = false;
-          _updateMessage = 'Password updated successfully!';
-          _updateMessageColor = Colors.yellow; // Set the color for success message
-        });
-      } else {
-        setState(() {
-          _updateMessage = 'Passwords do not match!';
-          _updateMessageColor = Colors.red.shade800; // Set the color for error message
-        });
-      }
+  void _resetPassword() async {
+    try {
+      final res = await Amplify.Auth.confirmResetPassword(
+        username: widget.emailController.text,
+        newPassword: _confirmPasswordController.text,
+        confirmationCode: _passwordController3.text,
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignIn(),
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text(
+            'Password changed successfully. Please log in',
+            style: TextStyle(fontSize: 15),
+          ),
+        ),
+      );
     }
+    on AuthException catch (e) {
+      _showError(context, '${e.message} - ${e.underlyingException}');
+    }
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.redAccent,
+        content: Text(
+          message,
+          style: TextStyle(fontSize: 15),
+        ),
+      ),
+    );
   }
 
 
@@ -65,7 +108,7 @@ class _PasswordUpdateState extends State<PasswordUpdate> {
       backgroundColor: Colors.grey,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text('Update Password for ${widget.username}'),
+        title: Text('Update Password for ${widget.emailController}'),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -143,6 +186,31 @@ class _PasswordUpdateState extends State<PasswordUpdate> {
                           : Icons.visibility_off))),
             ),
           ),
+          Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: 2, vertical: 5),
+            decoration: BoxDecoration(
+                color: Color(0xfff5f8fd),
+                borderRadius:
+                BorderRadius.all(Radius.circular(20))),
+            child: TextFormField(
+              controller: _passwordController3,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Code is required";
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: "Email",
+                border: InputBorder.none,
+                prefixIcon: Icon(
+                  Icons.email,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
           // TextField(
           //   controller: _passwordController,
           //   obscureText: true,
@@ -164,7 +232,7 @@ class _PasswordUpdateState extends State<PasswordUpdate> {
           //   child: _isUpdatingPassword ? const CircularProgressIndicator() : const Text('Update Password'),
           // ),
           ElevatedButton(
-            onPressed: _updatePassword,
+            onPressed: _resetPassword,
             style: ElevatedButton.styleFrom(
               elevation: 3,
               padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),

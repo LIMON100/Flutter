@@ -1,11 +1,11 @@
 import 'dart:ui';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/sqflite/sqlite.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../model/usersauth.dart';
-import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'LogInScreen.dart';
 import 'PasswordUpdate.dart';
 
@@ -52,49 +52,103 @@ class _ForgetPaswordState extends State<ForgetPasword> {
   }
 
   // Update password with firebase
-  Future passwordChange() async{
-    try{
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _usernameController.text.trim());
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Text("Password reset link sent. Check your email inbox or spam folder"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignIn())
-                  );
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
+  // Future passwordChange() async{
+  //   try{
+  //     await FirebaseAuth.instance.sendPasswordResetEmail(email: _usernameController.text.trim());
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) {
+  //         return AlertDialog(
+  //           content: Text("Password reset link sent. Check your email inbox or spam folder"),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.push(
+  //                     context,
+  //                     MaterialPageRoute(builder: (context) => SignIn())
+  //                 );
+  //               },
+  //               child: Text("OK"),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  //   on FirebaseAuthException catch(e){
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) {
+  //         return AlertDialog(
+  //           content: Text(e.message.toString()),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.pop(context);
+  //               },
+  //               child: Text("OK"),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+
+  void _onRecoverPassword() async {
+    try {
+      // showCircularProgressIndicator();
+      await Amplify.Auth.resetPassword(username: _usernameController.text);
+      // if (res) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PasswordUpdate(emailController: _usernameController),
+        ),
       );
     }
-    on FirebaseAuthException catch(e){
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Text(e.message.toString()),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+    on AuthException catch (e) {
+      // Handle authentication exception and display error message
+      showSnackBar("EMAIL incorrect");
     }
   }
 
+  void hideCircularProgressIndicator() {
+    Navigator.of(context).pop(); // Close the dialog
+  }
+
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.redAccent,
+        content: Text(
+          message,
+          style: TextStyle(fontSize: 15),
+        ),
+      ),
+    );
+  }
+
+  void showCircularProgressIndicator() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -159,7 +213,7 @@ class _ForgetPaswordState extends State<ForgetPasword> {
             Center(
               child: ElevatedButton(
                 // onPressed: _navigateToPage2,
-                onPressed: passwordChange,
+                onPressed: _onRecoverPassword,
                 style: ElevatedButton.styleFrom(
                   elevation: 3,
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),

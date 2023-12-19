@@ -1,3 +1,4 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,58 +20,124 @@ class _SignInState extends State<SignIn> {
   final username = TextEditingController();
   final password = TextEditingController();
   final _passwordController = TextEditingController();
-  final FirebaseAuthService _auth = FirebaseAuthService();
+  // final FirebaseAuthService _auth = FirebaseAuthService();
   bool isLoginTrue = false;
 
   final db = DatabaseHelper();
 
   //Now we should call this function in login button
-  login() async {
-    var response = await db
-        .login(UsersAuth(usrName: username.text, usrPassword: password.text));
-    if (response == true) {
-      //If login is correct, then goto notes
-      if (!mounted) return;
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => BleScreen(title: '')));
-    }
-    else {
-      //If not, true the bool value to show error message
-      setState(() {
-        isLoginTrue = true;
-      });
-    }
-  }
+  // login() async {
+  //   var response = await db
+  //       .login(UsersAuth(usrName: username.text, usrPassword: password.text));
+  //   if (response == true) {
+  //     //If login is correct, then goto notes
+  //     if (!mounted) return;
+  //     Navigator.pushReplacement(
+  //         context, MaterialPageRoute(builder: (context) => BleScreen(title: '')));
+  //   }
+  //   else {
+  //     //If not, true the bool value to show error message
+  //     setState(() {
+  //       isLoginTrue = true;
+  //     });
+  //   }
+  // }
   final formKey = GlobalKey<FormState>();
   bool _isSigning = false;
 
   // Firebase SignIN
-  void _signIn() async {
-    setState(() {
-      _isSigning = true;
-    });
+  // void _signIn() async {
+  //   setState(() {
+  //     _isSigning = true;
+  //   });
 
-    String email = username.text;
-    String password = _passwordController.text;
+  //   String email = username.text;
+  //   String password = _passwordController.text;
 
-    User? user = await _auth.signInWithEmailAndPassword(email, password);
+  //   User? user = await _auth.signInWithEmailAndPassword(email, password);
 
-    setState(() {
-      _isSigning = false;
-    });
+  //   setState(() {
+  //     _isSigning = false;
+  //   });
 
-    if (user != null) {
-      showToast(message: "User is successfully signed in");
-      // Navigate to the ConnectWifiForDashCam screen
+  //   if (user != null) {
+  //     showToast(message: "User is successfully signed in");
+  //     // Navigate to the ConnectWifiForDashCam screen
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => BleScreen(title: ''),
+  //       ),
+  //     );
+  //   } else {
+  //     showToast(message: "Some error occurred");
+  //   }
+  // }
+
+  // AWS amplify log in
+  void _login() async {
+    try {
+      // Show circular progress indicator while waiting for the authentication process
+      showCircularProgressIndicator();
+
+      final signInOptions = const SignInOptions();
+      await Amplify.Auth.signIn(
+        username: username.text,
+        password: _passwordController.text,
+        options: signInOptions,
+      );
+
+      // Navigate to the next screen on successful login
+      print("Before navigation");
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BleScreen(title: ''),
+          builder: (context) => ForgetPasword(),
         ),
       );
-    } else {
-      showToast(message: "Some error occurred");
+
+      // Show a success message
+      showSnackBar("Logged In successfully");
     }
+    on AuthException catch (e) {
+      // Handle authentication exception and display error message
+      showSnackBar(e.message);
+    } on Exception catch (e) {
+      // Handle other exceptions
+      print(e);
+      // Display a generic error message
+      showSnackBar("An error occurred during login");
+    } finally {
+      // Ensure that the circular progress indicator is hidden
+      // hideCircularProgressIndicator();
+    }
+
+    // Refresh the UI
+    setState(() {});
+  }
+
+  void showCircularProgressIndicator() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  // void hideCircularProgressIndicator() {
+  //   Navigator.of(context, rootNavigator: true).pop(); // Close the dialog
+  // }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 
   bool isLoggedIn = false;
@@ -254,7 +321,7 @@ class _SignInState extends State<SignIn> {
                               onPressed: () {
                                 if (formKey.currentState!.validate()) {
                                   // login();
-                                  _signIn();
+                                  _login();
                                 }
                                 setState(() {
                                   isLoggedIn = true;
