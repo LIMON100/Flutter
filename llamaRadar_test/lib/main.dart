@@ -1,3 +1,5 @@
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lamaradar/provider/ConnectionProvider.dart';
@@ -11,7 +13,7 @@ import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:page_transition/page_transition.dart';
 import 'auth/Screens/LogInScreen.dart';
-
+import 'amplifyconfiguration.dart';
 
 Future<bool> checkLoginStatus() async {
   final prefs = await SharedPreferences.getInstance();
@@ -21,7 +23,8 @@ Future<bool> checkLoginStatus() async {
 
 Future main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
+  await configureAmplify();
   runApp(
     MultiProvider(
       providers: [
@@ -43,6 +46,10 @@ Future main() async{
   );
 }
 
+Future<void> configureAmplify() async {
+  await Amplify.addPlugins([AmplifyAuthCognito()]);
+  await Amplify.configure(amplifyconfig);
+}
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -75,7 +82,7 @@ class SplashScreen extends StatelessWidget {
 }
 
 
-// For Firebase
+// FOR AWS
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -84,13 +91,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  User? user;
-
-  @override
-  void initState(){
-    super.initState();
-    user = FirebaseAuth.instance.currentUser;
-  }
+  // User? user;
+  //
+  // @override
+  // void initState(){
+  //   super.initState();
+  //   user = FirebaseAuth.instance.currentUser;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -100,10 +107,40 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: user != null ? BleScreen(title: '') : SignIn(),
+      home: SignIn(),
     );
   }
 }
+
+// For Firebase
+// class MyApp extends StatefulWidget {
+//   const MyApp({Key? key}) : super(key: key);
+//
+//   @override
+//   State<MyApp> createState() => _MyAppState();
+// }
+//
+// class _MyAppState extends State<MyApp> {
+//   User? user;
+//
+//   @override
+//   void initState(){
+//     super.initState();
+//     user = FirebaseAuth.instance.currentUser;
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       title: 'Flutter Google Maps',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: user != null ? BleScreen(title: '') : SignIn(),
+//     );
+//   }
+// }
 
 /// For OFFLINE DB
 // class MyApp extends StatelessWidget {
