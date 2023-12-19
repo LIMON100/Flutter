@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lamaradar/auth/Screens/ConfirmCode.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:lamaradar/auth/size_config.dart';
 import 'package:flutter/material.dart';
 import '../../model/usersauth.dart';
 import '../../sqflite/sqlite.dart';
 import '../Screens/LogInScreen.dart';
-import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+// import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import '../firebase/temp/global/common/toast.dart';
 import 'land.dart';
 import 'sun.dart';
@@ -22,13 +25,16 @@ class _BodyNewState extends State<BodyNew> {
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
 
-  final FirebaseAuthService _auth = FirebaseAuthService();
+  // final FirebaseAuthService _auth = FirebaseAuthService();
   bool isSigningUp = false;
 
   bool isVisible = false;
   bool isFullSun = false;
   bool isDayMood = true;
   Duration _duration = Duration(seconds: 1);
+
+  bool _loggedIn = false;
+  bool _registered = false;
 
   @override
   void initState() {
@@ -40,30 +46,69 @@ class _BodyNewState extends State<BodyNew> {
     });
   }
 
-  void _signUp() async {
+  // void _signUp() async {
 
-    setState(() {
-      isSigningUp = true;
-    });
+  //   setState(() {
+  //     isSigningUp = true;
+  //   });
 
-    User? user = await _auth.signUpWithEmailAndPassword(username.text, confirmPassword.text);
+  //   User? user = await _auth.signUpWithEmailAndPassword(username.text, confirmPassword.text);
 
-    setState(() {
-      isSigningUp = false;
-    });
+  //   setState(() {
+  //     isSigningUp = false;
+  //   });
 
-    if (user != null) {
-      showToast(message: "New User is successfully created");
+  //   if (user != null) {
+  //     showToast(message: "New User is successfully created");
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => SignIn(),
+  //       ),
+  //     );
+  //   }
+  //   else {
+  //     showToast(message: "Some error happend");
+  //   }
+  // }
+
+  void _registerAccount() async {
+    try {
+      final signUpOptions = SignUpOptions(
+        userAttributes: {
+          CognitoUserAttributeKey.email: username.text,
+          CognitoUserAttributeKey.familyName: confirmPassword.text,
+          // CognitoUserAttributeKey.familyName: 'nothingImopr@#@',
+        },
+      );
+      await Amplify.Auth.signUp(username: username.text, password: confirmPassword.text, options: signUpOptions);
+      // Registration is successful, navigate to the next page
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => SignIn(),
+        MaterialPageRoute(builder: (context) => ConfirmCode(emailController: username)), // Replace NextPage with your actual next page
+      );
+    }
+    on AuthException catch (e) {
+      print(e.message);
+      // Handle error and display message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Registration failed: ${e.message}"),
+        ),
+      );
+    } on Exception catch (e) {
+      print(e);
+      // Handle other errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Unexpected error occurred"),
         ),
       );
     }
-    else {
-      showToast(message: "Some error happend");
-    }
+    // Move the setState and SnackBar outside the try-catch block
+    setState(() {
+      _registered = true;
+    });
   }
 
   @override
@@ -297,7 +342,7 @@ class _BodyNewState extends State<BodyNew> {
                           Center(
                             child: ElevatedButton(
                               onPressed: () {
-                                _signUp();
+                                _registerAccount();
                               },
                               style: ElevatedButton.styleFrom(
                                 elevation: 3,
