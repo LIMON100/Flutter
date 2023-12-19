@@ -1,14 +1,12 @@
+import 'dart:async';
+
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/auth/Screens/forgetPassword.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../model/usersauth.dart';
-import '../../sqflite/sqlite.dart';
-import '../firebase/temp/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import '../firebase/temp/global/common/toast.dart';
 import 'registration_screen.dart';
 
 class SignIn extends StatefulWidget {
@@ -22,64 +20,21 @@ class _SignInState extends State<SignIn> {
   final _passwordController = TextEditingController();
   // final FirebaseAuthService _auth = FirebaseAuthService();
   bool isLoginTrue = false;
+  bool isVisible = false;
+  bool _isLoading = false;
 
-  final db = DatabaseHelper();
-
-  //Now we should call this function in login button
-  // login() async {
-  //   var response = await db
-  //       .login(UsersAuth(usrName: username.text, usrPassword: password.text));
-  //   if (response == true) {
-  //     //If login is correct, then goto notes
-  //     if (!mounted) return;
-  //     Navigator.pushReplacement(
-  //         context, MaterialPageRoute(builder: (context) => BleScreen(title: '')));
-  //   }
-  //   else {
-  //     //If not, true the bool value to show error message
-  //     setState(() {
-  //       isLoginTrue = true;
-  //     });
-  //   }
-  // }
+  // final db = DatabaseHelper();
   final formKey = GlobalKey<FormState>();
   bool _isSigning = false;
 
-  // Firebase SignIN
-  // void _signIn() async {
-  //   setState(() {
-  //     _isSigning = true;
-  //   });
-
-  //   String email = username.text;
-  //   String password = _passwordController.text;
-
-  //   User? user = await _auth.signInWithEmailAndPassword(email, password);
-
-  //   setState(() {
-  //     _isSigning = false;
-  //   });
-
-  //   if (user != null) {
-  //     showToast(message: "User is successfully signed in");
-  //     // Navigate to the ConnectWifiForDashCam screen
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => BleScreen(title: ''),
-  //       ),
-  //     );
-  //   } else {
-  //     showToast(message: "Some error occurred");
-  //   }
-  // }
-
   // AWS amplify log in
   void _login() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      // Show circular progress indicator while waiting for the authentication process
       showCircularProgressIndicator();
-
+      // Show circular progress indicator while waiting for the authentication process
       final signInOptions = const SignInOptions();
       await Amplify.Auth.signIn(
         username: username.text,
@@ -87,58 +42,87 @@ class _SignInState extends State<SignIn> {
         options: signInOptions,
       );
 
-      // Navigate to the next screen on successful login
-      print("Before navigation");
+      // Show a success message
+      setState(() {
+        _isLoading = false;
+      });
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ForgetPasword(),
+          builder: (context) => BleScreen(title: ''),
         ),
       );
 
-      // Show a success message
       showSnackBar("Logged In successfully");
     }
     on AuthException catch (e) {
-      // Handle authentication exception and display error message
       showSnackBar(e.message);
-    } on Exception catch (e) {
-      // Handle other exceptions
-      print(e);
-      // Display a generic error message
-      showSnackBar("An error occurred during login");
-    } finally {
-      // Ensure that the circular progress indicator is hidden
-      // hideCircularProgressIndicator();
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    // Refresh the UI
-    setState(() {});
+    on Exception catch (e) {
+      showSnackBar("An error occurred during login");
+    }
+    finally {}
   }
 
   void showCircularProgressIndicator() {
+    // Create a Completer to control when to stop the spinner
+    Completer<void> spinnerCompleter = Completer<void>();
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        // Start the spinner
+        _startSpinner(spinnerCompleter);
+
         return Center(
-          child: CircularProgressIndicator(),
+          child: FutureBuilder(
+            future: spinnerCompleter.future,
+            builder: (context, snapshot) {
+              // Check if the Future is complete (spinner duration reached)
+              if (snapshot.connectionState == ConnectionState.done) {
+                // Stop the spinner
+                Navigator.of(context).pop();
+                return Container(); // You can replace Container() with any other widget or an empty Container
+              } else {
+                // Show the spinner while the duration is not reached
+                return SpinKitDancingSquare(
+                  color: Colors.blue,
+                  size: 150.0,
+                );
+              }
+            },
+          ),
         );
       },
     );
   }
 
-  // void hideCircularProgressIndicator() {
-  //   Navigator.of(context, rootNavigator: true).pop(); // Close the dialog
-  // }
+// Function to start the spinner and complete it after 3 seconds
+  void _startSpinner(Completer<void> completer) {
+    Future.delayed(Duration(seconds: 6), () {
+      completer.complete();
+    });
+  }
 
   void showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        duration: Duration(seconds: 3),
       ),
     );
   }
+
 
   bool isLoggedIn = false;
   Future<void> saveLoginStatus(bool isLoggedIn) async {
@@ -257,7 +241,7 @@ class _SignInState extends State<SignIn> {
                                       border: InputBorder.none,
                                       prefixIcon: Icon(
                                         Icons.email,
-                                        color: Colors.grey,
+                                        color: Colors.black,
                                       ),
                                     ),
                                   ),
@@ -271,6 +255,7 @@ class _SignInState extends State<SignIn> {
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(20))),
                                   child: TextFormField(
+                                    obscureText:!isVisible,
                                     controller: _passwordController,
                                     validator: (value) {
                                       if (value!.isEmpty) {
@@ -278,13 +263,29 @@ class _SignInState extends State<SignIn> {
                                       }
                                       return null;
                                     },
-                                    obscureText: true,
+                                    // obscureText: true,
                                     decoration: InputDecoration(
-                                      hintText: "Password",
-                                      border: InputBorder.none,
-                                      prefixIcon:
-                                          Icon(Icons.vpn_key, color: Colors.grey),
-                                    ),
+                                        prefixIcon:
+                                        Icon(Icons.vpn_key, color: Colors.black),
+                                        border: InputBorder.none,
+                                        hintText: "Password",
+                                        suffixIcon: IconButton(
+                                            onPressed: () {
+                                              //In here we will create a click to show and hide the password a toggle button
+                                              setState(() {
+                                                //toggle button
+                                                isVisible = !isVisible;
+                                              });
+                                            },
+                                            icon: Icon(isVisible
+                                                ? Icons.visibility
+                                                : Icons.visibility_off))),
+                                    // decoration: InputDecoration(
+                                    //   hintText: "Password",
+                                    //   border: InputBorder.none,
+                                    //   prefixIcon:
+                                    //       Icon(Icons.vpn_key, color: Colors.grey),
+                                    // ),
                                   ),
                                 ),
                               ]),
@@ -346,10 +347,31 @@ class _SignInState extends State<SignIn> {
                                 ),
                               ),
                             ),
-
                             SizedBox(width: 10),
                           ],
                         ),
+                        // ElevatedButton(
+                        //   onPressed: () async {
+                        //     await Amplify.Auth.signOut();
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     elevation: 3,
+                        //     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 80),
+                        //     primary: Colors.deepPurpleAccent, // Change to your preferred color
+                        //     shape: RoundedRectangleBorder(
+                        //       side: BorderSide(color: Colors.white70),
+                        //       borderRadius: BorderRadius.all(Radius.circular(30)),
+                        //     ),
+                        //   ),
+                        //   child: Text(
+                        //     "Sign Out",
+                        //     style: TextStyle(
+                        //       fontSize: 20,
+                        //       color: Colors.white,
+                        //       fontWeight: FontWeight.w700,
+                        //     ),
+                        //   ),
+                        // ),
                         SizedBox(height: 10),
                         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                           Text("Don't have an account?"),

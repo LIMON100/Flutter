@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/auth/Screens/LogInScreen.dart';
 
 class ConfirmCode extends StatefulWidget {
@@ -18,6 +19,7 @@ class _ConfirmCodeState extends State<ConfirmCode> {
 
   String _confirmationNumber = "";
   final _cofirmController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,48 +33,102 @@ class _ConfirmCodeState extends State<ConfirmCode> {
   }
 
   void _confirmSignUp() async {
-    SignUpResult res = await Amplify.Auth.confirmSignUp(
-        username: widget.emailController.text, confirmationCode: _cofirmController.text
-    );
-    if(res.isSignUpComplete) {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      showCircularProgressIndicator();
+      SignUpResult res = await Amplify.Auth.confirmSignUp(
+          username: widget.emailController.text,
+          confirmationCode: _cofirmController.text
+      );
+      // if (res.isSignUpComplete) {
+      setState(() {
+        _isLoading = false;
+      });
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => SignIn()), // Replace NextPage with your actual next page
+        MaterialPageRoute(builder: (context) =>
+            SignIn()),
       );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Confirmation complete"),
       ));
     }
+    on AuthException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+        ),
+      );
+    } on Exception catch (e) {
+      print(e);
+      // Handle other errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Unexpected error occurred"),
+        ),
+      );
+    }
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //       appBar: AppBar(title: Text("")),
-  //       body: SafeArea(
-  //         child: Column(
-  //           children: [
-  //             TextField(
-  //               onChanged: (value) {
-  //                 setState(() {
-  //                   _confirmationNumber = value;
-  //                 });
-  //               },
-  //               decoration: InputDecoration(
-  //                 labelText: "Confirmation Code",
-  //               ),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: _confirmationNumber.isNotEmpty
-  //                   ? _confirmSignUp
-  //                   : null,
-  //               child: Text("Confirmation"),
-  //             )
-  //           ],
-  //         ),
-  //       )
-  //   );
-  // }
+  void showCircularProgressIndicator() {
+    Completer<void> spinnerCompleter = Completer<void>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        // Start the spinner
+        _startSpinner(spinnerCompleter);
+
+        return Center(
+          child: FutureBuilder(
+            future: spinnerCompleter.future,
+            builder: (context, snapshot) {
+              // Check if the Future is complete (spinner duration reached)
+              if (snapshot.connectionState == ConnectionState.done) {
+                // Stop the spinner
+                Navigator.of(context).pop();
+                return Container(); // You can replace Container() with any other widget or an empty Container
+              } else {
+                // Show the spinner while the duration is not reached
+                return SpinKitDancingSquare(
+                  color: Colors.blue,
+                  size: 150.0,
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+// Function to start the spinner and complete it after 3 seconds
+  void _startSpinner(Completer<void> completer) {
+    Future.delayed(Duration(seconds: 3), () {
+      completer.complete();
+    });
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
