@@ -105,7 +105,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   GpsDatabaseHelper helper = GpsDatabaseHelper();
   bool dataInserted = false;
   bool _dangerWarningCalled = false;
-  Timer? _gpsDataTimer;
+
 
   @override
   void initState() {
@@ -133,7 +133,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   Future<void> _getCurrentPosition() async {
-    final completer = Completer<void>();
     print("cpos $cpos");
     cpos = cpos + 1;
     final hasPermission = await _handleLocationPermission();
@@ -254,11 +253,22 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     };
   }
   //
+
   Future<void> insertDemoData() async {
     if(_dangerWarningCalled) {
       Map<String, dynamic> demoData = getDemoData();
       await helper.insertCoordinates(demoData);
       _dangerWarningCalled = false;
+=======
+  int da = 0;
+  Future<void> insertDemoData() async {
+    if(_dangerWarningCalled) {
+      print("insertData $da");
+      print(da);
+      Map<String, dynamic> demoData = getDemoData();
+      await helper.insertCoordinates(demoData);
+      _dangerWarningCalled = false;
+      da = da + 1;
     }
   }
   // ------------------End GPS data processing-----------------
@@ -646,6 +656,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     int locationCode;
     try {
       locationCode = int.parse(_value[27]); //_value[28]=test, _value[27]=real Radar data
+
+      locationCode = int.parse(_value[28]); //_value[28]=test, _value[27]=real Radar data
     } catch (e) {
       return 'No Notification';
     }
@@ -680,6 +692,19 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       _gpsDataTimer = Timer(Duration(milliseconds: 300), () {
         getCurrentDateTime();
         _getCurrentPosition();
+
+  int callGPS = 0;
+  bool _isGpsDataCallScheduled = false;
+  void callGpsData(){
+    // Save value gps coordinates and images
+    if (!_isGpsDataCallScheduled) {
+      _isGpsDataCallScheduled = true;
+
+      Timer(Duration(seconds: 1), () {
+        print('Calling GPS data...');
+
+        _getCurrentPosition();
+        getCurrentDateTime();
         _saveScreenshot();
         insertDemoData();
         _isGpsDataCallScheduled = false;
@@ -698,6 +723,10 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.red;
       left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
+
+      print("callGPS");
+      print(callGPS);
+      callGPS = callGPS + 1;
 
       Timer(Duration(milliseconds: 600), () {
         left_redPlayer.stop();
@@ -1729,180 +1758,77 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                             SizedBox(width: 75),
                           ],
                         ),
-                      ),
-
-                      // Camera and distance mode
-                      Row(
-                        children: [
-                          SizedBox(width: 5),
-                          //Spinning tried
-                          // if (!isButtonEnabled && isCameraAnimation) // Show loading spinner when button is disabled
-                          //   SpinKitThreeInOut(
-                          //     color: Colors.cyan.shade500,
-                          //     size: 80.0,
-                          //   ),
-                          // if (!isCameraAnimation) // Show loading spinner when button is disabled
-                          Flexible(
-                            flex: 3,
-                            child: Screenshot(
-                              controller: screenshotController,
-                              child: Container(
-                                height: 280,
-                                width: 300,
-                                child: Center(
-                                  child: Stack(
-                                    children: [
-                                      isCameraStreaming && _videoPlayerController != null
-                                          ? Transform.rotate(
-                                        angle: rotationAngle * 3.14159265359 / 180,
-                                        child: VlcPlayer(
-                                          controller: _videoPlayerController,
-                                          aspectRatio: currentOrientation == Orientation.portrait
-                                              ? 16 / 9
-                                              : 9 / 16,
-                                        ),
-                                      )
-                                          : Image.asset(
-                                        'images/test_background3.jpg',
-                                        fit: BoxFit.fitWidth,
-                                      ),
-                                      if (isCameraStreaming)
-                                        Positioned(
-                                          bottom: 16.0,
-                                          right: 16.0,
-                                          child: IconButton(
-                                            color: Colors.red,
-                                            icon: Icon(Icons.cameraswitch_outlined),
-                                            onPressed: changeOrientation,
-                                            iconSize: 40.0,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Flexible(
-                          child:Column(
-                            children: [
-                              Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  RotatedBox(
-                                    quarterTurns: 3,
-                                    child: SliderTheme(
-                                      data: SliderThemeData(
-                                        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
-                                        overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
-                                        trackHeight: 12.0, // Adjust the track height
-                                      ),
-                                      child: Slider(
-                                        value: _sliderValue,
-                                        min: 0,
-                                        max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                        divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                        activeColor: Colors.deepPurple,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _sliderValue = value;
-                                            _selectedValue = (_sliderValue * 30).round();
-                                          });
-                                        },
-                                        onChangeEnd: (value) {
-                                          int selectedValue = (_sliderValue * 30).round();
-                                          print("SELECTEFVALUE");
-                                          print(selectedValue);
-                                          if (selectedValue == 30) {
-                                            _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                                action: SnackBarAction(
-                                                  label: 'Dismiss',
-                                                  onPressed: () {
-                                                    // Handle the action when the user dismisses the message
-                                                  },
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          else if (selectedValue == 60) {
-                                            _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                                action: SnackBarAction(
-                                                  label: 'Dismiss',
-                                                  onPressed: () {
-                                                    // Handle the action when the user dismisses the message
-                                                  },
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          else if (selectedValue == 90) {
-                                            _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                                action: SnackBarAction(
-                                                  label: 'Dismiss',
-                                                  onPressed: () {
-                                                    // Handle the action when the user dismisses the message
-                                                  },
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          else if (selectedValue == 0) {
-                                            _selectedValue = 10;
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                                action: SnackBarAction(
-                                                  label: 'Dismiss',
-                                                  onPressed: () {
-                                                    // Handle the action when the user dismisses the message
-                                                  },
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      SizedBox(height: 20),
-                                      Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 20),
-                                      Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 10),
-                                      SizedBox(height: 20),
-                                      Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 25),
-                                      Text('10', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 10),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          ),
-                        ],
-                      ),
-                      // Stop ride
-                      SizedBox(height: 30),
-                      Row(
+                    ),
+                    // Stop ride
+                    SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SizedBox(width: 50),
+                        GlowingButton2(
+                          text: "Stop Ride",
+                          onPressed: () {
+                            _disconnectFromDevice();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) =>
+                                  BleScreen(title: '')),
+                            );
+                          },
+                          color1: Color(0xFF517fa4),
+                          color2: Colors.cyan,
+                        ),
+                      ],
+                    ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     GlowingButton2(
+                  //       text: "Stop Ride",
+                  //       onPressed: () {
+                  //         // Show a confirmation dialog
+                  //         showDialog(
+                  //           context: context,
+                  //           builder: (BuildContext context) {
+                  //             return AlertDialog(
+                  //               title: Text("Stop Ride"),
+                  //               content: Text("Are you sure you want to Review your ride?"),
+                  //               actions: [
+                  //                 TextButton(
+                  //                   onPressed: () {
+                  //                     _disconnectFromDevice();
+                  //                     Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(builder: (context) => ShowGpsData()),
+                  //                     );
+                  //                   },
+                  //                   child: Text("Yes"),
+                  //                 ),
+                  //                 TextButton(
+                  //                   onPressed: () {
+                  //                     _disconnectFromDevice();
+                  //                     Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+                  //                     );
+                  //                   },
+                  //                   child: Text("No"),
+                  //                 ),
+                  //               ],
+                  //             );
+                  //           },
+                  //         );
+                  //       },
+                  //       color1: Color(0xFF517fa4),
+                  //       color2: Colors.cyan,
+                  //     ),
+                  //   ],
+                  // ),
+                  // Image with power button
+                    SizedBox(height: 30),
+                    Container(
+                      margin: EdgeInsets.only(top: 1),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // SizedBox(width: 50),

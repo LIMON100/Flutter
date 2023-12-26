@@ -147,149 +147,68 @@ class _MapViewState extends State<MapView> {
                 ),
               ),
             ),
-            // Previous ONE WORK
-            // ListView.builder(
-            //     itemCount: _gpsCoordinates.length,
-            //     itemBuilder: (context, index) {
-            //       final gpsCoordinate = _gpsCoordinates[index];
-            //       if (gpsCoordinate['latitude'] != null &&
-            //           gpsCoordinate['longitude'] != null) {
-            //         return GestureDetector(
-            //           onTap: () {},
-            //           child: ListTile(
-            //             title: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 Text(
-            //                   'Latitude: ${gpsCoordinate['latitude']}, Longitude: ${gpsCoordinate['longitude']}',
-            //                 ),
-            //                 Text(
-            //                   'Time: ${gpsCoordinate['time']}',
-            //                 ),
-            //                 SizedBox(height: 8.0),
-            //                 Row(
-            //                   children: [
-            //                     if (_imageList[index] != null)
-            //                       Image.memory(
-            //                         _imageList[index]!,
-            //                         height: 100.0,
-            //                         width: 100.0,
-            //                       ),
-            //                     SizedBox(width: 80),
-            //                     ElevatedButton(
-            //                       onPressed: () {
-            //                         // Check if latitude and longitude are not null
-            //                         if (gpsCoordinate['latitude'] != null &&
-            //                             gpsCoordinate['longitude'] != null) {
-            //                           // Navigate to the map page
-            //                           Navigator.push(
-            //                             context,
-            //                             MaterialPageRoute(
-            //                               builder: (context) => MapScreen(
-            //                                 latitude: gpsCoordinate['latitude'],
-            //                                 longitude: gpsCoordinate['longitude'],
-            //                                 image: _imageList[index],
-            //                               ),
-            //                             ),
-            //                           );
-            //                         } else {
-            //                           // Show a message if latitude or longitude is null
-            //                           ScaffoldMessenger.of(context).showSnackBar(
-            //                             SnackBar(
-            //                               content: Text('No data found for this location.'),
-            //                             ),
-            //                           );
-            //                         }
-            //                       },
-            //                       style: ElevatedButton.styleFrom(
-            //                         elevation: 3,
-            //                         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-            //                         primary: Colors.blueGrey,
-            //                         shape: RoundedRectangleBorder(
-            //                           side: BorderSide(color: Colors.white70),
-            //                           borderRadius: BorderRadius.all(Radius.circular(30)),
-            //                         ),
-            //                       ),
-            //                       child: Text(
-            //                         "MAP",
-            //                         style: TextStyle(
-            //                           fontSize: 20,
-            //                           color: Colors.white,
-            //                           fontWeight: FontWeight.w700,
-            //                         ),
-            //                       ),
-            //                     ),
-            //                   ],
-            //                 )
-            //               ],
-            //             ),
-            //           ),
-            //         );
-            //       } else {
-            //         return Container();
-            //       }
-            //     },
-            //   ),
-            ListView.builder(
-              itemCount: _gpsCoordinates.length,
-              itemBuilder: (context, index) {
-                final gpsCoordinate = _gpsCoordinates[index];
-                if (gpsCoordinate['latitude'] != null &&
-                    gpsCoordinate['longitude'] != null) {
-                  return GestureDetector(
-                    onTap: () {},
-                    child: ListTile(
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Latitude: ${gpsCoordinate['latitude']}, Longitude: ${gpsCoordinate['longitude']}',
-                          ),
-                          Text(
-                            'Time: ${gpsCoordinate['time']}',
-                          ),
-                          SizedBox(height: 8.0),
-                          Row(
-                            children: [
-                              if (_imageList[index] != null)
-                                Image.memory(
-                                  _imageList[index]!,
-                                  height: 100.0,
-                                  width: 100.0,
-                                ),
-                              SizedBox(width: 80),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Check if latitude and longitude are not null
-                                  if (gpsCoordinate['latitude'] != null &&
-                                      gpsCoordinate['longitude'] != null) {
-                                    // Navigate to the map page
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => MapScreen(
-                                          latitude: gpsCoordinate['latitude'],
-                                          longitude: gpsCoordinate['longitude'],
-                                          image: _imageList[index],
+            Expanded(
+              child: ListView.builder(
+                itemCount: _gpsCoordinates.length,
+                itemBuilder: (context, index) {
+                  final gpsCoordinate = _gpsCoordinates[index];
+                  if (gpsCoordinate['latitude'] != null &&
+                      gpsCoordinate['longitude'] != null) {
+                    return GestureDetector(
+                      onTap: () {},
+                      child: ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Latitude: ${gpsCoordinate['latitude']}, Longitude: ${gpsCoordinate['longitude']}',
+                            ),
+                            Text(
+                              'Time: ${gpsCoordinate['time']}',
+                            ),
+                            SizedBox(height: 8.0),
+                            Row(
+                              children: [
+                                if (_imageList[index] != null)
+                                  Image.memory(
+                                    _imageList[index]!,
+                                    height: 100.0,
+                                    width: 100.0,
+                                  ),
+                                SizedBox(width: 80),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Check if latitude and longitude are not null
+                                    if (gpsCoordinate['latitude'] != null &&
+                                        gpsCoordinate['longitude'] != null) {
+                                      // Navigate to the map page
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MapScreen(
+                                            latitude: gpsCoordinate['latitude'],
+                                            longitude: gpsCoordinate['longitude'],
+                                            image: _imageList[index],
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  } else {
-                                    // Show a message if latitude or longitude is null
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('No data found for this location.'),
-                                      ),
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 3,
-                                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-                                  primary: Colors.blueGrey,
-                                  shape: RoundedRectangleBorder(
-                                    side: BorderSide(color: Colors.white70),
-                                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                                      );
+                                    } else {
+                                      // Show a message if latitude or longitude is null
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('No data found for this location.'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 3,
+                                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                                    primary: Colors.blueGrey,
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(color: Colors.white70),
+                                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                                    ),
                                   ),
                                 ),
                                 child: Text(
@@ -312,6 +231,14 @@ class _MapViewState extends State<MapView> {
                 }
               },
             )
+
+                    );
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),

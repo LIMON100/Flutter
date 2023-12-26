@@ -655,7 +655,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[28]); //_value[28]=test, _value[27]=real Radar data
+      locationCode = int.parse(_value[27]); //_value[28]=test, _value[27]=real Radar data
     } catch (e) {
       return 'No Notification';
     }
@@ -885,7 +885,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       Timer(Duration(milliseconds: 600), () {
         right_redPlayer.stop();
       });
-      callGpsData();
     }
     else if (_getLocation() == 'Right Notification Warning') {
       dataInserted = true;
@@ -938,7 +937,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       Timer(Duration(milliseconds: 600), () {
         rear_redPlayer.stop();
       });
-      callGpsData();
     }
     else if (_getLocation() == 'Rear Notification Warning') {
       color = Colors.yellow;
@@ -1012,7 +1010,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
     //   ),
     // );
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4',
+      'https://media.w3.org/2010/05/sintel/trailer.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
@@ -1121,8 +1119,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
           //     ]),),
           // );
           _videoPlayerController = VlcPlayerController.network(
-            'rtsp://192.168.1.254/xxxx.mp4',
-            // 'https://media.w3.org/2010/05/sintel/trailer.mp4',
+            'https://media.w3.org/2010/05/sintel/trailer.mp4',
             hwAcc: HwAcc.disabled,
             autoPlay: true,
             options: VlcPlayerOptions(
@@ -1164,7 +1161,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       //     ]),),
       // );
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4',
+        'https://media.w3.org/2010/05/sintel/trailer.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
@@ -2053,5 +2050,5 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
         );
       }
     );
-  }
+
 }
