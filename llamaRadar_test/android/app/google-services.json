@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "880729904985",
+    "project_id": "auth-llama",
+    "storage_bucket": "auth-llama.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880729904985:android:20b967a1eb36970e9e1e48",
+        "android_client_info": {
+          "package_name": "com.example.lamaradar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYYpSZNfxsJhg13TdhnbFvpB89685bzUo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

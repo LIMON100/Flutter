@@ -106,6 +106,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   bool dataInserted = false;
   bool _dangerWarningCalled = false;
 
+
   @override
   void initState() {
     super.initState();
@@ -147,6 +148,12 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     }).catchError((e) {
       debugPrint(e);
     });
+
+    // When navigating away, cancel the operation
+    if (Navigator.canPop(context)) {
+      completer.completeError('Navigation canceled');
+    }
+    return completer.future;
   }
 
 
@@ -246,6 +253,13 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     };
   }
   //
+
+  Future<void> insertDemoData() async {
+    if(_dangerWarningCalled) {
+      Map<String, dynamic> demoData = getDemoData();
+      await helper.insertCoordinates(demoData);
+      _dangerWarningCalled = false;
+=======
   int da = 0;
   Future<void> insertDemoData() async {
     if(_dangerWarningCalled) {
@@ -634,7 +648,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
 
 
   String _getLocation() {
-    // Check if _value is null or empty
     if (_value == null || _value.isEmpty || _value.length < 29) {
       return 'Notification Not Available';
     }
@@ -642,6 +655,8 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
+      locationCode = int.parse(_value[27]); //_value[28]=test, _value[27]=real Radar data
+
       locationCode = int.parse(_value[28]); //_value[28]=test, _value[27]=real Radar data
     } catch (e) {
       return 'No Notification';
@@ -657,6 +672,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
         return 'Left Notification Warning';
       case 4:
         return 'Left Notification Danger';
+
       case 5:
         return 'Rear Notification Danger';
       default:
@@ -668,6 +684,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   int right_danger_counter = 0;
 
   // Test insertDemodatacalling
+  bool _isGpsDataCallScheduled = false;
+  void callGpsData(){
+    if (!_isGpsDataCallScheduled) {
+      _isGpsDataCallScheduled = true;
+
+      _gpsDataTimer = Timer(Duration(milliseconds: 300), () {
+        getCurrentDateTime();
+        _getCurrentPosition();
 
   int callGPS = 0;
   bool _isGpsDataCallScheduled = false;
@@ -715,7 +739,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       color = Colors.yellow;
       left_greenPlayer.setAsset('assets/warning3.wav');
       left_greenPlayer.play();
-
 
       Timer(Duration(milliseconds: 400), () {
         left_greenPlayer.stop();
@@ -1005,7 +1028,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     //   ),
     // );
     _videoPlayerController = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4',
+      'https://media.w3.org/2010/05/sintel/trailer.mp4',
       hwAcc: HwAcc.disabled,
       autoPlay: true,
       options: VlcPlayerOptions(
@@ -1114,7 +1137,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
           //     ]),),
           // );
           _videoPlayerController = VlcPlayerController.network(
-            'rtsp://192.168.1.254/xxxx.mp4',
+            'https://media.w3.org/2010/05/sintel/trailer.mp4',
             hwAcc: HwAcc.disabled,
             autoPlay: true,
             options: VlcPlayerOptions(
@@ -1156,7 +1179,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
       //     ]),),
       // );
       _videoPlayerController = VlcPlayerController.network(
-        'rtsp://192.168.1.254/xxxx.mp4',
+        'https://media.w3.org/2010/05/sintel/trailer.mp4',
         hwAcc: HwAcc.disabled,
         autoPlay: true,
         options: VlcPlayerOptions(
@@ -1209,6 +1232,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   // Dispose function
   @override
   void dispose() {
+    print("DISPOSE CALLED");
     _leftBlinkTimer?.cancel();
     _rightBlinkTimer?.cancel();
     right_redPlayer.dispose();
@@ -1219,7 +1243,9 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
     left_redPlayer.dispose();
     _stopBlinking();
     _videoPlayerController.dispose();
+    _gpsDataTimer?.cancel();
     super.dispose();
+    print("DISPOSE END");
   }
 
   Widget buildCameraButton() {
@@ -1505,398 +1531,233 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
   }
 
   @override
+  void didPop() {
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // This is called when the page is popped and the previous page is now active
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ledValuesProvider = Provider.of<LedValuesProvider>(context);
     Color screenColor = Theme.of(context).backgroundColor;
     return OrientationBuilder(
       builder: (context, orientation) {
         currentOrientation = orientation;
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-            ),
-          ),
-          child: Scaffold(
-            // backgroundColor: Colors.transparent,
-            backgroundColor: Colors.white70,
-            appBar: AppBar(
-              centerTitle: true,
-              foregroundColor: Colors.black,
-              title: const Text('Ride Info'),
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device, selectedOption: _selectedOption)),
-                    );
-                  },
-                ),
-              ],
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  // color: Color(0xFF6497d3),
-                  color: Color(0xFF517fa4),
-                  // color: Colors.white70,
-                ),
+        return WillPopScope(
+          onWillPop: () async {
+            return true;
+          },
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
               ),
             ),
-            body: SingleChildScrollView(
-              child: Container(
-                margin: EdgeInsets.only(top: 15),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Top warning+indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            if (!_isLeftBlinking) {
-                              _startLeftBlinking();
-                              if (_isFirstData) {
-                                _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
-                                _isFirstData = false;
-                              }
-                              else {
-                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
-                                _isFirstData = true;
-                              }
-                            }
-                          },
-                          icon: Icon(
-                            Indicator.image2vector,
-                            size: 48,
-                            color: _isLeftBlinking ? Colors.orange : Colors.black,
-                          ),
-                        ),
-
-                        SizedBox(width: 60),
-                        Container(
-                          height: 48,
-                          color: Colors.transparent,
-                          child: Image.asset(
-                            'assets/icons/front_warning_llama_rb.png',
-                            color: _isTopBlinking ? Colors.red : Colors.green,
-                          ),
-                        ),
-
-                        SizedBox(width: 60),
-                        IconButton(
-                          onPressed: () {
-                            if (!_isRightBlinking) {
-                              _startRightBlinking();
-                              // Determine which data to send based on the state
-                              if (_isFirstDataRight) {
-                                _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
-                                _isFirstDataRight = false; // Toggle the state for the next press
-                              } else {
-                                _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
-                                _isFirstDataRight = true; // Toggle the state for the next press
-                              }
-                            }
-                          },
-                          icon: Icon(
-                            Indicator.image2vector__1_,
-                            size: 48,
-                            color: _isRightBlinking ? Colors.orange : Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // left+right warning
-                    SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _getLeftIcon(),
-                        // _getNotificationIconLeft(),
-                        SizedBox(width: 15),
-                        Text(
-                          _getLocation(),
-                          style: TextStyle(fontSize: 17),
-                        ),
-                        SizedBox(width: 15),
-                        _getRightIcon(),
-                      ],
-                    ),
-
-                    // Rear warning
-                    SizedBox(height: 30),
-                    Container(
-                      margin: EdgeInsets.only(top: 1),
-                      child: Row(
+            child: Scaffold(
+              // backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white70,
+              appBar: AppBar(
+                centerTitle: true,
+                foregroundColor: Colors.black,
+                title: const Text('Ride Info'),
+                actions: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.settings),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LlamaGuardSetting(device: widget.device, selectedOption: _selectedOption)),
+                      );
+                    },
+                  ),
+                ],
+                flexibleSpace: Container(
+                  decoration: BoxDecoration(
+                    // color: Color(0xFF6497d3),
+                    color: Color(0xFF517fa4),
+                    // color: Colors.white70,
+                  ),
+                ),
+              ),
+              body: SingleChildScrollView(
+                child: Container(
+                  margin: EdgeInsets.only(top: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Top warning+indicator
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _getRearIcon(),
-                        ],
-                      ),
-                    ),
-                    // Test without column
-                    Container(
-                      margin: EdgeInsets.only(top: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Row(
-                            // mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SizedBox(width: 100),
-                              // SizedBox(width: 0),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
-                                    onPressed: () {},
-                                    padding: EdgeInsets.all(0),
-                                  ),
-                                  DropdownButton<String>(
-                                    value: _selectedOption,
-                                    onChanged: (String? value) {
-                                      setState(() {
-                                        _selectedOption = value!;
-                                        switch (value) {
-                                          case 'OFF':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
-                                            break;
-                                          case 'ON':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
-                                            break;
-                                          case 'FLASHING':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
-                                            break;
-                                          case 'PULSE':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x03, 0x19]);
-                                            break;
-                                          case 'PELOTON':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x04, 0x19]);
-                                            break;
-                                          case 'QUICKLY_FLASH':
-                                            _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
-                                            break;
-                                          case 'CUSTOM':
-                                            isCustomSelected = true;
-                                            _showCustomDialog();
-                                            break;
-                                          default:
-                                            isCustomSelected = false;
-                                            break;
-                                        }
-                                      });
-                                    },
-                                    items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH', 'CUSTOM']
-                                        .map((String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Open rear up cam
-                    Container(
-                      // margin: EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
-                        children: [
-                          SizedBox(width: 70),
-                          buildCameraButton(),
-                          SizedBox(width: 75),
-                          // Flexible(
-                          //   child: Column(
-                          //     crossAxisAlignment: CrossAxisAlignment.start,
-                          //     children: [
-                          //       SizedBox(height: 20),
-                          //       Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
-                          //       Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
-                          //     ],
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    ),
-
-                    // Camera and distance mode
-                    Row(
-                      children: [
-                        SizedBox(width: 5),
-                        //Spinning tried
-                        // if (!isButtonEnabled && isCameraAnimation) // Show loading spinner when button is disabled
-                        //   SpinKitThreeInOut(
-                        //     color: Colors.cyan.shade500,
-                        //     size: 80.0,
-                        //   ),
-                        // if (!isCameraAnimation) // Show loading spinner when button is disabled
-                        Flexible(
-                          flex: 3,
-                          child: Screenshot(
-                            controller: screenshotController,
-                            child: Container(
-                              height: 280,
-                              width: 300,
-                              child: Center(
-                                child: Stack(
-                                  children: [
-                                    isCameraStreaming && _videoPlayerController != null
-                                        ? Transform.rotate(
-                                      angle: rotationAngle * 3.14159265359 / 180,
-                                      child: VlcPlayer(
-                                        controller: _videoPlayerController,
-                                        aspectRatio: currentOrientation == Orientation.portrait
-                                            ? 16 / 9
-                                            : 9 / 16,
-                                      ),
-                                    )
-                                        : Image.asset(
-                                      'images/test_background3.jpg',
-                                      fit: BoxFit.fitWidth,
-                                    ),
-                                    if (isCameraStreaming)
-                                      Positioned(
-                                        bottom: 16.0,
-                                        right: 16.0,
-                                        child: IconButton(
-                                          color: Colors.red,
-                                          icon: Icon(Icons.cameraswitch_outlined),
-                                          onPressed: changeOrientation,
-                                          iconSize: 40.0,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
+                          IconButton(
+                            onPressed: () {
+                              if (!_isLeftBlinking) {
+                                _startLeftBlinking();
+                                if (_isFirstData) {
+                                  _sendData([0x02, 0x01, 0x10, 0x00, 0x06, 0x19]);
+                                  _isFirstData = false;
+                                }
+                                else {
+                                  _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                  _isFirstData = true;
+                                }
+                              }
+                            },
+                            icon: Icon(
+                              Indicator.image2vector,
+                              size: 48,
+                              color: _isLeftBlinking ? Colors.orange : Colors.black,
                             ),
                           ),
-                        ),
-                        Flexible(
-                        child:Column(
+
+                          SizedBox(width: 60),
+                          Container(
+                            height: 48,
+                            color: Colors.transparent,
+                            child: Image.asset(
+                              'assets/icons/front_warning_llama_rb.png',
+                              color: _isTopBlinking ? Colors.red : Colors.green,
+                            ),
+                          ),
+
+                          SizedBox(width: 60),
+                          IconButton(
+                            onPressed: () {
+                              if (!_isRightBlinking) {
+                                _startRightBlinking();
+                                // Determine which data to send based on the state
+                                if (_isFirstDataRight) {
+                                  _sendData([0x02, 0x01, 0x10, 0x00, 0x07, 0x19]);
+                                  _isFirstDataRight = false; // Toggle the state for the next press
+                                } else {
+                                  _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                  _isFirstDataRight = true; // Toggle the state for the next press
+                                }
+                              }
+                            },
+                            icon: Icon(
+                              Indicator.image2vector__1_,
+                              size: 48,
+                              color: _isRightBlinking ? Colors.orange : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // left+right warning
+                      SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _getLeftIcon(),
+                          // _getNotificationIconLeft(),
+                          SizedBox(width: 15),
+                          Text(
+                            _getLocation(),
+                            style: TextStyle(fontSize: 17),
+                          ),
+                          SizedBox(width: 15),
+                          _getRightIcon(),
+                        ],
+                      ),
+
+                      // Rear warning
+                      SizedBox(height: 30),
+                      Container(
+                        margin: EdgeInsets.only(top: 1),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Distance',style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text('Mode: $_selectedValue', style: TextStyle(fontWeight: FontWeight.bold)),
+                            _getRearIcon(),
+                          ],
+                        ),
+                      ),
+                      // Test without column
+                      Container(
+                        margin: EdgeInsets.only(top: 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              // mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                RotatedBox(
-                                  quarterTurns: 3,
-                                  child: SliderTheme(
-                                    data: SliderThemeData(
-                                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0), // Adjust the thumb size
-                                      overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0), // Adjust the overlay size
-                                      trackHeight: 12.0, // Adjust the track height
+                                SizedBox(width: 100),
+                                // SizedBox(width: 0),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(_tailight ? Icons.wb_twilight : Icons.wb_twilight),
+                                      onPressed: () {},
+                                      padding: EdgeInsets.all(0),
                                     ),
-                                    child: Slider(
-                                      value: _sliderValue,
-                                      min: 0,
-                                      max: 3, // Represents 0, 30, 60, 90 (3 steps)
-                                      divisions: 3, // Number of divisions (0, 30, 60, 90)
-                                      activeColor: Colors.deepPurple,
-                                      onChanged: (value) {
+                                    DropdownButton<String>(
+                                      value: _selectedOption,
+                                      onChanged: (String? value) {
                                         setState(() {
-                                          _sliderValue = value;
-                                          _selectedValue = (_sliderValue * 30).round();
+                                          _selectedOption = value!;
+                                          switch (value) {
+                                            case 'OFF':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x00, 0x19]);
+                                              break;
+                                            case 'ON':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x01, 0x19]);
+                                              break;
+                                            case 'FLASHING':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x02, 0x19]);
+                                              break;
+                                            case 'PULSE':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x03, 0x19]);
+                                              break;
+                                            case 'PELOTON':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x04, 0x19]);
+                                              break;
+                                            case 'QUICKLY_FLASH':
+                                              _sendData([0x02, 0x01, 0x10, 0x00, 0x05, 0x19]);
+                                              break;
+                                            case 'CUSTOM':
+                                              isCustomSelected = true;
+                                              _showCustomDialog();
+                                              break;
+                                            default:
+                                              isCustomSelected = false;
+                                              break;
+                                          }
                                         });
                                       },
-                                      onChangeEnd: (value) {
-                                        int selectedValue = (_sliderValue * 30).round();
-                                        print("SELECTEFVALUE");
-                                        print(selectedValue);
-                                        if (selectedValue == 30) {
-                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x00, 0x37]);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                              action: SnackBarAction(
-                                                label: 'Dismiss',
-                                                onPressed: () {
-                                                  // Handle the action when the user dismisses the message
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                        else if (selectedValue == 60) {
-                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x01, 0x37]);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                              action: SnackBarAction(
-                                                label: 'Dismiss',
-                                                onPressed: () {
-                                                  // Handle the action when the user dismisses the message
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                        else if (selectedValue == 90) {
-                                          _sendData([0x02, 0x01, 0x33, 0x00, 0x02, 0x37]);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                              action: SnackBarAction(
-                                                label: 'Dismiss',
-                                                onPressed: () {
-                                                  // Handle the action when the user dismisses the message
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                        else if (selectedValue == 0) {
-                                          _selectedValue = 10;
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Distance mode set to ${_selectedValue}M', style: TextStyle(fontWeight: FontWeight.bold)),
-                                              duration: Duration(seconds: 1), // Set the duration to 2 seconds
-                                              action: SnackBarAction(
-                                                label: 'Dismiss',
-                                                onPressed: () {
-                                                  // Handle the action when the user dismisses the message
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                      items: <String>['OFF', 'ON', 'FLASHING', 'PULSE', 'PELOTON', 'QUICKLY_FLASH', 'CUSTOM']
+                                          .map((String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
                                     ),
-                                  ),
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    SizedBox(height: 20),
-                                    Text('90', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 20),
-                                    Text('60', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 10),
-                                    SizedBox(height: 20),
-                                    Text('30', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 25),
-                                    Text('10', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 10),
                                   ],
                                 ),
                               ],
                             ),
                           ],
                         ),
+                      ),
+                      // Open rear up cam
+                      Container(
+                        // margin: EdgeInsets.only(top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
+                          children: [
+                            SizedBox(width: 70),
+                            buildCameraButton(),
+                            SizedBox(width: 75),
+                          ],
                         ),
-                      ],
                     ),
                     // Stop ride
                     SizedBox(height: 30),
@@ -1970,22 +1831,136 @@ class _CollisionWarningPage2State extends State<CollisionWarningPage2> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(width: 235),
-                          FloatingActionButton(
+                          // SizedBox(width: 50),
+                          GlowingButton2(
+                            text: "Stop Ride",
                             onPressed: () {
-                              _sendData([0x02, 0x01, 0x53, 0x00, 0x01, 0x57]);
-                              setState(() {
-                                _powerOn = !_powerOn;
-                              });
+                              left_redPlayer.stop();
+                              left_greenPlayer.stop();
+                              _disconnectFromDevice();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) =>
+                                    BleScreen(title: '')),
+                              );
                             },
-                            backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
-                            child: Icon(Icons.power_settings_new),
+                            color1: Color(0xFF517fa4),
+                            color2: Colors.cyan,
                           ),
                         ],
                       ),
-                    ),
-                    SizedBox(height: 15),
-                  ],
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     GlowingButton2(
+                      //       text: "Stop Ride",
+                      //       onPressed: () {
+                      //         // Show a confirmation dialog
+                      //         showDialog(
+                      //           context: context,
+                      //           builder: (BuildContext context) {
+                      //             return AlertDialog(
+                      //               title: Text("Stop Ride"),
+                      //               content: Text("Are you sure you want to Review your ride?"),
+                      //               actions: [
+                      //                 TextButton(
+                      //                   onPressed: () {
+                      //                     _disconnectFromDevice();
+                      //                     Navigator.push(
+                      //                       context,
+                      //                       MaterialPageRoute(builder: (context) => ShowGpsData()),
+                      //                     );
+                      //                   },
+                      //                   child: Text("Yes"),
+                      //                 ),
+                      //                 TextButton(
+                      //                   onPressed: () {
+                      //                     _disconnectFromDevice();
+                      //                     Navigator.push(
+                      //                       context,
+                      //                       MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+                      //                     );
+                      //                   },
+                      //                   child: Text("No"),
+                      //                 ),
+                      //               ],
+                      //             );
+                      //           },
+                      //         );
+                      //       },
+                      //       color1: Color(0xFF517fa4),
+                      //       color2: Colors.cyan,
+                      //     ),
+                      //   ],
+                      // ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     GlowingButton2(
+                    //       text: "Stop Ride",
+                    //       onPressed: () {
+                    //         // Show a confirmation dialog
+                    //         showDialog(
+                    //           context: context,
+                    //           builder: (BuildContext context) {
+                    //             return AlertDialog(
+                    //               title: Text("Stop Ride"),
+                    //               content: Text("Are you sure you want to Review your ride?"),
+                    //               actions: [
+                    //                 TextButton(
+                    //                   onPressed: () {
+                    //                     _disconnectFromDevice();
+                    //                     Navigator.push(
+                    //                       context,
+                    //                       MaterialPageRoute(builder: (context) => ShowGpsData()),
+                    //                     );
+                    //                   },
+                    //                   child: Text("Yes"),
+                    //                 ),
+                    //                 TextButton(
+                    //                   onPressed: () {
+                    //                     _disconnectFromDevice();
+                    //                     Navigator.push(
+                    //                       context,
+                    //                       MaterialPageRoute(builder: (context) => BleScreen(title: '')),
+                    //                     );
+                    //                   },
+                    //                   child: Text("No"),
+                    //                 ),
+                    //               ],
+                    //             );
+                    //           },
+                    //         );
+                    //       },
+                    //       color1: Color(0xFF517fa4),
+                    //       color2: Colors.cyan,
+                    //     ),
+                    //   ],
+                    // ),
+                    // Image with power button
+                      SizedBox(height: 30),
+                      Container(
+                        margin: EdgeInsets.only(top: 1),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(width: 235),
+                            FloatingActionButton(
+                              onPressed: () {
+                                _sendData([0x02, 0x01, 0x53, 0x00, 0x01, 0x57]);
+                                setState(() {
+                                  _powerOn = !_powerOn;
+                                });
+                              },
+                              backgroundColor: _powerOn ? Colors.red : Colors.blueGrey,
+                              child: Icon(Icons.power_settings_new),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 15),
+                    ],
+                  ),
                 ),
               ),
             ),

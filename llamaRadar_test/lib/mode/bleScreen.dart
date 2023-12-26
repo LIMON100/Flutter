@@ -389,29 +389,59 @@ class _BleScreenState extends State<BleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        drawer: SideBar(),
-        appBar: AppBar(
-          centerTitle: true,
-          foregroundColor: Colors.black,
-          title: const Text('Llama Guard'),
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              // color: Color(0xFF6497d3),
-              color: Color(0xFF517fa4),
-            ),
+    return WillPopScope(
+      onWillPop: () async {
+        final shouldPop = await showDialog(
+          context: context,
+          builder: (context) {
+            return Container(
+              child: AlertDialog(
+                title: Text("Are you sure to exit?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      // Navigator.of(context).pop(true);
+                      SystemNavigator.pop();
+                    },
+                    child: Text("Yes"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: Text("No"),
+                  )
+                ],
+              ),
+            );
+          },
+        );
+        return shouldPop ?? false;
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFa8caba), Color(0xFF517fa4)],
           ),
         ),
-        body: _buildView(),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          drawer: SideBar(),
+          appBar: AppBar(
+            centerTitle: true,
+            foregroundColor: Colors.black,
+            title: const Text('Llama Guard'),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                // color: Color(0xFF6497d3),
+                color: Color(0xFF517fa4),
+              ),
+            ),
+          ),
+          body: _buildView(),
+        ),
       ),
     );
   }

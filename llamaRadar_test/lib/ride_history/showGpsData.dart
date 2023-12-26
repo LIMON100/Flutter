@@ -41,7 +41,7 @@ class _ShowGpsDataState extends State<ShowGpsData> {
 
     if (_gpsCoordinates.isEmpty) {
       // Delay the "No data found" message for 3-4 seconds
-      Future.delayed(const Duration(seconds: 5), () {
+      Future.delayed(const Duration(seconds: 3), () {
         if (_gpsCoordinates.isEmpty) {
           showDialog(
             context: context,

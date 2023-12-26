@@ -46,7 +46,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <meta-data
+           android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyA0oXx7Ixd7R9vaP0q1iO4rxZGDRWmFzLo" />
+
+        <!-- <meta-data
             android:name="android.allow_multiple_resumed_activities"
-            android:value="true" />
+            android:value="true" /> -->
     </application>
 </manifest>

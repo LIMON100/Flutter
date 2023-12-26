@@ -1,6 +1,16 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:flutter_iot_wifi/flutter_iot_wifi.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:connectivity/connectivity.dart';
+
 
 class NetworkStreamPlayer extends StatefulWidget {
   @override
@@ -8,131 +18,83 @@ class NetworkStreamPlayer extends StatefulWidget {
 }
 
 class _NetworkStreamPlayerState extends State<NetworkStreamPlayer> {
-  VlcPlayerController ?_controller;
-  Orientation currentOrientation = Orientation.portrait;
-  double rotationAngle = 0.0;
-  String streamUrl = '';
-  int networkCache = 1000; // Default network cache duration
+  final String videoUrl = 'rtsp://username:password@ip_address:554/stream/channel=1/0';
+  final VlcPlayerController _controller = VlcPlayerController.network(
+    'rtsp://username:password@ip_address:554/stream/channel=1/0',
+    options: VlcPlayerOptions(),
+  );
+  bool _isPlaying = false;
+  Uint8List? _screenshot;
 
-  @override
-  void initState() {
-    super.initState();
-    liveViewState();
-    stopRecordState();
-    _controller = VlcPlayerController.network(
-      'rtsp://192.168.1.254/xxxx.mp4',
-      hwAcc: HwAcc.disabled,
-      options: VlcPlayerOptions(
-        advanced: VlcAdvancedOptions([
-          VlcAdvancedOptions.networkCaching(50),
-          VlcAdvancedOptions.fileCaching(50),
-          VlcAdvancedOptions.liveCaching(50),
-          VlcAdvancedOptions.clockSynchronization(1),
-        ]),
-        rtp: VlcRtpOptions([
-          VlcRtpOptions.rtpOverRtsp(true),
-          ":rtsp-tcp",
-        ]),
-          sout: VlcStreamOutputOptions([
-            VlcStreamOutputOptions.soutMuxCaching(0),
-          ])
-      ),);
-  }
-
-  Future<void> liveViewState() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2015&par=1'));
-    if (response.statusCode == 200) {
-      //fileList = json.decode(response.body);
-      print('HDR');
-    } else {
-      print('Cam error: ${response.statusCode}');
-    }
-  }
-
-  Future<void> stopRecordState() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.1.254/?custom=1&cmd=2001&par=0'));
-    if (response.statusCode == 200) {
-      //fileList = json.decode(response.body);
-      print('HDR');
-    } else {
-      print('Cam error: ${response.statusCode}');
-    }
-  }
-  void changeOrientation() {
+  void _togglePlay() {
     setState(() {
-      rotationAngle += 90.0; // Rotate by 90 degrees
-      if (rotationAngle >= 360.0) {
-        rotationAngle = 0.0;
+      _isPlaying = !_isPlaying;
+      if (_isPlaying) {
+        _controller.play();
+      } else {
+        _controller.pause();
       }
     });
   }
 
   @override
-  void dispose() {
-    _controller!.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  Future<void> _takeScreenshot() async {
+    try {
+      final screenshot = await _controller.takeSnapshot();
+      print("SCREEN");
+      print(screenshot);
+      setState(() {
+        _screenshot = screenshot;
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Network Stream Player'),
+        title: Text('Video Player'),
+        actions: [
+          ElevatedButton(
+            onPressed: _takeScreenshot,
+            child: Icon(Icons.camera_alt),
+          ),
+        ],
       ),
       body: Column(
         children: [
-          TextField(
-            decoration: InputDecoration(
-              labelText: 'Enter RTSP/HTTP URL',
-            ),
-            onChanged: (value) {
-              setState(() {
-                streamUrl = value;
-              });
-            },
+          VlcPlayer(
+            controller: _controller,
+            placeholder: Center(child: CircularProgressIndicator()),
+            aspectRatio: 16 / 9,
           ),
-          Row(
-            children: [
-              Text('Network Cache (0-1000ms)'),
-              Slider(
-                value: networkCache.toDouble(),
-                onChanged: (value) {
-                  setState(() {
-                    networkCache = value.round();
-                  });
-                },
-                min: 0,
-                max: 1000,
-                divisions: 20, // Adjust as needed
-              ),
-            ],
-          ),
-
-          // VlcPlayer(
-          //   controller: _controller!,
-          //   aspectRatio: 16 / 9, // Adjust for your video's aspect ratio
-          // ),
-          AspectRatio(
-            aspectRatio: currentOrientation == Orientation.portrait
-                ? 16 / 9
-                : 9 / 16,
-            child: Transform.rotate(
-              angle: rotationAngle * 3.14159265359 / 180,
-              child: VlcPlayer(
-                controller: _controller!,
-                aspectRatio: currentOrientation == Orientation.portrait
-                    ? 16 / 9
-                    : 9 / 16,
-              ),
-            ),
-          ),
+          SizedBox(height: 16),
           ElevatedButton(
-            onPressed: changeOrientation,
-            child: Text('Change Orientation'),
+            onPressed: _togglePlay,
+            child: _isPlaying ? Text('Pause') : Text('Play'),
           ),
+          SizedBox(height: 16),
+          if (_screenshot != null)
+            Image.memory(
+              _screenshot!,
+              width: 300, // Adjust the width as needed
+              height: 200, // Adjust the height as needed
+            ),
         ],
       ),
     );

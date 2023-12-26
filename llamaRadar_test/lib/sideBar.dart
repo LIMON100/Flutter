@@ -1,19 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lamaradar/auth/Screens/LogInScreen.dart';
 import 'package:lamaradar/icons/custom_icon_icons.dart';
 import 'package:lamaradar/icons/db_icons.dart';
 import 'package:camera/camera.dart';
+import 'package:lamaradar/ride_history/mapView.dart';
 import 'package:lamaradar/ride_history/maps/marker_info.dart';
 import 'package:lamaradar/ride_history/maps/maker_with_image.dart';
 import 'package:lamaradar/ride_history/maps/temp/CustomMarkerInfoWindowScreen.dart';
 import 'package:lamaradar/ride_history/maps/temp/custom_marker_with_network_image.dart';
 import 'package:lamaradar/ride_history/showGpsData.dart';
-import 'package:lamaradar/temp/ConnectWifiForDashCam.dart';
+import 'package:lamaradar/mode/ConnectWifiForDashCam.dart';
+import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
 import 'package:lamaradar/temp/checkdb.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'auth/firebase/temp/features/user_auth/presentation/pages/login_page.dart';
 import 'mode/llamaGuardSetting.dart';
 
 class SideBar extends StatefulWidget {
@@ -25,6 +29,8 @@ class SideBar extends StatefulWidget {
 class _SideBarState extends State<SideBar> {
 // class SideBar extends StatelessWidget {
   late final CameraDescription camera;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user;
 
   bool isLoggedIn = true;
   Future<void> saveLoginStatus(bool isLoggedIn) async {
@@ -35,6 +41,7 @@ class _SideBarState extends State<SideBar> {
 
   @override
   Widget build(BuildContext context) {
+    user = FirebaseAuth.instance.currentUser;
     final size = MediaQuery.of(context).size;
     return Drawer(
       child: Container(
@@ -42,7 +49,8 @@ class _SideBarState extends State<SideBar> {
         child: ListView(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text('   LLAMA'),
+              // accountName: Text('   LLAMA'),
+              accountName: Text(user?.email ?? 'Not logged in'),
               accountEmail: Text(''),
               currentAccountPicture: CircleAvatar(
                 child: ClipOval(
@@ -119,37 +127,6 @@ class _SideBarState extends State<SideBar> {
                 );
               },
             ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
-                    CustomIcon.webcam,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'Test map',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>  MarkerWithImage(date: '2023-12-01'), //TestGps
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-
             // LayoutBuilder(
             //   builder: (context, constraints) {
             //     final fontSize = constraints.maxWidth * 0.06;
@@ -160,7 +137,7 @@ class _SideBarState extends State<SideBar> {
             //         size: constraints.maxWidth * 0.07,
             //       ),
             //       title: Text(
-            //         'Check DB ',
+            //         'Test VLC',
             //         style: TextStyle(
             //           fontFamily: 'Quicksand-VariableFont_wght',
             //           fontSize: fontSize,
@@ -173,7 +150,38 @@ class _SideBarState extends State<SideBar> {
             //         Navigator.pop(context);
             //         Navigator.of(context).push(
             //           MaterialPageRoute(
-            //             builder: (context) =>  CheckDB(), //ConnectWifiForDashCam
+            //             builder: (context) =>  LoginPage(),//MarkerWithImage(date: '2023-12-01'), //TestGps
+            //           ),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
+
+            // LayoutBuilder(
+            //   builder: (context, constraints) {
+            //     final fontSize = constraints.maxWidth * 0.06;
+            //     return ListTile(
+            //       leading: Icon(
+            //         CustomIcon.webcam,
+            //         color: Colors.black,
+            //         size: constraints.maxWidth * 0.07,
+            //       ),
+            //       title: Text(
+            //         'TEST VLC 2 ',
+            //         style: TextStyle(
+            //           fontFamily: 'Quicksand-VariableFont_wght',
+            //           fontSize: fontSize,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black,
+            //           letterSpacing: 2.0,
+            //         ),
+            //       ),
+            //       onTap: () {
+            //         Navigator.pop(context);
+            //         Navigator.of(context).push(
+            //           MaterialPageRoute(
+            //             builder: (context) =>  TestGps(),//CheckDB(), //ConnectWifiForDashCam
             //           ),
             //         );
             //       },
@@ -208,14 +216,8 @@ class _SideBarState extends State<SideBar> {
                             title: Text("Are you sure to log out?"),
                             actions: [
                               TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    isLoggedIn = false; // Update login status
-                                  });
-
-                                  saveLoginStatus(isLoggedIn); // Save login status to shared preferences
-
-                                  // Clear login status before navigating back
+                                onPressed: () async{
+                                  await _auth.signOut();
                                   Navigator.of(context).popUntil((route) => route.isFirst);
                                   Navigator.of(context).push(
                                     MaterialPageRoute(

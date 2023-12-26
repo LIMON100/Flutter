@@ -2,6 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+        <key>NSAppTransportSecurity</key>
+        <dict>
+          <key>NSAllowsArbitraryLoads</key>
+          <true/>
+        </dict>
+        <key>NSLocalNetworkUsageDescription</key>
+        <string>Used to search for chromecast devices</string>
+        <key>NSBonjourServices</key>
+        <array>
+          <string>_googlecast._tcp</string>
+        </array>
+	    <key>NSBluetoothAlwaysUsageDescription</key>
+        <string>Need BLE permission</string>
+        <key>NSBluetoothPeripheralUsageDescription</key>
+        <string>Need BLE permission</string>
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>Need Location permission</string>
+        <key>NSLocationAlwaysUsageDescription</key>
+        <string>Need Location permission</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>Need Location permission</string>
 		<key>io.flutter.embedded_views_preview</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

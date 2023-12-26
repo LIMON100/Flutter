@@ -2050,5 +2050,5 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
         );
       }
     );
-  }
+
 }

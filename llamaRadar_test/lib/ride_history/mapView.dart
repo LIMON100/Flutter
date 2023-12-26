@@ -30,17 +30,36 @@ class _MapViewState extends State<MapView> {
   }
 
   // Fetch all data based on date
+  // Future<void> _fetchGpsCoordinates() async {
+  //   final Database db = await GpsDatabaseHelper().initDatabase();
+  //   final List<Map<String, dynamic>> gpsCoordinates = await db.query(
+  //     'gps_coordinates',
+  //     where: 'date = ?',
+  //     whereArgs: [widget.date],
+  //   );
+  //
+  //   setState(() {
+  //     _gpsCoordinates = gpsCoordinates;
+  //     //Extra
+  //     _imageList = _gpsCoordinates
+  //         .map<Uint8List?>((coordinate) => _getImageBytes(coordinate['image']))
+  //         .toList();
+  //   });
+  // }
+
+  // Data in decending order
   Future<void> _fetchGpsCoordinates() async {
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
       'gps_coordinates',
       where: 'date = ?',
       whereArgs: [widget.date],
+      orderBy: 'time DESC', // Added this line to sort by time in descending order
     );
 
     setState(() {
-      _gpsCoordinates = gpsCoordinates;
-      //Extra
+      // Sort the GPS coordinates by time in descending order
+      _gpsCoordinates = gpsCoordinates.toList()..sort((a, b) => b['time'].compareTo(a['time']));
       _imageList = _gpsCoordinates
           .map<Uint8List?>((coordinate) => _getImageBytes(coordinate['image']))
           .toList();
@@ -191,20 +210,28 @@ class _MapViewState extends State<MapView> {
                                       borderRadius: BorderRadius.all(Radius.circular(30)),
                                     ),
                                   ),
-                                  child: Text(
-                                    "MAP",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                ),
+                                child: Text(
+                                  "MAP",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                              ],
-                            )
-                          ],
-                        ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
+                    ),
+                  );
+                } else {
+                  return Container();
+                }
+              },
+            )
+
                     );
                   } else {
                     return Container();
