@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:lamaradar/temp/showAWSData.dart';
 import 'package:path/path.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -218,7 +219,8 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   // Query data
-  late List<History?> historyList;
+  late List<History?> historyList = []; // Initialize with an empty list
+
   Future<List<History?>> queryListItems() async {
     try {
       final request = ModelQueries.list(History.classType);
@@ -226,8 +228,8 @@ class _TestScreenState extends State<TestScreen> {
 
       final items = response.data?.items;
       print("ITEMS");
-      historyList = items!;
-      print(items);
+      historyList = items ?? []; // Assign items or an empty list if items is null
+
       if (items == null) {
         print('errors: ${response.errors}');
         return <History?>[];
@@ -354,20 +356,15 @@ class _TestScreenState extends State<TestScreen> {
 
               ElevatedButton(
                 // onPressed: () => getImageUrl2('283e3e80-a897-11ee-b57a-9707fee91674.png'),
-                onPressed: () => queryListItems(),
-                child: Text('Retreive data'),
-              ),
-              ListView.builder(
-                itemCount: historyList?.length,
-                itemBuilder: (context, index) {
-                  History? history = historyList?[index];
-                  return ListTile(
-                    title: Text('ID: ${history!.id}'),
-                    subtitle: Text('Date: ${history.date} Time: ${history.time}'),
-                    leading: Image.network(history.imageUrl!),
-                    // Add more widgets to display other details as needed
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>  ShowAwsData(),//MarkerWithImage(date: '2023-12-01'), //TestGps
+                    ),
                   );
                 },
+                child: Text('Retreive data'),
               ),
             ],
           ),
