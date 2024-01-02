@@ -43,7 +43,7 @@ class _ShowAwsDataState extends State<ShowAwsData> {
   }
 
   Future<void> initializeData() async {
-    await Future.delayed(Duration(seconds: 3));
+    // await Future.delayed(Duration(seconds: 3));
     await queryListItems();
   }
 
@@ -52,14 +52,25 @@ class _ShowAwsDataState extends State<ShowAwsData> {
   late List<History?> historyList = []; // Initialize with an empty list
 
   Future<List<History?>> queryListItems() async {
+    final currentUser = await Amplify.Auth.getCurrentUser();
+    print("CURRENTUSER");
+    print(currentUser);
     try {
       final request = ModelQueries.list(History.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      final items = response.data?.items;
+      final request2 = ModelQueries.get(History.classType, HistoryModelIdentifier(id: currentUser.userId));
+      final response2 = await Amplify.API.query(request: request2).response;
+      final testItems = response2?.data?.latitude;
       print("ITEMS");
-      historyList = items ?? []; // Assign items or an empty list if items is null
+      print(request2);
+      print(request);
+      print(testItems);
 
+      final items = response.data?.items;
+
+      historyList = items ?? []; // Assign items or an empty list if items is null
+      // print(historyList);
       if (items != null && items.isNotEmpty) {
         newHistory = items[0]!; // Assuming you want the first item
       }
@@ -75,125 +86,195 @@ class _ShowAwsDataState extends State<ShowAwsData> {
     return <History?>[];
   }
 
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 5,
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              height: 500,
-              alignment: Alignment.center,
-              // color: Colors,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: newHistory.imageUrl != null
-                        ? Stack(
-                      children: [
-                        const Center(child: CircularProgressIndicator()),
-                        CachedNetworkImage(
-                          errorWidget: (context, url, dynamic error) =>
-                          const Icon(Icons.error_outline_outlined),
-                          imageUrl: newHistory.imageUrl!,
-                          cacheKey: newHistory.imagekey,
-                          width: double.maxFinite,
-                          height: 500,
-                          alignment: Alignment.topCenter,
-                          fit: BoxFit.fill,
-                        ),
-                      ],
-                    )
-                        : Image.asset(
-                      'images/new_lama.jpg',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        newHistory.latitude.toString(),
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .headlineSmall!
-                            .copyWith(color: Colors.white),
+    return ListView.builder(
+      itemCount: historyList.length, // Since you have a single item, set itemCount to 1
+      itemBuilder: (context, index) {
+        final gpsCoordinate = historyList[index];
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          elevation: 5,
+          child: Column(
+            children: [
+              Container(
+                height: 500,
+                alignment: Alignment.center,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: historyList[index]?.imageUrl != null
+                          ? Stack(
+                        children: [
+                          const Center(child: CircularProgressIndicator()),
+                          CachedNetworkImage(
+                            errorWidget: (context, url, dynamic error) =>
+                            const Icon(Icons.error_outline_outlined),
+                            imageUrl: historyList[index]!.imageUrl!,
+                            cacheKey: historyList[index]!.imagekey,
+                            width: double.maxFinite,
+                            height: 350,
+                            alignment: Alignment.topCenter,
+                            fit: BoxFit.fill,
+                          ),
+                        ],
+                      )
+                          : Image.asset(
+                        'images/new_lama.jpg',
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 8, 8, 4),
-            child: DefaultTextStyle(
-              softWrap: false,
-              overflow: TextOverflow.ellipsis,
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .titleMedium!,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      newHistory.longitude.toString(),
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .titleMedium!
-                          .copyWith(color: Colors.black54),
+                    Positioned(
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          newHistory.latitude.toString(),
+                          style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    newHistory.date.toString(),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  Text(
-                    newHistory.time.toString(),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(2, 8, 8, 4),
+                child: DefaultTextStyle(
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium!,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          historyList[index]!.longitude.toString(),
+                          style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.black54),
+                        ),
+                      ),
+                      Text(
+                        historyList[index]!.date.toString(),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        historyList[index]!.position.toString(),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
+
   // @override
   // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: Text('Data Submission Screen'),
+  //   return Card(
+  //     clipBehavior: Clip.antiAlias,
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(15),
   //     ),
-  //     body: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: ListView.builder(
-  //         itemCount: historyList.length,
-  //         itemBuilder: (context, index) {
-  //           History? history = historyList[index];
-  //           return ListTile(
-  //             title: Text('ID: ${history!.id}'),
-  //             subtitle: Text('Date: ${history.date} Time: ${history.time}'),
-  //             leading: Image.network(history.imageUrl!),
-  //             // Add more widgets to display other details as needed
-  //           );
-  //         },
-  //       ),
+  //     elevation: 5,
+  //     child: Column(
+  //       children: [
+  //         Expanded(
+  //           child: Container(
+  //             height: 500,
+  //             alignment: Alignment.center,
+  //             // color: Colors,
+  //             child: Stack(
+  //               children: [
+  //                 Positioned.fill(
+  //                   child: newHistory.imageUrl != null
+  //                       ? Stack(
+  //                     children: [
+  //                       const Center(child: CircularProgressIndicator()),
+  //                       CachedNetworkImage(
+  //                         errorWidget: (context, url, dynamic error) =>
+  //                         const Icon(Icons.error_outline_outlined),
+  //                         imageUrl: newHistory.imageUrl!,
+  //                         cacheKey: newHistory.imagekey,
+  //                         width: double.maxFinite,
+  //                         height: 500,
+  //                         alignment: Alignment.topCenter,
+  //                         fit: BoxFit.fill,
+  //                       ),
+  //                     ],
+  //                   )
+  //                       : Image.asset(
+  //                     'images/new_lama.jpg',
+  //                     fit: BoxFit.contain,
+  //                   ),
+  //                 ),
+  //                 Positioned(
+  //                   bottom: 16,
+  //                   left: 16,
+  //                   right: 16,
+  //                   child: FittedBox(
+  //                     fit: BoxFit.scaleDown,
+  //                     alignment: Alignment.centerLeft,
+  //                     child: Text(
+  //                       newHistory.latitude.toString(),
+  //                       style: Theme
+  //                           .of(context)
+  //                           .textTheme
+  //                           .headlineSmall!
+  //                           .copyWith(color: Colors.white),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         Padding(
+  //           padding: const EdgeInsets.fromLTRB(2, 8, 8, 4),
+  //           child: DefaultTextStyle(
+  //             softWrap: false,
+  //             overflow: TextOverflow.ellipsis,
+  //             style: Theme
+  //                 .of(context)
+  //                 .textTheme
+  //                 .titleMedium!,
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Padding(
+  //                   padding: const EdgeInsets.only(bottom: 8),
+  //                   child: Text(
+  //                     newHistory.longitude.toString(),
+  //                     style: Theme
+  //                         .of(context)
+  //                         .textTheme
+  //                         .titleMedium!
+  //                         .copyWith(color: Colors.black54),
+  //                   ),
+  //                 ),
+  //                 Text(
+  //                   newHistory.date.toString(),
+  //                   style: const TextStyle(fontSize: 12),
+  //                 ),
+  //                 Text(
+  //                   newHistory.time.toString(),
+  //                   style: const TextStyle(fontSize: 12),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ],
   //     ),
   //   );
   // }
