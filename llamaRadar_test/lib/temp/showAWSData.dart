@@ -53,6 +53,7 @@ class _ShowAwsDataState extends State<ShowAwsData> {
 
   Future<List<History?>> queryListItems() async {
     final currentUser = await Amplify.Auth.getCurrentUser();
+
     print("CURRENTUSER");
     print(currentUser);
     try {

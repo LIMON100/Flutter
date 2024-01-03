@@ -614,7 +614,7 @@ class _CollisionWarningPageFirebaseState extends State<CollisionWarningPageFireb
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[28]); //_value[28]=test, _value[27]=real Radar data
+      locationCode = int.parse(_value[27]); //_value[28]=test, _value[27]=real Radar data
     } catch (e) {
       return 'No Notification';
     }

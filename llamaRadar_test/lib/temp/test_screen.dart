@@ -175,15 +175,8 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   Future<String?> uploadImage()
-  //     {
-  //   required BuildContext context,
-  // })
   async {
-    // final picker = ImagePicker();
-    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    // if (pickedFile == null) {
-    //   return false;
-    // }
+
     RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage();
     ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -197,17 +190,6 @@ class _TestScreenState extends State<TestScreen> {
     print(tempDir);
     final file = File('${tempDir.path}/captured_image22.png');
     await file.writeAsBytes(pngBytes!);
-
-
-    // final file = File(pickedFile.path); // Picked file
-
-    // await showDialog<String>(
-    //   context: context,
-    //   barrierDismissible: false,3
-    //   builder: (BuildContext context) {
-    //     return CircularPercentIndicator(radius: radius);
-    //   },
-    // );
 
     final fileKey = await uploadFile(file);
     print("CHECKKEY");
@@ -294,7 +276,7 @@ class _TestScreenState extends State<TestScreen> {
           longitude: longitude,
           date: TemporalDate.fromString(date),
           time: TemporalTime.fromString(time),
-          position: "2Happy",
+          position: "left",
           imageUrl: imageUrlNew.toString(),
           imagekey: fileKeyFinal
       );
@@ -344,7 +326,7 @@ class _TestScreenState extends State<TestScreen> {
                   color: Colors.white,
                   height: 100, // Adjust the height as needed
                   child: Center(
-                    child: Text('Screenshot Placeholder'),
+                    child: Text('NO NOW'),
                   ),
                 ),
               ),
