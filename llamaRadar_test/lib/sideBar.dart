@@ -1,3 +1,4 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,9 +17,12 @@ import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
 import 'package:lamaradar/temp/checkdb.dart';
+import 'package:lamaradar/temp/test_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'auth/firebase/temp/features/user_auth/presentation/pages/login_page.dart';
+// import 'auth/firebase/temp/features/user_auth/presentation/pages/login_page.dart';
 import 'mode/llamaGuardSetting.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_api/amplify_api.dart';
 
 class SideBar extends StatefulWidget {
   SideBar({Key? key}) : super(key: key);
@@ -29,8 +33,23 @@ class SideBar extends StatefulWidget {
 class _SideBarState extends State<SideBar> {
 // class SideBar extends StatelessWidget {
   late final CameraDescription camera;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
+  String userUniqueName = '';
+
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUserID();
+  }
+
+  Future<void> getCurrentUserID() async {
+    final currentUser = await Amplify.Auth.getCurrentUser();
+    Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
+    userUniqueName = signInDetails['username'];
+    setState(() {});
+  }
 
   bool isLoggedIn = true;
   Future<void> saveLoginStatus(bool isLoggedIn) async {
@@ -41,7 +60,7 @@ class _SideBarState extends State<SideBar> {
 
   @override
   Widget build(BuildContext context) {
-    user = FirebaseAuth.instance.currentUser;
+    // user = FirebaseAuth.instance.currentUser;
     final size = MediaQuery.of(context).size;
     return Drawer(
       child: Container(
@@ -50,7 +69,7 @@ class _SideBarState extends State<SideBar> {
           children: [
             UserAccountsDrawerHeader(
               // accountName: Text('   LLAMA'),
-              accountName: Text(user?.email ?? 'Not logged in'),
+              accountName: Text(userUniqueName ?? 'Not logged in'),
               accountEmail: Text(''),
               currentAccountPicture: CircleAvatar(
                 child: ClipOval(
@@ -127,36 +146,36 @@ class _SideBarState extends State<SideBar> {
                 );
               },
             ),
-            // LayoutBuilder(
-            //   builder: (context, constraints) {
-            //     final fontSize = constraints.maxWidth * 0.06;
-            //     return ListTile(
-            //       leading: Icon(
-            //         CustomIcon.webcam,
-            //         color: Colors.black,
-            //         size: constraints.maxWidth * 0.07,
-            //       ),
-            //       title: Text(
-            //         'Test VLC',
-            //         style: TextStyle(
-            //           fontFamily: 'Quicksand-VariableFont_wght',
-            //           fontSize: fontSize,
-            //           fontWeight: FontWeight.bold,
-            //           color: Colors.black,
-            //           letterSpacing: 2.0,
-            //         ),
-            //       ),
-            //       onTap: () {
-            //         Navigator.pop(context);
-            //         Navigator.of(context).push(
-            //           MaterialPageRoute(
-            //             builder: (context) =>  LoginPage(),//MarkerWithImage(date: '2023-12-01'), //TestGps
-            //           ),
-            //         );
-            //       },
-            //     );
-            //   },
-            // ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = constraints.maxWidth * 0.06;
+                return ListTile(
+                  leading: Icon(
+                    CustomIcon.webcam,
+                    color: Colors.black,
+                    size: constraints.maxWidth * 0.07,
+                  ),
+                  title: Text(
+                    'Test AWS DATA',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand-VariableFont_wght',
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>  TestScreen(),//MarkerWithImage(date: '2023-12-01'), //TestGps
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
 
             // LayoutBuilder(
             //   builder: (context, constraints) {
@@ -217,7 +236,11 @@ class _SideBarState extends State<SideBar> {
                             actions: [
                               TextButton(
                                 onPressed: () async{
-                                  await _auth.signOut();
+                                  setState(() {
+                                    isLoggedIn = false;
+                                    saveLoginStatus(isLoggedIn);
+                                  });
+                                  await Amplify.Auth.signOut();
                                   Navigator.of(context).popUntil((route) => route.isFirst);
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
