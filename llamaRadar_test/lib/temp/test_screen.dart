@@ -41,6 +41,7 @@ class _TestScreenState extends State<TestScreen> {
     super.initState();
     getCurrentLocation();
     getCurrentDateTime();
+    // Amplify.DataStore.start();
   }
 
   Future<void> getCurrentLocation() async {
@@ -78,19 +79,6 @@ class _TestScreenState extends State<TestScreen> {
 
 
   // Upload images
-
-  // Future<String> getImageUrl(String key) async {
-  //   final result = await Amplify.Storage.getUrl(
-  //     key: key,
-  //     options: const StorageGetUrlOptions(
-  //       pluginOptions: S3GetUrlPluginOptions(
-  //         validateObjectExistence: true,
-  //         expiresIn: Duration(days: 1),
-  //       ),
-  //     ),
-  //   ).result;
-  //   return result.url.toString();
-  // }
   Future<String> getImageUrl2(String key) async {
     print("STORAGEKEY");
     print(key);
@@ -145,12 +133,14 @@ class _TestScreenState extends State<TestScreen> {
       final key2 = const Uuid().v1() + '.png';
       final awsFile = AWSFile.fromPath(file.path);
 
+      final key3 = "limon/2024-01-05/" + key2;
       print("filePath");
       print(key2);
+      print(key3);
       // print(file.path);
       await Amplify.Storage.uploadFile(
         localFile: awsFile,
-        key: key2,
+        key: key3,
         onProgress: (progress) {
           progress.fractionCompleted;
         },
@@ -165,7 +155,7 @@ class _TestScreenState extends State<TestScreen> {
       print("NEWNAMEW");
       print(desiredKey);
 
-      fileKeyFinal = key2;
+      fileKeyFinal = key3;
       return fileKeyFinal!;
     }
     on Exception catch (e) {
@@ -176,7 +166,6 @@ class _TestScreenState extends State<TestScreen> {
 
   Future<String?> uploadImage()
   async {
-
     RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
     ui.Image image = await boundary.toImage();
     ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -200,73 +189,9 @@ class _TestScreenState extends State<TestScreen> {
     return imageUrl;
   }
 
-  // Query data
-  late List<History?> historyList = []; // Initialize with an empty list
-
-  Future<List<History?>> queryListItems() async {
-    try {
-      final request = ModelQueries.list(History.classType);
-      final response = await Amplify.API.query(request: request).response;
-
-      final items = response.data?.items;
-      print("ITEMS");
-      historyList = items ?? []; // Assign items or an empty list if items is null
-
-      if (items == null) {
-        print('errors: ${response.errors}');
-        return <History?>[];
-      }
-      return items;
-    } on ApiException catch (e) {
-      print('Query failed: $e');
-    }
-    return <History?>[];
-  }
-
-  //
-  // Future<void> createAndUploadFilePublic() async {
-  //   // Create a dummy file
-  //   final exampleString = 'Example file contents';
-  //   final key = const Uuid().v1() + extension;
-  //   final tempDir = await getTemporaryDirectory();
-  //   final exampleFile = File(tempDir.path + '/example.txt')
-  //     ..createSync()
-  //     ..writeAsStringSync(exampleString);
-  //   // Upload the file to S3
-  //   final awsFile = AWSFile.fromPath(exampleFile.path);
-  //   try {
-  //     await Amplify.Storage.uploadFile(
-  //       localFile: awsFile,
-  //       key: 'ExampleKey',
-  //       options: S3UploadFileOptions(
-  //         accessLevel: StorageAccessLevel.guest,
-  //       ),
-  //     );
-  //     // print('Successfully uploaded file: ${result.key}');
-  //   } on StorageException catch (e) {
-  //     print('Error uploading file: $e');
-  //   }
-  // }
-
 
   // Upload data
   Future<void> createHistory() async {
-    // RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
-    // ui.Image image = await boundary.toImage();
-    // ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    //
-    // if (byteData != null) {
-    //   Uint8List pngBytes = byteData.buffer.asUint8List();
-    //
-    //   // Save image to a temporary file
-    //   final tempDir = await getTemporaryDirectory();
-    //   final file = File('${tempDir.path}/captured_image.png');
-    //   await file.writeAsBytes(pngBytes);
-    //
-    //   // Save image to gallery using gallery_saver
-    //   print(file);
-    //   await GallerySaver.saveImage(file.path);
-    // }
     final imageUrlNew = await uploadImage();
     print("IMAGGEURL");
     print(imageUrlNew);
@@ -292,6 +217,36 @@ class _TestScreenState extends State<TestScreen> {
     } on ApiException catch (e) {
       safePrint('Mutation failed: $e');
     }
+  }
+
+
+  // Query data
+  late List<History?> historyList = []; // Initialize with an empty list
+
+  Future<List<History?>> queryListItems() async {
+    try {
+      final request = ModelQueries.list(History.classType);
+      final response = await Amplify.API.query(request: request).response;
+
+      final items = response.data?.items;
+      print("ITEMS");
+      historyList = items ?? []; // Assign items or an empty list if items is null
+
+      if (items == null) {
+        print('errors: ${response.errors}');
+        return <History?>[];
+      }
+      return items;
+    } on ApiException catch (e) {
+      print('Query failed: $e');
+    }
+    return <History?>[];
+  }
+
+  @override
+  void dispose() {
+    // Amplify.DataStore.stop();
+    super.dispose();
   }
 
   @override
@@ -326,7 +281,7 @@ class _TestScreenState extends State<TestScreen> {
                   color: Colors.white,
                   height: 100, // Adjust the height as needed
                   child: Center(
-                    child: Text('NO NOW'),
+                    child: Text('TEST WITH SEPRATE DATE'),
                   ),
                 ),
               ),
