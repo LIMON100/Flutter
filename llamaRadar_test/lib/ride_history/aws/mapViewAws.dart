@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:amplify_api/amplify_api.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lamaradar/ride_history/aws/showGpsDataAws.dart';
 import 'package:lamaradar/ride_history/maps/maker_with_image.dart';
 import 'package:lamaradar/ride_history/maps/marker_info.dart';
 import 'package:lamaradar/ride_history/showGpsData.dart';
@@ -11,6 +14,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../models/History.dart';
 import '../../sqflite/sqlite.dart';
 import '../maps/MapScreen.dart';
+import 'maker_with_image_aws.dart';
 import 'mapScreenAws.dart';
 
 
@@ -33,6 +37,61 @@ class _MapViewAwsState extends State<MapViewAws> {
   void initState() {
     super.initState();
     // _fetchGpsCoordinates();
+    // queryListItems();
+    checkHistory();
+  }
+
+  late List<History?> historyList = [];
+  late final History newHistory;
+
+  Future<List<History?>> queryListItems() async {
+    try {
+      print("CHEDATE;");
+
+      final request = ModelQueries.list(History.classType);
+      final response = await Amplify.API.query(request: request).response;
+
+      await Future.delayed(Duration(seconds: 2));
+
+      final items = response.data?.items;
+
+      historyList = items?.where((history) => history?.date == "2024-01-04")?.toList() ?? [];
+
+      if (historyList.isNotEmpty) {
+        newHistory = historyList[0]!; // Assuming you want the first item
+      }
+
+      if (items == null) {
+        print('errors: ${response.errors}');
+        return <History?>[];
+      }
+      print("HISTPPP");
+      print(historyList.length);
+      print(historyList);
+
+      return historyList;
+    } on ApiException catch (e) {
+      print('Query failed: $e');
+    }
+    return <History?>[];
+  }
+
+  Future<void> checkHistory() async {
+
+    // List<History?> filteredList = await widget.historyList.where((history) => history?.date == widget.date).toList();
+
+    historyList = widget.historyList?.where((history) => history?.date == widget.date)?.toList() ?? [];
+
+    // List<History?> filteredAndSortedHistory = widget.historyList
+    //     .where((history) => history?.date == widget.date)
+    //     .toList()
+    //   ..sort((a, b) => a!.time!.compareTo(b!.time!));
+
+    print("HISTORYLENGITH");
+    print(widget.date);
+    print(widget.historyList.length);
+    print(historyList.length);
+    print(historyList);
   }
 
   // Data in decending order
@@ -85,7 +144,7 @@ class _MapViewAwsState extends State<MapViewAws> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ShowGpsData(),
+                  builder: (context) => ShowGpsDataAws(),
                 ),
               );
             },
@@ -113,7 +172,7 @@ class _MapViewAwsState extends State<MapViewAws> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MarkerWithImage(date: widget.date),
+                      builder: (context) => MarkerWithImageAws(date: widget.date, historyList: widget.historyList,),
                     ),
                   );
                 },
@@ -140,8 +199,7 @@ class _MapViewAwsState extends State<MapViewAws> {
               itemCount: widget.historyList.length,
               itemBuilder: (context, index) {
                 final history = widget.historyList[index];
-                if (history!.latitude != null &&
-                    history!.longitude  != null) {
+                if (history!.latitude != null && history!.longitude  != null && history!.date.toString() == widget.date.toString()) {
                   return GestureDetector(
                     onTap: () {},
                     child: ListTile(
@@ -155,25 +213,29 @@ class _MapViewAwsState extends State<MapViewAws> {
                             'Time: ${history!.time}',
                           ),
                           Text(
-                            'Time: ${history!.position}',
+                            'Position: ${history!.position}',
+                          ),
+                          Text(
+                            'Date: ${history!.date}',
                           ),
                           SizedBox(height: 8.0),
                           Row(
                             children: [
-                              if (history.imageUrl != null)
+                              if (history.imageUrl == null)
                                 const Center(child: CircularProgressIndicator()),
-                              Expanded(
-                                child: CachedNetworkImage(
-                                  errorWidget: (context, url, dynamic error) =>
-                                  const Icon(Icons.error_outline_outlined),
-                                  imageUrl: history!.imageUrl!,
-                                  cacheKey: history!.imagekey,
-                                  width: double.maxFinite,
-                                  height: 120.0,
-                                  alignment: Alignment.topCenter,
-                                  fit: BoxFit.fill,
+                              if (history.imageUrl != null)
+                                Expanded(
+                                  child: CachedNetworkImage(
+                                    errorWidget: (context, url, dynamic error) =>
+                                    const Icon(Icons.error_outline_outlined),
+                                    imageUrl: history!.imageUrl!,
+                                    cacheKey: history!.imagekey,
+                                    width: double.maxFinite,
+                                    height: 120.0,
+                                    alignment: Alignment.topCenter,
+                                    fit: BoxFit.fill,
+                                  ),
                                 ),
-                              ),
                               SizedBox(width: 40),
                               ElevatedButton(
                                 onPressed: () {
