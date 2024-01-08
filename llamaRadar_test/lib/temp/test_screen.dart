@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
@@ -34,19 +36,203 @@ class _TestScreenState extends State<TestScreen> {
   String time = "";
 
   String fileKeyFinal = "";
+  String userUniqueName = "";
+  String currentUniqueUser = "";
   get radius => null;
 
   @override
   void initState() {
     super.initState();
+    getCurrentUserID();
     getCurrentLocation();
     getCurrentDateTime();
-    // Amplify.DataStore.start();
+  }
+
+  // VLC PLAYER START--------------------------------
+  late VlcPlayerController _videoPlayerController;
+  bool isCameraStreaming = false;
+  Uint8List? _screenshot;
+  Orientation currentOrientation = Orientation.portrait;
+  bool isRearCamOpen = false;
+  double rotationAngle = 0.0;
+
+  Future<void> _takeScreenshot() async {
+    try {
+      final screenshot = await _videoPlayerController.takeSnapshot();
+      setState(() {
+        _screenshot = screenshot;
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  Future<void> initializePlayer() async {
+    _videoPlayerController = VlcPlayerController.network(
+      'rtsp://192.168.1.254/xxxx.mp4',
+      hwAcc: HwAcc.disabled,
+      autoPlay: true,
+      options: VlcPlayerOptions(
+          video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
+            VlcVideoOptions.skipFrames(false)],),
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(30),
+            VlcAdvancedOptions.clockJitter(0),
+            VlcAdvancedOptions.fileCaching(30),
+            VlcAdvancedOptions.liveCaching(30),
+            VlcAdvancedOptions.clockSynchronization(1),
+          ]),
+          rtp: VlcRtpOptions([
+            VlcRtpOptions.rtpOverRtsp(true),
+            ":rtsp-tcp",
+          ]),
+          extras: ['--h264-fps=60'],
+          // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
+          sout: VlcStreamOutputOptions([
+            VlcStreamOutputOptions.soutMuxCaching(0),
+          ])
+      ),);
+    await _videoPlayerController!.initialize();
+  }
+
+
+  void toggleCameraStreaming() {
+    if (isCameraStreaming) {
+      _videoPlayerController.stop();
+      _videoPlayerController.dispose();
+    }
+    else {
+      Connectivity().onConnectivityChanged.listen((connectivity) {
+        if (connectivity == ConnectivityResult.wifi) {
+          _videoPlayerController = VlcPlayerController.network(
+            'rtsp://192.168.1.254/xxxx.mp4',
+            // 'https://media.w3.org/2010/05/sintel/trailer.mp4',
+            hwAcc: HwAcc.disabled,
+            autoPlay: true,
+            options: VlcPlayerOptions(
+                video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
+                  VlcVideoOptions.skipFrames(false)],),
+                advanced: VlcAdvancedOptions([
+                  VlcAdvancedOptions.networkCaching(30),
+                  VlcAdvancedOptions.clockJitter(0),
+                  VlcAdvancedOptions.fileCaching(30),
+                  VlcAdvancedOptions.liveCaching(30),
+                  VlcAdvancedOptions.clockSynchronization(1),
+                ]),
+                rtp: VlcRtpOptions([
+                  VlcRtpOptions.rtpOverRtsp(true),
+                  ":rtsp-tcp",
+                ]),
+                extras: ['--h264-fps=60'],
+                // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
+                sout: VlcStreamOutputOptions([
+                  VlcStreamOutputOptions.soutMuxCaching(0),
+                ])
+            ),);
+          _videoPlayerController.initialize().then((_) {
+            _videoPlayerController.play();
+          });
+        }
+      });
+
+      _videoPlayerController = VlcPlayerController.network(
+        'rtsp://192.168.1.254/xxxx.mp4',
+        hwAcc: HwAcc.disabled,
+        autoPlay: true,
+        options: VlcPlayerOptions(
+            video: VlcVideoOptions([VlcVideoOptions.dropLateFrames(true),
+              VlcVideoOptions.skipFrames(false)],),
+            advanced: VlcAdvancedOptions([
+              VlcAdvancedOptions.networkCaching(30),
+              VlcAdvancedOptions.clockJitter(0),
+              VlcAdvancedOptions.fileCaching(30),
+              VlcAdvancedOptions.liveCaching(30),
+              VlcAdvancedOptions.clockSynchronization(1),
+            ]),
+            rtp: VlcRtpOptions([
+              VlcRtpOptions.rtpOverRtsp(true),
+              ":rtsp-tcp",
+            ]),
+            extras: ['--h264-fps=60'],
+            // extras: [':network-caching=0', ':live-caching=0', ':file-caching=0', ':clock-jitter=0', ':clock-synchro=0','--h264-fps=60'],
+            sout: VlcStreamOutputOptions([
+              VlcStreamOutputOptions.soutMuxCaching(0),
+            ])
+        ),);
+      _videoPlayerController.initialize().then((_) {
+        _videoPlayerController.play();
+      });
+    }
+
+    setState(() {
+      isCameraStreaming = !isCameraStreaming;
+      isRearCamOpen = !isRearCamOpen;
+    });
+  }
+
+  Widget buildCameraButton() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: Column(
+          children: [
+            if (isCameraStreaming) // Show "Stop Rear Camera" button when streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Stop Rear Camera',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            if (!isCameraStreaming) // Show "Open Rear Cam" button when not streaming
+              ElevatedButton(
+                onPressed: toggleCameraStreaming,
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.cyan.shade500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                ),
+                child: Text(
+                  'Open Rear Cam',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // VLC PLAYER END ----------------------------
+
+  Future<void> getCurrentUserID() async {
+    final currentUser = await Amplify.Auth.getCurrentUser();
+    Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
+    currentUniqueUser = currentUser.userId;
+    userUniqueName = signInDetails['username'];
+    print(currentUser);
+    setState(() {});
   }
 
   Future<void> getCurrentLocation() async {
-    // Simulate getting the current location (replace with actual implementation)
-    // For demonstration, using fixed coordinates
     latitude = 37.7749;
     longitude = -122.4194;
   }
@@ -133,8 +319,9 @@ class _TestScreenState extends State<TestScreen> {
       final key2 = const Uuid().v1() + '.png';
       final awsFile = AWSFile.fromPath(file.path);
 
-      final key3 = "limon/2024-01-05/" + key2;
+      final key3 = "$userUniqueName/$date/" + key2;
       print("filePath");
+      print(userUniqueName);
       print(key2);
       print(key3);
       // print(file.path);
@@ -166,40 +353,55 @@ class _TestScreenState extends State<TestScreen> {
 
   Future<String?> uploadImage()
   async {
-    RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
-    ui.Image image = await boundary.toImage();
-    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    // RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+    // ui.Image image = await boundary.toImage();
+    // ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    //
+    // // if (byteData != null) {
+    // Uint8List? pngBytes = byteData?.buffer.asUint8List();
+    //
+    // // Save image to a temporary file
+    // final tempDir = await getTemporaryDirectory();
+    // print("DIRECTORY");
+    // print(tempDir);
+    // final file = File('${tempDir.path}/captured_image22.png');
+    // await file.writeAsBytes(pngBytes!);
+    //
+    // print("2 DIFFERENT FILE");
+    // print(file);
+    if (_screenshot != null) {
+      File tempFile = await _createTemporaryFile(_screenshot!);
+      print("CHECKKEY");
+      print(_screenshot);
+      print(tempFile);
+      final fileKey = await uploadFile(tempFile);
+      await Future.delayed(Duration(seconds: 1));
+      final imageUrl = await getImageUrl(fileKey.toString());
 
-    // if (byteData != null) {
-    Uint8List? pngBytes = byteData?.buffer.asUint8List();
-
-    // Save image to a temporary file
-    final tempDir = await getTemporaryDirectory();
-    print("DIRECTORY");
-    print(tempDir);
-    final file = File('${tempDir.path}/captured_image22.png');
-    await file.writeAsBytes(pngBytes!);
-
-    final fileKey = await uploadFile(file);
-    print("CHECKKEY");
-    print(fileKey);
-    await Future.delayed(Duration(seconds: 1));
-    final imageUrl = await getImageUrl(fileKey.toString());
-
-    return imageUrl;
+      return imageUrl;
+    }
   }
 
+  Future<File> _createTemporaryFile(Uint8List data) async {
+    Directory tempDir = await getTemporaryDirectory();
+    File tempFile = File('${tempDir.path}/temp_file.png');
+    await tempFile.writeAsBytes(data);
+    return tempFile;
+  }
 
   // Upload data
   Future<void> createHistory() async {
+    _takeScreenshot();
     final imageUrlNew = await uploadImage();
     print("IMAGGEURL");
     print(imageUrlNew);
     try {
       final model = History(
-          latitude: 100.23,
+          userUniqueId: userUniqueName,
+          latitude: 9.2,
           longitude: longitude,
-          date: TemporalDate.fromString(date),
+          // date: TemporalDate.fromString(date),
+          date: TemporalDate.fromString("2024-01-04"),
           time: TemporalTime.fromString(time),
           position: "left",
           imageUrl: imageUrlNew.toString(),
@@ -218,7 +420,6 @@ class _TestScreenState extends State<TestScreen> {
       safePrint('Mutation failed: $e');
     }
   }
-
 
   // Query data
   late List<History?> historyList = []; // Initialize with an empty list
@@ -245,7 +446,7 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   void dispose() {
-    // Amplify.DataStore.stop();
+    _videoPlayerController.dispose();
     super.dispose();
   }
 
@@ -253,7 +454,7 @@ class _TestScreenState extends State<TestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Data Submission Screen'),
+        title: Text('Test Screen'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -275,13 +476,61 @@ class _TestScreenState extends State<TestScreen> {
               Text('Date: $date'),
               Text('Time: $time'),
               SizedBox(height: 16),
+              // RepaintBoundary(
+              //   key: globalKey,
+              //   child: Container(
+              //     color: Colors.white,
+              //     height: 100, // Adjust the height as needed
+              //     child: Center(
+              //       child: Text('RAHMANNEW-123'),
+              //     ),
+              //   ),
+              // ),
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)
+                  children: [
+                    SizedBox(width: 70),
+                    buildCameraButton(),
+                    SizedBox(width: 75),
+                  ],
+                ),
+              ),
               RepaintBoundary(
-                key: globalKey,
+                key: GlobalKey(),
                 child: Container(
-                  color: Colors.white,
-                  height: 100, // Adjust the height as needed
+                  height: 280,
+                  width: 300,
                   child: Center(
-                    child: Text('TEST WITH SEPRATE DATE'),
+                    child: Stack(
+                      children: [
+                        isCameraStreaming && _videoPlayerController != null
+                            ? Transform.rotate(
+                          angle: rotationAngle * 3.14159265359 / 180,
+                          child: VlcPlayer(
+                            controller: _videoPlayerController,
+                            aspectRatio: currentOrientation == Orientation.portrait
+                                ? 16 / 9
+                                : 9 / 16,
+                          ),
+                        )
+                            : Image.asset(
+                          'images/test_background3.jpg',
+                          fit: BoxFit.fitWidth,
+                        ),
+                        if (isCameraStreaming)
+                          Positioned(
+                            bottom: 16.0,
+                            right: 16.0,
+                            child: IconButton(
+                              color: Colors.red,
+                              icon: Icon(Icons.cameraswitch_outlined),
+                              onPressed: (){},
+                              iconSize: 40.0,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),

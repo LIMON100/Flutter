@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -127,80 +126,7 @@ class _MapScreenState extends State<MapScreen> {
             }
         ));
       }
-      // else {
-      //   _markers.add( Marker(
-      //       markerId: MarkerId(i.toString()),
-      //       position: LatLng(widget.latitude,  widget.longitude),
-      //       icon: BitmapDescriptor.fromBytes(markerIcon),
-      //       onTap: () {
-      //         _customInfoWindowController.addInfoWindow!(
-      //           Container(
-      //             width: 300,
-      //             height: 200,
-      //             decoration: BoxDecoration(
-      //               color: Colors.white,
-      //               border: Border.all(color: Colors.grey),
-      //               borderRadius: BorderRadius.circular(10.0),
-      //             ),
-      //             child: Column(
-      //               mainAxisAlignment: MainAxisAlignment.start,
-      //               crossAxisAlignment: CrossAxisAlignment.start,
-      //               children: [
-      //                 Container(
-      //                   width: 300,
-      //                   height: 100,
-      //                   decoration: BoxDecoration(
-      //                     image: DecorationImage(
-      //                         image: NetworkImage('https://images.pexels.com/photos/1566837/pexels-photo-1566837.jpeg?cs=srgb&dl=pexels-narda-yescas-1566837.jpg&fm=jpg'),
-      //                         fit: BoxFit.fitWidth,
-      //                         filterQuality: FilterQuality.high),
-      //                     borderRadius: const BorderRadius.all(
-      //                       Radius.circular(10.0),
-      //                     ),
-      //                     color: Colors.red,
-      //                   ),
-      //                 ),
-      //                 Padding(
-      //                   padding: const EdgeInsets.only(top: 10 , left: 10 , right: 10),
-      //                   child: Row(
-      //                     children: [
-      //                       SizedBox(
-      //                         width: 100,
-      //                         child: Text(
-      //                           'Beef Tacos',
-      //                           maxLines: 1,
-      //                           overflow: TextOverflow.fade,
-      //                           softWrap: false,
-      //                         ),
-      //                       ),
-      //                       const Spacer(),
-      //                       Text(
-      //                         '.3 mi.',
-      //                         // widget.data!.date!,
-      //
-      //                       )
-      //                     ],
-      //                   ),
-      //                 ),
-      //                 Padding(
-      //                   padding: const EdgeInsets.only(top: 10 , left: 10 , right: 10),
-      //                   child: Text(
-      //                     'Help me finish these tacos! I got a platter from Costco and it’s too much.',
-      //                     maxLines: 2,
-      //
-      //                   ),
-      //                 ),
-      //
-      //               ],
-      //             ),
-      //           ),
-      //           LatLng(33.6844, 73.0479),
-      //         );
-      //       }
-      //   ));
-      // }
       setState(() {
-
       });
     }
   }

@@ -63,6 +63,8 @@ class _SignInState extends State<SignIn> {
       });
     }
     on Exception catch (e) {
+      print("SNACKBAR");
+      print(e);
       showSnackBar("An error occurred during login");
     }
     finally {}

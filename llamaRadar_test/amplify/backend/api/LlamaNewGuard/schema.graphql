@@ -1,0 +1,11 @@
+type History @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userUniqueId: String
+  latitude: Float
+  longitude: Float
+  date: AWSDate
+  time: AWSTime
+  position: String
+  imageUrl: String
+  imagekey: String
+}

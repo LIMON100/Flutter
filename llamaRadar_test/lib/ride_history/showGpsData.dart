@@ -108,12 +108,12 @@ class _ShowGpsDataState extends State<ShowGpsData> {
           final gpsCoordinate = _gpsCoordinates[index];
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MapView(date: gpsCoordinate['date']),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => MapView(date: gpsCoordinate['date']),
+              //   ),
+              // );
             },
             child: ListTile(
               title: Column(

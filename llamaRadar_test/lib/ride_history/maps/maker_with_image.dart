@@ -104,6 +104,7 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Display the image with BoxFit.width if available
+
                           if (_gpsCoordinates[i]['image'] != null)
                             Container(
                               width: double.infinity, // Set width to maximum available width

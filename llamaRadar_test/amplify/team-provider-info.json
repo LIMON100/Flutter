@@ -1,0 +1,26 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-llamanewguard-staging-101408-authRole",
+      "UnauthRoleArn": "arn:aws:iam::881695826190:role/amplify-llamanewguard-staging-101408-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::881695826190:role/amplify-llamanewguard-staging-101408-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-llamanewguard-staging-101408-deployment",
+      "UnauthRoleName": "amplify-llamanewguard-staging-101408-unauthRole",
+      "StackName": "amplify-llamanewguard-staging-101408",
+      "StackId": "arn:aws:cloudformation:us-west-2:881695826190:stack/amplify-llamanewguard-staging-101408/d53bb740-aa20-11ee-9e3f-0ae0837e0bc7",
+      "AmplifyAppId": "d2ntj0vyzrwa9d"
+    },
+    "categories": {
+      "auth": {
+        "llamanewguard30f6fac3": {}
+      },
+      "api": {
+        "LlamaNewGuard": {}
+      },
+      "storage": {
+        "s33de27d5e": {}
+      }
+    }
+  }
+}

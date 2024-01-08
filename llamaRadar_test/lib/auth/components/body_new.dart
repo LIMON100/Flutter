@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/auth/Screens/ConfirmCode.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:lamaradar/auth/size_config.dart';
@@ -35,6 +36,7 @@ class _BodyNewState extends State<BodyNew> {
 
   bool _loggedIn = false;
   bool _registered = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -46,34 +48,13 @@ class _BodyNewState extends State<BodyNew> {
     });
   }
 
-  // void _signUp() async {
-
-  //   setState(() {
-  //     isSigningUp = true;
-  //   });
-
-  //   User? user = await _auth.signUpWithEmailAndPassword(username.text, confirmPassword.text);
-
-  //   setState(() {
-  //     isSigningUp = false;
-  //   });
-
-  //   if (user != null) {
-  //     showToast(message: "New User is successfully created");
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => SignIn(),
-  //       ),
-  //     );
-  //   }
-  //   else {
-  //     showToast(message: "Some error happend");
-  //   }
-  // }
-
   void _registerAccount() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
+      showCircularProgressIndicator();
+
       final signUpOptions = SignUpOptions(
         userAttributes: {
           CognitoUserAttributeKey.email: username.text,
@@ -83,14 +64,19 @@ class _BodyNewState extends State<BodyNew> {
       );
       await Amplify.Auth.signUp(username: username.text, password: confirmPassword.text, options: signUpOptions);
       // Registration is successful, navigate to the next page
+      setState(() {
+        _isLoading = false;
+      });
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ConfirmCode(emailController: username)), // Replace NextPage with your actual next page
       );
     }
     on AuthException catch (e) {
-      print(e.message);
-      // Handle error and display message to the user
+      setState(() {
+        _isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Registration failed: ${e.message}"),
@@ -109,6 +95,60 @@ class _BodyNewState extends State<BodyNew> {
     setState(() {
       _registered = true;
     });
+  }
+
+  void showCircularProgressIndicator() {
+    Completer<void> spinnerCompleter = Completer<void>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        // Start the spinner
+        _startSpinner(spinnerCompleter);
+
+        return Center(
+          child: FutureBuilder(
+            future: spinnerCompleter.future,
+            builder: (context, snapshot) {
+              // Check if the Future is complete (spinner duration reached)
+              if (snapshot.connectionState == ConnectionState.done) {
+                // Stop the spinner
+                Navigator.of(context).pop();
+                return Container(); // You can replace Container() with any other widget or an empty Container
+              } else {
+                // Show the spinner while the duration is not reached
+                return SpinKitDancingSquare(
+                  color: Colors.blue,
+                  size: 150.0,
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+// Function to start the spinner and complete it after 3 seconds
+  void _startSpinner(Completer<void> completer) {
+    Future.delayed(Duration(seconds: 2), () {
+      completer.complete();
+    });
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -286,7 +326,7 @@ class _BodyNewState extends State<BodyNew> {
                                   prefixIcon:
                                   Icon(Icons.vpn_key, color: Colors.black),
                                   border: InputBorder.none,
-                                  hintText: "Type Password",
+                                  hintText: "Password(at least 8 character)",
                                   suffixIcon: IconButton(
                                       onPressed: () {
                                         //In here we will create a click to show and hide the password a toggle button

@@ -35,11 +35,20 @@ class _ShowAwsDataState extends State<ShowAwsData> {
 
   String fileKeyFinal = "";
   late final History newHistory;
+  String uniqueUser = "";
 
   @override
   void initState() {
     super.initState();
+    getCurrentUserID();
     initializeData();
+  }
+
+  Future<void> getCurrentUserID() async {
+    final currentUser = await Amplify.Auth.getCurrentUser();
+    Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
+    uniqueUser = signInDetails['username'];
+    setState(() {});
   }
 
   Future<void> initializeData() async {
@@ -52,35 +61,24 @@ class _ShowAwsDataState extends State<ShowAwsData> {
   late List<History?> historyList = []; // Initialize with an empty list
 
   Future<List<History?>> queryListItems() async {
-    final currentUser = await Amplify.Auth.getCurrentUser();
-
-    print("CURRENTUSER");
-    print(currentUser);
     try {
       final request = ModelQueries.list(History.classType);
       final response = await Amplify.API.query(request: request).response;
 
-      final request2 = ModelQueries.get(History.classType, HistoryModelIdentifier(id: currentUser.userId));
-      final response2 = await Amplify.API.query(request: request2).response;
-      final testItems = response2?.data?.latitude;
-      print("ITEMS");
-      print(request2);
-      print(request);
-      print(testItems);
-
       final items = response.data?.items;
 
-      historyList = items ?? []; // Assign items or an empty list if items is null
-      // print(historyList);
-      if (items != null && items.isNotEmpty) {
-        newHistory = items[0]!; // Assuming you want the first item
+      historyList = items?.where((history) => history?.userUniqueId == uniqueUser)?.toList() ?? [];
+
+      if (historyList.isNotEmpty) {
+        newHistory = historyList[0]!; // Assuming you want the first item
       }
 
       if (items == null) {
         print('errors: ${response.errors}');
         return <History?>[];
       }
-      return items;
+
+      return historyList;
     } on ApiException catch (e) {
       print('Query failed: $e');
     }
@@ -179,104 +177,4 @@ class _ShowAwsDataState extends State<ShowAwsData> {
       },
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Card(
-  //     clipBehavior: Clip.antiAlias,
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(15),
-  //     ),
-  //     elevation: 5,
-  //     child: Column(
-  //       children: [
-  //         Expanded(
-  //           child: Container(
-  //             height: 500,
-  //             alignment: Alignment.center,
-  //             // color: Colors,
-  //             child: Stack(
-  //               children: [
-  //                 Positioned.fill(
-  //                   child: newHistory.imageUrl != null
-  //                       ? Stack(
-  //                     children: [
-  //                       const Center(child: CircularProgressIndicator()),
-  //                       CachedNetworkImage(
-  //                         errorWidget: (context, url, dynamic error) =>
-  //                         const Icon(Icons.error_outline_outlined),
-  //                         imageUrl: newHistory.imageUrl!,
-  //                         cacheKey: newHistory.imagekey,
-  //                         width: double.maxFinite,
-  //                         height: 500,
-  //                         alignment: Alignment.topCenter,
-  //                         fit: BoxFit.fill,
-  //                       ),
-  //                     ],
-  //                   )
-  //                       : Image.asset(
-  //                     'images/new_lama.jpg',
-  //                     fit: BoxFit.contain,
-  //                   ),
-  //                 ),
-  //                 Positioned(
-  //                   bottom: 16,
-  //                   left: 16,
-  //                   right: 16,
-  //                   child: FittedBox(
-  //                     fit: BoxFit.scaleDown,
-  //                     alignment: Alignment.centerLeft,
-  //                     child: Text(
-  //                       newHistory.latitude.toString(),
-  //                       style: Theme
-  //                           .of(context)
-  //                           .textTheme
-  //                           .headlineSmall!
-  //                           .copyWith(color: Colors.white),
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.fromLTRB(2, 8, 8, 4),
-  //           child: DefaultTextStyle(
-  //             softWrap: false,
-  //             overflow: TextOverflow.ellipsis,
-  //             style: Theme
-  //                 .of(context)
-  //                 .textTheme
-  //                 .titleMedium!,
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Padding(
-  //                   padding: const EdgeInsets.only(bottom: 8),
-  //                   child: Text(
-  //                     newHistory.longitude.toString(),
-  //                     style: Theme
-  //                         .of(context)
-  //                         .textTheme
-  //                         .titleMedium!
-  //                         .copyWith(color: Colors.black54),
-  //                   ),
-  //                 ),
-  //                 Text(
-  //                   newHistory.date.toString(),
-  //                   style: const TextStyle(fontSize: 12),
-  //                 ),
-  //                 Text(
-  //                   newHistory.time.toString(),
-  //                   style: const TextStyle(fontSize: 12),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

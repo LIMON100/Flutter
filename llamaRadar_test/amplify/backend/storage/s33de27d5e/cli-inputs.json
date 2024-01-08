@@ -1,0 +1,14 @@
+{
+  "resourceName": "s33de27d5e",
+  "policyUUID": "3de27d5e",
+  "bucketName": "llamanewguard018844efa88246d08c57326f985db896",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

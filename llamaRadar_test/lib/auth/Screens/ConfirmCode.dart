@@ -110,7 +110,7 @@ class _ConfirmCodeState extends State<ConfirmCode> {
 
 // Function to start the spinner and complete it after 3 seconds
   void _startSpinner(Completer<void> completer) {
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(seconds: 2), () {
       completer.complete();
     });
   }

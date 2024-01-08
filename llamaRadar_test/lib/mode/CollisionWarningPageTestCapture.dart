@@ -8,10 +8,8 @@ import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
 import 'package:lamaradar/provider/LedValuesProvider.dart';
 import 'package:lamaradar/provider/PopupWindowProvider.dart';
-import '../ride_history/showGpsData.dart';
 import '../sqflite/sqlite.dart';
 import '../temp/glowing_button.dart';
-import '../temp/warning_icons.dart';
 import '../temp/indicator_icons.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:just_audio/just_audio.dart';
@@ -29,7 +27,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:intl/intl.dart';
-import 'package:lamaradar/ride_history/mapView.dart';
 
 
 class CollisionWarningPageTestCapture extends StatefulWidget {
@@ -126,6 +123,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
   int dt = 0;
   int cpos = 0;
   int ss = 0;
+
   void getCurrentDateTime() {
     print("dt $dt");
     dateTime!['date'] = formatterDate.format(now);
@@ -690,7 +688,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       _gpsDataTimer = Timer(Duration(milliseconds: 300), () {
         getCurrentDateTime();
         _getCurrentPosition();
-        // _saveScreenshot();
         _takeScreenshot();
         insertDemoData();
         _isGpsDataCallScheduled = false;
@@ -1045,7 +1042,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
     if (_videoPlayerController == null) {
       return;
     }
-
     if (_isShowingPopup) {
       return;
     }

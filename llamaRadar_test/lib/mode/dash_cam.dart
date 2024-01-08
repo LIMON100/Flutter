@@ -754,7 +754,20 @@ class _HomeState extends State<Home> {
         print('Image captured');
         // await getFilesFromCamera();
         // Add snakbar message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('                  Image captured successfully.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
 
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('             Image cannot capture due to network.'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
         print('Error occured: ${response.statusCode}');
         // Add snakbar message
       }
@@ -1183,6 +1196,143 @@ class _HomeState extends State<Home> {
                           ),
                         ),
 
+                        // TEST BUTTON FOR CAMERA
+                        // SizedBox(height: 15),
+                        // Center(
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       SizedBox(width: 15),
+                        //       Align(
+                        //         alignment: Alignment.center,
+                        //         child: Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             //only capture image
+                        //             IconButton(
+                        //               onPressed: () {
+                        //                 setDateOfCam();
+                        //                 setTimeOfCam();
+                        //                 changeToVideoMode();
+                        //                 changeToPhotoMode();
+                        //                 takePicture();
+                        //               },
+                        //               icon: Icon(
+                        //                 Icons.camera_alt,
+                        //                 size: 40,
+                        //                 color: Colors.black87,
+                        //               ),
+                        //             ),
+                        //             SizedBox(height: 8),
+                        //             Text(
+                        //               '   TEST-1',
+                        //               style: TextStyle(
+                        //                 // color: Color(0xFFa8caba),
+                        //                 color: Colors.black87,
+                        //                 fontWeight: FontWeight.bold,
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //       SizedBox(width: 15),
+                        //       Align(
+                        //         alignment: Alignment.center,
+                        //         child: Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             IconButton(
+                        //               onPressed: () {
+                        //                 setDateOfCam();
+                        //                 setTimeOfCam();
+                        //                 changeToPhotoMode();
+                        //                 takePicture();
+                        //                 liveViewState();
+                        //               },
+                        //               icon: Icon(
+                        //                 Icons.camera_alt,
+                        //                 size: 40,
+                        //                 color: Colors.black87,
+                        //               ),
+                        //             ),
+                        //             SizedBox(height: 8),
+                        //             Text(
+                        //               '   TEST-2',
+                        //               style: TextStyle(
+                        //                 // color: Color(0xFFa8caba),
+                        //                 color: Colors.black87,
+                        //                 fontWeight: FontWeight.bold,
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //       SizedBox(width: 15),
+                        //       Align(
+                        //         alignment: Alignment.center,
+                        //         child: Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             IconButton(
+                        //               onPressed: () {
+                        //                 setDateOfCam();
+                        //                 setTimeOfCam();
+                        //                 changeToPhotoMode();
+                        //                 takePicture();
+                        //               },
+                        //               icon: Icon(
+                        //                 Icons.camera_alt,
+                        //                 size: 40,
+                        //                 color: Colors.black87,
+                        //               ),
+                        //             ),
+                        //             SizedBox(height: 8),
+                        //             Text(
+                        //               '   TEST-3',
+                        //               style: TextStyle(
+                        //                 // color: Color(0xFFa8caba),
+                        //                 color: Colors.black87,
+                        //                 fontWeight: FontWeight.bold,
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //       SizedBox(width: 10),
+                        //       Align(
+                        //         alignment: Alignment.center,
+                        //         child: Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.center,
+                        //           children: [
+                        //             IconButton(
+                        //               onPressed: () {
+                        //                 startTakingPictures();
+                        //               },
+                        //               icon: Icon(
+                        //                 Icons.camera_alt,
+                        //                 size: 40,
+                        //                 color: Colors.black87,
+                        //               ),
+                        //             ),
+                        //             SizedBox(height: 8),
+                        //             Text(
+                        //               '   TEST-4',
+                        //               style: TextStyle(
+                        //                 // color: Color(0xFFa8caba),
+                        //                 color: Colors.black87,
+                        //                 fontWeight: FontWeight.bold,
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         SizedBox(height: 5),
                       ],
                     ),

@@ -17,6 +17,7 @@ import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
 import 'package:lamaradar/temp/checkdb.dart';
+import 'package:lamaradar/ride_history/aws/showGpsDataAws.dart';
 import 'package:lamaradar/temp/test_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'auth/firebase/temp/features/user_auth/presentation/pages/login_page.dart';
@@ -139,7 +140,7 @@ class _SideBarState extends State<SideBar> {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>  ShowGpsData(), //ConnectWifiForDashCam
+                        builder: (context) =>  ShowGpsDataAws(), //ConnectWifiForDashCam
                       ),
                     );
                   },
