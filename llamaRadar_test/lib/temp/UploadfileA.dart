@@ -14,8 +14,8 @@ import '../models/History.dart';
 import '../sqflite/sqlite.dart';
 
 class UploadFileA extends StatefulWidget  {
-  // final String date;
-  // DateDetailsPageTestLocal({required this.date});
+  final String email;
+  UploadFileA({required this.email});
 
   @override
   _UploadFileAState createState() => _UploadFileAState();
@@ -51,7 +51,10 @@ class _UploadFileAState extends State<UploadFileA> {
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
       'gps_coordinates_A',
+      where: 'email = ?',
+      whereArgs: [widget.email.toString()],
     );
+
     setState(() {
       _gpsCoordinates = gpsCoordinates;
       //Extra
@@ -59,6 +62,8 @@ class _UploadFileAState extends State<UploadFileA> {
           .map<Uint8List?>((coordinate) => _getImageBytes(coordinate['image']))
           .toList();
     });
+    print("GPSLENGHTH");
+    print(_gpsCoordinates.length);
   }
 
   Uint8List? _getImageBytes(dynamic imageData) {
@@ -77,7 +82,6 @@ class _UploadFileAState extends State<UploadFileA> {
 
 
   // AWS UPLOADING PART---------------------------
-
   Future<void> getCurrentUserID() async {
     final currentUser = await Amplify.Auth.getCurrentUser();
     Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
@@ -141,14 +145,14 @@ class _UploadFileAState extends State<UploadFileA> {
 
 
   // 1st test it save images with key+extension only, 2nd test it return key+png as a KEY
-  Future<String?> uploadFile(File file) async {
+  Future<String?> uploadFile(File file, String newDate) async {
     try {
       final extension = file.path;
       final key = const Uuid().v1() + extension;
       final key2 = const Uuid().v1() + '.png';
       final awsFile = AWSFile.fromPath(file.path);
 
-      final key3 = "$userUniqueName/$date/" + key2;
+      final key3 = "$userUniqueName/$newDate/" + key2;
       print("filePath");
       print(userUniqueName);
       print(key2);
@@ -180,20 +184,20 @@ class _UploadFileAState extends State<UploadFileA> {
     }
   }
 
-  // Future<String?> uploadImage()
-  // async {
-  //   if (_screenshot != null) {
-  //     File tempFile = await _createTemporaryFile(_screenshot!);
-  //     print("CHECKKEY");
-  //     print(_screenshot);
-  //     print(tempFile);
-  //     final fileKey = await uploadFile(tempFile);
-  //     await Future.delayed(Duration(seconds: 1));
-  //     final imageUrl = await getImageUrl(fileKey.toString());
-  //
-  //     return imageUrl;
-  //   }
-  // }
+  Future<String?> uploadImage(Uint8List? _screenshotVLC, String date)
+  async {
+    if (_screenshotVLC != null) {
+      File tempFile = await _createTemporaryFile(_screenshotVLC!);
+      print("CHECKKEY");
+      print(_screenshotVLC);
+      print(tempFile);
+      final fileKey = await uploadFile(tempFile, date);
+      await Future.delayed(Duration(seconds: 1));
+      final imageUrl = await getImageUrl(fileKey.toString());
+
+      return imageUrl;
+    }
+  }
 
   Future<File> _createTemporaryFile(Uint8List data) async {
     Directory tempDir = await getTemporaryDirectory();
@@ -204,31 +208,55 @@ class _UploadFileAState extends State<UploadFileA> {
 
   Future<void> createHistory() async {
     // final imageUrlNew = await uploadImage();
-
     try {
-      final model = History(
-          userUniqueId: userUniqueName,
-          latitude: 9.2,
-          longitude: longitude,
-          date: TemporalDate.fromString(date),
-          time: TemporalTime.fromString(time),
-          position: "left",
-          imageUrl: "imageUrlNew".toString(),
-          imagekey: fileKeyFinal
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Loading..."),
+              ],
+            ),
+          );
+        },
       );
-      final request = ModelMutations.create(model);
-      final response = await Amplify.API.mutate(request: request).response;
 
-      final createdHistory = response.data;
-      if (createdHistory == null) {
-        safePrint('errors: ${response.errors}');
-        return;
+      for (int i = 0; i < _gpsCoordinates.length; i++) {
+        print(_gpsCoordinates[i]);
+        // print(_gpsCoordinates[i]['image']);
+        // print("\n");
+        final imageUrlNew = await uploadImage(_gpsCoordinates[i]['image'], _gpsCoordinates[i]['date'].toString());
+        final model = History(
+          userUniqueId: userUniqueName,
+          latitude: _gpsCoordinates[i]['latitude'],
+          longitude: _gpsCoordinates[i]['longitude'],
+          date: TemporalDate.fromString(_gpsCoordinates[i]['date']),
+          time: TemporalTime.fromString(_gpsCoordinates[i]['time']),
+          position: _gpsCoordinates[i]['position'],
+          imageUrl: imageUrlNew,
+          imagekey: fileKeyFinal,
+        );
+
+        final request = ModelMutations.create(model);
+        final response = await Amplify.API.mutate(request: request).response;
+
+        final createdHistory = response.data;
+        if (createdHistory == null) {
+          safePrint('errors: ${response.errors}');
+          return;
+        }
       }
-      // safePrint('Mutation result: ${createdHistory.id}');
     } on ApiException catch (e) {
       safePrint('Mutation failed: $e');
+    } finally {
+      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -236,31 +264,33 @@ class _UploadFileAState extends State<UploadFileA> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        title: Text("TEST LOCAL"),
+        title: Text("TEST LOCAL Upload"),
         centerTitle: true,
       ),
       body: Column(
         children: [
           SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () async {
-              await createHistory();
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 3,
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-              primary: Colors.blueGrey, // Change to your preferred color
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: Colors.white70),
-                borderRadius: BorderRadius.all(Radius.circular(30)),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                await createHistory();
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 3,
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                primary: Colors.blueGrey, // Change to your preferred color
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.white70),
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                ),
               ),
-            ),
-            child: Text(
-              "UPLOAD TO AWS",
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
+              child: Text(
+                "UPLOAD TO AWS",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
