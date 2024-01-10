@@ -49,7 +49,11 @@ class _MarkerWithImageAwsState extends State<MarkerWithImageAws> {
     print(widget.historyList);
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
+<<<<<<< HEAD
       'gps_coordinates_A',
+=======
+      'gps_coordinates',
+>>>>>>> 8088986bef8fdca0eba5fdf4204b910b018ef49a
       where: 'date = ?',
       whereArgs: [widget.date],
     );
