@@ -1,30 +1,28 @@
-import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:sqflite/sqflite.dart';
+import '../../models/History.dart';
 import '../../sqflite/sqlite.dart';
 
-class MarkerWithImage extends StatefulWidget {
+class MarkerWithImageAws extends StatefulWidget {
   final String date;
-  MarkerWithImage({required this.date});
+  final List<History?> historyList;
+  MarkerWithImageAws({required this.date, required this.historyList});
 
   @override
-  _MarkerWithImageState createState() => _MarkerWithImageState();
+  _MarkerWithImageAwsState createState() => _MarkerWithImageAwsState();
 }
 
-class _MarkerWithImageState extends State<MarkerWithImage> {
+class _MarkerWithImageAwsState extends State<MarkerWithImageAws> {
 
   Completer<GoogleMapController> _controller = Completer();
   static const LatLng _center = const LatLng(24.7471, 90.4203);
@@ -47,6 +45,8 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
   }
 
   Future<void> _fetchGpsCoordinates() async {
+    print("DADDA");
+    print(widget.historyList);
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
       'gps_coordinates_A',
@@ -83,9 +83,9 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
 
   Future<void> _loadMarkers() async {
     Completer<void> completer = Completer<void>();
-    for (int i = 0; i < _gpsCoordinates.length; i++) {
-      double? latitude = _gpsCoordinates[i]['latitude'] as double?;
-      double? longitude = _gpsCoordinates[i]['longitude'] as double?;
+    for (int i = 0; i < widget.historyList.length; i++) {
+      double? latitude = widget.historyList[i]?.latitude as double?;
+      double? longitude = widget.historyList[i]?.longitude as double?;
       if (latitude != null && longitude != null) {
         _markers.add(
           Marker(
@@ -104,17 +104,23 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Display the image with BoxFit.width if available
-
-                          if (_gpsCoordinates[i]['image'] != null)
-                            Container(
-                              width: double.infinity, // Set width to maximum available width
-                              child: FittedBox(
-                                fit: BoxFit.fitWidth,
-                                child: Image.memory(
-                                  _gpsCoordinates[i]['image'],
-                                ),
+                          // if (widget.historyList[i]?.imageUrl != null)
+                          Container(
+                            width: double.infinity, // Set width to maximum available width
+                            child: FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: CachedNetworkImage(
+                                errorWidget: (context, url, dynamic error) =>
+                                const Icon(Icons.error_outline_outlined),
+                                imageUrl: widget.historyList[i]!.imageUrl!,
+                                cacheKey: widget.historyList[i]!.imagekey!,
+                                width: double.maxFinite,
+                                height: 120.0,
+                                alignment: Alignment.topCenter,
+                                fit: BoxFit.fill,
                               ),
                             ),
+                          ),
                           SizedBox(height: 20),
                           // Display the GPS coordinates
                           Text('Coordinates: $latitude, $longitude'),
@@ -129,7 +135,6 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
       }
     }
     _fitAllMarkers();
-
     // Complete the completer
     completer.complete();
 
@@ -178,8 +183,6 @@ class _MarkerWithImageState extends State<MarkerWithImage> {
       body: GoogleMap(
         initialCameraPosition: _kGooglePlex,
         mapType: MapType.normal,
-        // myLocationButtonEnabled: true,
-        // myLocationEnabled: true,
         markers: Set<Marker>.of(_markers),
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);

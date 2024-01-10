@@ -34,7 +34,7 @@ class _DateDetailsPageState extends State<DateDetailsPage> {
   Future<void> _fetchGpsCoordinates() async {
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
-      'gps_coordinates',
+      'gps_coordinates_A',
       where: 'date = ?',
       whereArgs: [widget.date],
     );

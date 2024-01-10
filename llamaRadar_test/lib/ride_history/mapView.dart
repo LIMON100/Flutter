@@ -12,8 +12,7 @@ import 'maps/MapScreen.dart';
 
 class MapView extends StatefulWidget {
   final String date;
-  final List<History?> historyList;
-  MapView({required this.date, required this.historyList});
+  MapView({required this.date});
 
   @override
   _MapViewState createState() => _MapViewState();
@@ -33,10 +32,9 @@ class _MapViewState extends State<MapView> {
 
   // Data in decending order
   Future<void> _fetchGpsCoordinates() async {
-    print(widget.historyList.length);
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
-      'gps_coordinates',
+      'gps_coordinates_A',
       where: 'date = ?',
       whereArgs: [widget.date],
       orderBy: 'time DESC', // Added this line to sort by time in descending order

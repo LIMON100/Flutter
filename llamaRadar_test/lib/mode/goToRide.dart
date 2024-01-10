@@ -127,7 +127,7 @@ class _GoToRideState extends State<GoToRide> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CollisionWarningPageFirebase(device: widget.device)),
+                      MaterialPageRoute(builder: (context) => CollisionWarningPageTestCapture(device: widget.device)),
                     );
                   },
                   color:  Color(0xFFa8caba),

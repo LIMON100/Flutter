@@ -13,6 +13,7 @@ import 'package:lamaradar/ride_history/maps/temp/CustomMarkerInfoWindowScreen.da
 import 'package:lamaradar/ride_history/maps/temp/custom_marker_with_network_image.dart';
 import 'package:lamaradar/ride_history/showGpsData.dart';
 import 'package:lamaradar/mode/ConnectWifiForDashCam.dart';
+import 'package:lamaradar/temp/DateDetailsPageTestLocal.dart';
 import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
@@ -37,6 +38,7 @@ class _SideBarState extends State<SideBar> {
   // final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
   String userUniqueName = '';
+  String currentUniqueUser = '';
 
 
   @override
@@ -48,6 +50,7 @@ class _SideBarState extends State<SideBar> {
   Future<void> getCurrentUserID() async {
     final currentUser = await Amplify.Auth.getCurrentUser();
     Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
+    currentUniqueUser = currentUser.userId;
     userUniqueName = signInDetails['username'];
     setState(() {});
   }
@@ -157,7 +160,7 @@ class _SideBarState extends State<SideBar> {
                     size: constraints.maxWidth * 0.07,
                   ),
                   title: Text(
-                    'Test AWS DATA',
+                    'LOCAL DB',
                     style: TextStyle(
                       fontFamily: 'Quicksand-VariableFont_wght',
                       fontSize: fontSize,
@@ -170,7 +173,38 @@ class _SideBarState extends State<SideBar> {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>  TestScreen(),//MarkerWithImage(date: '2023-12-01'), //TestGps
+                        builder: (context) =>  DateDetailsPageTestLocal(email: currentUniqueUser.toString()),//MarkerWithImage(date: '2023-12-01'), //TestGps //TestScreen
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = constraints.maxWidth * 0.06;
+                return ListTile(
+                  leading: Icon(
+                    Icons.history,
+                    color: Colors.black,
+                    size: constraints.maxWidth * 0.07,
+                  ),
+                  title: Text(
+                    'Ride History LOCAL',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand-VariableFont_wght',
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>  ShowGpsData(), //ConnectWifiForDashCam
                       ),
                     );
                   },

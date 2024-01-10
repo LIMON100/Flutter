@@ -60,7 +60,6 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
   Set<String> uniqueDates2 = Set();
 
   List<History?> getUniqueDates(List<History?> historyList) {
-    // Set<DateTime> uniqueDates = Set<DateTime>();
     List<Map<String, dynamic>> uniqueGpsCoordinates = [];
     for (var history in historyList) {
       if (history != null && history.date != null) {
@@ -73,8 +72,6 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
       historyList = historyList2;
     });
 
-    print("UNIQUEDATE");
-    print(historyList);
     return historyList2;
   }
 
@@ -115,7 +112,7 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
 
   // Future<void> _fetchGpsCoordinates() async {
   //   final Database db = await GpsDatabaseHelper().initDatabase();
-  //   final gpsCoordinates = await db.query('gps_coordinates', orderBy: 'date DESC');
+  //   final gpsCoordinates = await db.query('gps_coordinates_A', orderBy: 'date DESC');
   //
   //   // Use a set to store unique dates
   //   Set<String> uniqueDates = Set();

@@ -222,7 +222,6 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   // VLC PLAYER END ----------------------------
-
   Future<void> getCurrentUserID() async {
     final currentUser = await Amplify.Auth.getCurrentUser();
     Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
@@ -353,22 +352,6 @@ class _TestScreenState extends State<TestScreen> {
 
   Future<String?> uploadImage()
   async {
-    // RenderRepaintBoundary boundary = globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
-    // ui.Image image = await boundary.toImage();
-    // ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    //
-    // // if (byteData != null) {
-    // Uint8List? pngBytes = byteData?.buffer.asUint8List();
-    //
-    // // Save image to a temporary file
-    // final tempDir = await getTemporaryDirectory();
-    // print("DIRECTORY");
-    // print(tempDir);
-    // final file = File('${tempDir.path}/captured_image22.png');
-    // await file.writeAsBytes(pngBytes!);
-    //
-    // print("2 DIFFERENT FILE");
-    // print(file);
     if (_screenshot != null) {
       File tempFile = await _createTemporaryFile(_screenshot!);
       print("CHECKKEY");
@@ -400,8 +383,7 @@ class _TestScreenState extends State<TestScreen> {
           userUniqueId: userUniqueName,
           latitude: 9.2,
           longitude: longitude,
-          // date: TemporalDate.fromString(date),
-          date: TemporalDate.fromString("2024-01-04"),
+          date: TemporalDate.fromString(date),
           time: TemporalTime.fromString(time),
           position: "left",
           imageUrl: imageUrlNew.toString(),
@@ -476,16 +458,6 @@ class _TestScreenState extends State<TestScreen> {
               Text('Date: $date'),
               Text('Time: $time'),
               SizedBox(height: 16),
-              // RepaintBoundary(
-              //   key: globalKey,
-              //   child: Container(
-              //     color: Colors.white,
-              //     height: 100, // Adjust the height as needed
-              //     child: Center(
-              //       child: Text('RAHMANNEW-123'),
-              //     ),
-              //   ),
-              // ),
               Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start, // Align children to the start (left)

@@ -100,23 +100,22 @@ class DatabaseHelper {
 }
 
 
-// Database for gpsCoordinates
+// Database for gpsCoordinates and screenshot
 class GpsDatabaseHelper {
   Database? _database;
-  static const String tableName = 'gps_coordinates';
+  static const String tableName = 'gps_coordinates_A';
 
   Future<Database> get database async {
     if (_database != null) {
       return _database!;
     }
-
     _database = await initDatabase();
     return _database!;
   }
 
   Future<Database> initDatabase() async {
     final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, 'gpscoord.db');
+    final path = join(databasesPath, 'gpscoordNewA.db');
 
     return await openDatabase(path, version: 1, onCreate: _createDb);
   }
@@ -129,10 +128,13 @@ class GpsDatabaseHelper {
         longitude REAL,
         image BLOB, 
         date TEXT,
-        time TEXT
+        time TEXT,
+        position TEXT,
+        email TEXT
       )
     ''');
   }
+
   //image TEXT
   Future<int> insertCoordinates(Map<String, dynamic> row) async {
     Database db = await database;
@@ -144,5 +146,21 @@ class GpsDatabaseHelper {
   Future<List<Map<String, dynamic>>> queryAllRows() async {
     Database db = await database;
     return await db.query(tableName);
+  }
+
+  // Delete single items
+  Future<int> deleteCoordinate(int id) async {
+    Database db = await database;
+    int result = await db.delete(tableName, where: 'id = ?', whereArgs: [id]);
+    print('Deleted row with result: $result');
+    return result;
+  }
+
+  // Delete all rows in the table
+  Future<int> deleteAllCoordinates() async {
+    Database db = await database;
+    int result = await db.delete(tableName);
+    print('Deleted all rows with result: $result');
+    return result;
   }
 }

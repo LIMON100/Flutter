@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
 import 'package:lamaradar/mode/llamaGuardSetting.dart';
@@ -98,6 +99,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
   Map<String, String>? dateTime;
   Uint8List? capturedImage;
   Uint8List? _screenshot;
+  String indicatePosition = "Rear";
 
   // Helper for database
   GpsDatabaseHelper helper = GpsDatabaseHelper();
@@ -105,11 +107,16 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
   bool _dangerWarningCalled = false;
   Timer? _gpsDataTimer;
 
+
+  String userUniqueName = "";
+  String currentUniqueUser = "";
+
   @override
   void initState() {
     super.initState();
     dateTime = {};
     // getCurrentDateTime();
+    getCurrentUserID();
     _scanWifiNetworks(context);
     _device = widget.device;
     _connectToDevice();
@@ -123,6 +130,15 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
   int dt = 0;
   int cpos = 0;
   int ss = 0;
+
+  Future<void> getCurrentUserID() async {
+    final currentUser = await Amplify.Auth.getCurrentUser();
+    Map<String, dynamic> signInDetails = currentUser.signInDetails.toJson();
+    currentUniqueUser = currentUser.userId;
+    userUniqueName = signInDetails['username'];
+    print(currentUser);
+    setState(() {});
+  }
 
   void getCurrentDateTime() {
     print("dt $dt");
@@ -232,24 +248,6 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
     return result['filePath'];
   }
 
-  // List<Map<String, dynamic>> getDemoData(){
-  //   return [
-  //     {
-  //       "latitude": _currentPosition?.latitude,
-  //       "longitude": _currentPosition?.longitude,
-  //       "image": capturedImage,
-  //       "date": dateTime!['date'].toString(),
-  //       "time": dateTime!['time'].toString()
-  //     },
-  //   ];
-  // }
-  //
-  // // GpsDatabaseHelper helper = GpsDatabaseHelper();
-  // Future<void> insertDemoData() async {
-  //   for(Map<String, dynamic> row in getDemoData()) {
-  //     await helper.insertCoordinates(row);
-  //   }
-  // }
 
   // TEST SAVE SINGLE DATA
   Map<String, dynamic> getDemoData() {
@@ -258,11 +256,14 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       "longitude": _currentPosition?.longitude,
       "image": _screenshot,
       "date": dateTime!['date'].toString(),
-      "time": dateTime!['time'].toString()
+      "time": dateTime!['time'].toString(),
+      "position": indicatePosition.toString(),
+      "email": currentUniqueUser.toString(),
     };
   }
   //
   Future<void> insertDemoData() async {
+    print("INSERTDATA");
     if(_dangerWarningCalled) {
       Map<String, dynamic> demoData = getDemoData();
       await helper.insertCoordinates(demoData);
@@ -653,7 +654,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
     // Extract the character at index 28 and parse it as an integer
     int locationCode;
     try {
-      locationCode = int.parse(_value[28]); //_value[28]=test, _value[27]=real Radar data
+      locationCode = int.parse(_value[27]); //_value[28]=test, _value[27]=real Radar data
     } catch (e) {
       return 'No Notification';
     }
@@ -707,9 +708,11 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       left_redPlayer.setAsset('assets/danger3.mp3');
       left_redPlayer.play();
 
+      indicatePosition = "Left";
       Timer(Duration(milliseconds: 600), () {
         left_redPlayer.stop();
       });
+
       callGpsData();
     }
 
@@ -879,6 +882,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
       right_redPlayer.setAsset('assets/danger3.mp3');
       right_redPlayer.play();
 
+      indicatePosition = "Right";
       Timer(Duration(milliseconds: 600), () {
         right_redPlayer.stop();
       });
@@ -932,6 +936,7 @@ class _CollisionWarningPage2State extends State<CollisionWarningPageTestCapture>
         right_danger_counter = 0;
       }
       right_danger_counter = right_danger_counter + 1;
+      indicatePosition = "Rear";
       Timer(Duration(milliseconds: 600), () {
         rear_redPlayer.stop();
       });

@@ -19,9 +19,17 @@ class _ShowGpsDataState extends State<ShowGpsData> {
   List<Map<String, dynamic>> _gpsCoordinates = [];
   bool _isLoading = true;
 
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGpsCoordinates();
+  }
+
+
   Future<void> _fetchGpsCoordinates() async {
     final Database db = await GpsDatabaseHelper().initDatabase();
-    final gpsCoordinates = await db.query('gps_coordinates', orderBy: 'date DESC');
+    final gpsCoordinates = await db.query('gps_coordinates_A', orderBy: 'date DESC');
 
     // Use a set to store unique dates
     Set<String> uniqueDates = Set();
@@ -59,13 +67,10 @@ class _ShowGpsDataState extends State<ShowGpsData> {
         }
       });
     }
+    print("ALLLOCAL");
+    print(_gpsCoordinates.length);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchGpsCoordinates();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,23 +113,27 @@ class _ShowGpsDataState extends State<ShowGpsData> {
           final gpsCoordinate = _gpsCoordinates[index];
           return GestureDetector(
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => MapView(date: gpsCoordinate['date']),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MapView(date: gpsCoordinate['date']),
+                ),
+              );
             },
             child: ListTile(
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${gpsCoordinate['date']}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold, // Add this line for bold text
-                    ),
+                  Column(
+                    children: [
+                      Text(
+                      '${gpsCoordinate['date']}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold, // Add this line for bold text
+                       ),
+                      ),
+                    ]
                   ),
                 ],
               ),
@@ -143,7 +152,7 @@ class _ShowGpsDataState extends State<ShowGpsData> {
 //
 //   Future<void> _fetchGpsCoordinates() async {
 //     final Database db = await GpsDatabaseHelper().initDatabase();
-//     final gpsCoordinates = await db.query('gps_coordinates', orderBy: 'date DESC');
+//     final gpsCoordinates = await db.query('gps_coordinates_A', orderBy: 'date DESC');
 //
 //     // Use a set to store unique dates
 //     Set<String> uniqueDates = Set();
