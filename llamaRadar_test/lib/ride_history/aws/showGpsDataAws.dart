@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lamaradar/mode/bleScreen.dart';
@@ -32,13 +33,25 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
   String fileKeyFinal = "";
   late final History newHistory;
   String uniqueUser = "";
+  bool _hasInternetConnection = true;
 
   @override
   void initState() {
     super.initState();
     // _fetchGpsCoordinates();
+    _checkInternetConnection();
     getCurrentUserID();
     initializeData();
+  }
+
+  // First check internet connection is ON/OFF
+  Future<void> _checkInternetConnection() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = false;
+      });
+    }
   }
 
   Future<void> getCurrentUserID() async {
@@ -165,7 +178,6 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Handle back button press to navigate to a specific page
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -175,32 +187,31 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
           },
         ),
       ),
-      body: _isLoading
+      body: _hasInternetConnection
+          ? _isLoading
           ? Center(
         child: SpinKitFadingCube(
           color: Colors.deepPurple,
           size: 150.0, // Adjust the size as needed
-        ),
+      ),
       )
           : historyList.isEmpty
           ? Center(
-        child: SpinKitFadingCube(
-          color: Colors.deepPurple,
-          size: 150.0, // Adjust the size as needed
-        ),
+        child: Text('No history data available.'),
       )
-          :
-      ListView.builder(
+          : ListView.builder(
         itemCount: uniqueDates.length,
         itemBuilder: (context, index) {
-          // final gpsCoordinate = historyList[index];
           final uniqueDate = uniqueDates[index];
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MapViewAws(date: uniqueDate.toString(), historyList: historyList),
+                  builder: (context) => MapViewAws(
+                    date: uniqueDate.toString(),
+                    historyList: historyList,
+                  ),
                 ),
               );
             },
@@ -212,7 +223,7 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
                     '${uniqueDate.toString()}',
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold, // Add this line for bold text
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -220,7 +231,80 @@ class _ShowGpsDataAwsState extends State<ShowGpsDataAws> {
             ),
           );
         },
+      )
+          : Center(
+        child: Text('Please turn on WIFI first and re-open the ride-histoy.'),
       ),
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       centerTitle: true,
+  //       title: const Text('Date'),
+  //       backgroundColor: Colors.transparent,
+  //       foregroundColor: Colors.black,
+  //       leading: IconButton(
+  //         icon: Icon(Icons.arrow_back),
+  //         onPressed: () {
+  //           // Handle back button press to navigate to a specific page
+  //           Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) => BleScreen(title: ''),
+  //             ),
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //     body: _isLoading
+  //         ? Center(
+  //       child: SpinKitFadingCube(
+  //         color: Colors.deepPurple,
+  //         size: 150.0, // Adjust the size as needed
+  //       ),
+  //     )
+  //         : historyList.isEmpty
+  //         ? Center(
+  //       child: SpinKitFadingCube(
+  //         color: Colors.deepPurple,
+  //         size: 150.0, // Adjust the size as needed
+  //       ),
+  //     )
+  //         :
+  //     ListView.builder(
+  //       itemCount: uniqueDates.length,
+  //       itemBuilder: (context, index) {
+  //         // final gpsCoordinate = historyList[index];
+  //         final uniqueDate = uniqueDates[index];
+  //         return GestureDetector(
+  //           onTap: () {
+  //             Navigator.push(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => MapViewAws(date: uniqueDate.toString(), historyList: historyList),
+  //               ),
+  //             );
+  //           },
+  //           child: ListTile(
+  //             title: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   '${uniqueDate.toString()}',
+  //                   style: const TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold, // Add this line for bold text
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 }
