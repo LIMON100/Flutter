@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
@@ -42,13 +43,25 @@ class _LoadingFilePageState extends State<LoadingFilePage> {
   String currentUniqueUser = "";
   get radius => null;
   bool _isLoading = true;
-
+  bool _hasInternetConnection = true;
 
   @override
   void initState() {
     super.initState();
+    _checkInternetConnection();
     getCurrentUserID();
     _fetchGpsCoordinates();
+  }
+
+
+  // First check internet connection is ON/OFF
+  Future<void> _checkInternetConnection() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = false;
+      });
+    }
   }
 
   // Fetch all data based on date
@@ -254,6 +267,7 @@ class _LoadingFilePageState extends State<LoadingFilePage> {
           position: _gpsCoordinates[i]['position'],
           imageUrl: imageUrlNew,
           imagekey: fileKeyFinal,
+
         );
 
         final request = ModelMutations.create(model);
@@ -266,9 +280,9 @@ class _LoadingFilePageState extends State<LoadingFilePage> {
         }
       }
 
-      // Dismiss loading indicator
-      // Navigator.pop(context);
-      // await terminateDialog();
+      // After finish uploading it goes to ride history page
+      Navigator.of(context, rootNavigator: true).pop();
+      await GpsDatabaseHelper().deleteAllCoordinates();
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ShowGpsDataAws()),
@@ -277,9 +291,9 @@ class _LoadingFilePageState extends State<LoadingFilePage> {
       safePrint('Mutation failed: $e');
       Navigator.pop(context); // Dismiss loading indicator
     }
-    finally {
-      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-    }
+    // finally {
+    //   Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+    // }
   }
 
   // Future<void> createHistory() async {
@@ -352,17 +366,43 @@ class _LoadingFilePageState extends State<LoadingFilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Column(
         children: [
-          SizedBox(height: 200),
           Center(
-          child: Text(
-            'Uploading Files to Cloud...',
-            style: TextStyle(fontSize: 20),
+          child: _hasInternetConnection
+              ? Text('Uploading Files to Cloud. Please DONOT turn of Internet.')
+              : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Please turn on WIFI first and re-open the ride-history page'),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _checkInternetConnection();
+                },
+                child: Text('Check Again'),
+              ),
+            ],
           ),
-        ),],
+        ),
+       ],
       ),
     );
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: Colors.white,
+  //     body: Column(
+  //       children: [
+  //         SizedBox(height: 200),
+  //         Center(
+  //         child: Text(
+  //           'Uploading Files to Cloud...',
+  //           style: TextStyle(fontSize: 20),
+  //         ),
+  //       ),],
+  //     ),
+  //   );
+  // }
 }
