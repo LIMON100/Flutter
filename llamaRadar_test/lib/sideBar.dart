@@ -16,6 +16,7 @@ import 'package:lamaradar/mode/ConnectWifiForDashCam.dart';
 import 'package:lamaradar/temp/DateDetailsPageTestLocal.dart';
 import 'package:lamaradar/temp/NetworkStreamPlayer.dart';
 import 'package:lamaradar/temp/TestGps.dart';
+import 'package:lamaradar/temp/UploadfileA.dart';
 import 'package:lamaradar/temp/VlcPlayerPage.dart';
 import 'package:lamaradar/temp/checkdb.dart';
 import 'package:lamaradar/ride_history/aws/showGpsDataAws.dart';
@@ -25,6 +26,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'mode/llamaGuardSetting.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_api/amplify_api.dart';
+
+import 'mode/loadingFilePage.dart';
 
 class SideBar extends StatefulWidget {
   SideBar({Key? key}) : super(key: key);
@@ -143,74 +146,74 @@ class _SideBarState extends State<SideBar> {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>  ShowGpsDataAws(), //ConnectWifiForDashCam
+                        builder: (context) =>  LoadingFilePage(email: currentUniqueUser.toString()), // ShowGpsDataAws(), //ConnectWifiForDashCam
                       ),
                     );
                   },
                 );
               },
             ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
-                    CustomIcon.webcam,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'LOCAL DB',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>  DateDetailsPageTestLocal(email: currentUniqueUser.toString()),//MarkerWithImage(date: '2023-12-01'), //TestGps //TestScreen
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            // LayoutBuilder(
+            //   builder: (context, constraints) {
+            //     final fontSize = constraints.maxWidth * 0.06;
+            //     return ListTile(
+            //       leading: Icon(
+            //         CustomIcon.webcam,
+            //         color: Colors.black,
+            //         size: constraints.maxWidth * 0.07,
+            //       ),
+            //       title: Text(
+            //         'LOCAL DB',
+            //         style: TextStyle(
+            //           fontFamily: 'Quicksand-VariableFont_wght',
+            //           fontSize: fontSize,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black,
+            //           letterSpacing: 2.0,
+            //         ),
+            //       ),
+            //       onTap: () {
+            //         Navigator.pop(context);
+            //         Navigator.of(context).push(
+            //           MaterialPageRoute(
+            //             builder: (context) =>  DateDetailsPageTestLocal(email: currentUniqueUser.toString()),//MarkerWithImage(date: '2023-12-01'), //TestGps //TestScreen
+            //           ),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
 
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fontSize = constraints.maxWidth * 0.06;
-                return ListTile(
-                  leading: Icon(
-                    Icons.history,
-                    color: Colors.black,
-                    size: constraints.maxWidth * 0.07,
-                  ),
-                  title: Text(
-                    'Ride History LOCAL',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand-VariableFont_wght',
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>  ShowGpsData(), //ConnectWifiForDashCam
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            // LayoutBuilder(
+            //   builder: (context, constraints) {
+            //     final fontSize = constraints.maxWidth * 0.06;
+            //     return ListTile(
+            //       leading: Icon(
+            //         Icons.history,
+            //         color: Colors.black,
+            //         size: constraints.maxWidth * 0.07,
+            //       ),
+            //       title: Text(
+            //         'Upload to AWS',
+            //         style: TextStyle(
+            //           fontFamily: 'Quicksand-VariableFont_wght',
+            //           fontSize: fontSize,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black,
+            //           letterSpacing: 2.0,
+            //         ),
+            //       ),
+            //       onTap: () {
+            //         Navigator.pop(context);
+            //         Navigator.of(context).push(
+            //           MaterialPageRoute(
+            //             builder: (context) =>  UploadFileA(email: currentUniqueUser.toString()), //ConnectWifiForDashCam
+            //           ),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
 
             // LayoutBuilder(
             //   builder: (context, constraints) {
