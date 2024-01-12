@@ -106,7 +106,7 @@ class _SignInState extends State<SignIn> {
 
 // Function to start the spinner and complete it after 3 seconds
   void _startSpinner(Completer<void> completer) {
-    Future.delayed(Duration(seconds: 6), () {
+    Future.delayed(Duration(seconds: 10), () {
       completer.complete();
     });
   }
