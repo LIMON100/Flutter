@@ -49,11 +49,7 @@ class _MarkerWithImageAwsState extends State<MarkerWithImageAws> {
     print(widget.historyList);
     final Database db = await GpsDatabaseHelper().initDatabase();
     final List<Map<String, dynamic>> gpsCoordinates = await db.query(
-<<<<<<< HEAD
       'gps_coordinates_A',
-=======
-      'gps_coordinates',
->>>>>>> 8088986bef8fdca0eba5fdf4204b910b018ef49a
       where: 'date = ?',
       whereArgs: [widget.date],
     );
@@ -90,6 +86,7 @@ class _MarkerWithImageAwsState extends State<MarkerWithImageAws> {
     for (int i = 0; i < widget.historyList.length; i++) {
       double? latitude = widget.historyList[i]?.latitude as double?;
       double? longitude = widget.historyList[i]?.longitude as double?;
+      String positn = widget.historyList[i]!.position.toString();
       if (latitude != null && longitude != null) {
         _markers.add(
           Marker(
@@ -108,26 +105,26 @@ class _MarkerWithImageAwsState extends State<MarkerWithImageAws> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Display the image with BoxFit.width if available
-                          // if (widget.historyList[i]?.imageUrl != null)
-                          Container(
-                            width: double.infinity, // Set width to maximum available width
-                            child: FittedBox(
-                              fit: BoxFit.fitWidth,
-                              child: CachedNetworkImage(
-                                errorWidget: (context, url, dynamic error) =>
-                                const Icon(Icons.error_outline_outlined),
-                                imageUrl: widget.historyList[i]!.imageUrl!,
-                                cacheKey: widget.historyList[i]!.imagekey!,
-                                width: double.maxFinite,
-                                height: 120.0,
-                                alignment: Alignment.topCenter,
-                                fit: BoxFit.fill,
+                          if (widget.historyList[i]?.imageUrl != null)
+                            Container(
+                              width: double.infinity, // Set width to maximum available width
+                              child: FittedBox(
+                                fit: BoxFit.fitWidth,
+                                child: CachedNetworkImage(
+                                  errorWidget: (context, url, dynamic error) =>
+                                  const Icon(Icons.error_outline_outlined),
+                                  imageUrl: widget.historyList[i]!.imageUrl!,
+                                  cacheKey: widget.historyList[i]!.imagekey!,
+                                  width: double.maxFinite,
+                                  height: 120.0,
+                                  alignment: Alignment.topCenter,
+                                  fit: BoxFit.fill,
+                                ),
                               ),
                             ),
-                          ),
                           SizedBox(height: 20),
-                          // Display the GPS coordinates
                           Text('Coordinates: $latitude, $longitude'),
+                          Text('Warning From: $positn'),
                         ],
                       ),
                     );

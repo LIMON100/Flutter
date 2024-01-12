@@ -83,7 +83,8 @@ class _MapScreenAwsState extends State<MapScreenAws> {
                               ),
                             SizedBox(height: 20),
                             // Display the GPS coordinates
-                            Text('Latitude: ${widget.latitude}, Longitude: ${widget.longitude}, Position: ${widget.position}'),
+                            Text('Latitude: ${widget.latitude}, Longitude: ${widget.longitude}'),
+                            Text('Warning From: ${widget.position}'),
                           ],
                         ),
                       );
